@@ -69,7 +69,7 @@
 <div id="toolbar">
     &nbsp;&nbsp;
     <span style="border: solid 0.5vh gray;">
-        &nbsp;Select Slice:
+        &nbsp;Select Time Slice:
         &nbsp;
         <a href="javascript:change_slice(-1)">Prev</a>
         &nbsp;<span id="slice-number"></span>&nbsp;
@@ -98,7 +98,7 @@
                                         background-color: ${styles_map[cell.patch_type]};
                                         % for orientation, edge_type in cell.edges.items():
                                             border-${styles_map[orientation]}-style: ${styles_map[edge_type]};
-                                            border-${styles_map[orientation]}-color: black;
+                                            border-${styles_map[orientation]}-color: ${styles_map['edge_color_by_patch_type'][cell.patch_type]};
                                         % endfor
                                     %endif
                                "

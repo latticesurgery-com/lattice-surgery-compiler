@@ -1,6 +1,7 @@
 from mako.template import Template
 from typing import *
 import patches
+import topological_assembly
 from math import sqrt
 
 
@@ -12,7 +13,11 @@ styles_map = {patches.PatchType.Qubit : "darkkhaki",
               patches.Orientation.Left : "left",
               patches.Orientation.Right : "right",
               patches.EdgeType.Solid : "solid",
-              patches.EdgeType.Dashed : "dashed"
+              patches.EdgeType.Dashed : "dashed",
+              'edge_color_by_patch_type': {
+                   patches.PatchType.Qubit : 'black',
+                   patches.PatchType.Ancilla : 'blue',
+              }
 }
 
 
@@ -24,9 +29,7 @@ class VisualArrayCell:
         self.text = None
 
 def sparse_lattice_to_array(lattice: patches.Lattice):
-    ncols = 1+max(map(lambda patch: max(patch.cells, key=lambda c: c[0])[0], lattice.patches))
-    nrows = 1+max(map(lambda patch: max(patch.cells, key=lambda c: c[1])[1], lattice.patches))
-    array = [ [None for col in range(ncols)] for row in range(nrows) ]
+    array = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
 
     for patch in lattice.patches:
         for x,y in patch.cells:
@@ -57,7 +60,7 @@ lattice = patches.Lattice([
         patches.Edge(patches.EdgeType.Solid, (4, 3), patches.Orientation.Bottom),
         patches.Edge(patches.EdgeType.Dashed, (4, 3), patches.Orientation.Right),
     ]),
-])
+],0,0)
 
 # Construct a sample lattice
 lattice1= patches.Lattice([
@@ -67,7 +70,7 @@ lattice1= patches.Lattice([
         patches.Edge(patches.EdgeType.Dashed, (2, 2), patches.Orientation.Left),
         patches.Edge(patches.EdgeType.Dashed, (2, 2), patches.Orientation.Right)
     ])
-])
+],0,0)
 
 
 array = sparse_lattice_to_array(lattice)
@@ -79,5 +82,5 @@ slices = [array,array1]
 template = Template(filename='index.mak')
 with open('index.html','w') as f:
     f.write(template.render(
-        slices=slices,
+        slices=[sparse_lattice_to_array(topological_assembly.LatticeLayoutInitializer.simpleLayout(10))],
         styles_map=styles_map))
