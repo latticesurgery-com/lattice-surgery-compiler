@@ -58,7 +58,7 @@
         function change_slice(offset)
         {
             $('#slice-'+document.selected_slice).hide();
-            document.selected_slice += offset;
+            document.selected_slice = max(0,document.selected_slice+offset);
             $('#slice-'+document.selected_slice).show();
             $('#slice-number').text(document.selected_slice);
         }
@@ -108,7 +108,7 @@
                                </span><br>
                                <span>
                                    %if cell is not None and cell.text is not None:
-                                        ${cell.text}
+                                        <span style="font-size: 20px"><b>${cell.text}</b></span>
                                    %endif
                                </span>
 

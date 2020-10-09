@@ -38,6 +38,7 @@ class EdgeType(Enum):
 
 class PatchType(Enum):
     Qubit = "Qubit"
+    DistillationQubit = "DistillationQubit"
     Ancilla = "Ancilla"
 
 

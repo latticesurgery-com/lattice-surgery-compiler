@@ -7,6 +7,7 @@ from math import sqrt
 
 # TODO separate
 styles_map = {patches.PatchType.Qubit : "darkkhaki",
+              patches.PatchType.DistillationQubit : "orchid",
               patches.PatchType.Ancilla : "aquamarine",
               patches.Orientation.Top : "top",
               patches.Orientation.Bottom : "bottom",
@@ -16,6 +17,7 @@ styles_map = {patches.PatchType.Qubit : "darkkhaki",
               patches.EdgeType.Dashed : "dashed",
               'edge_color_by_patch_type': {
                    patches.PatchType.Qubit : 'black',
+                   patches.PatchType.DistillationQubit : 'black',
                    patches.PatchType.Ancilla : 'blue',
               }
 }
@@ -32,10 +34,11 @@ def sparse_lattice_to_array(lattice: patches.Lattice):
     array = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
 
     for patch in lattice.patches:
-        for x,y in patch.cells:
+        for cell_idx_in_patch,(x,y) in enumerate(patch.cells):
             array[y][x] = VisualArrayCell(patch.patch_type, {})
             if(patch.state is not None):
-                array[y][x].text = patch.state.ket_repr()
+                if(cell_idx_in_patch == 0): # Only display the value in the first cell of the patch
+                    array[y][x].text = patch.state.ket_repr()
 
         for edge in patch.edges:
             array[edge.cell[1]][edge.cell[0]].edges[edge.orientation] = edge.border_type
@@ -82,5 +85,5 @@ slices = [array,array1]
 template = Template(filename='index.mak')
 with open('index.html','w') as f:
     f.write(template.render(
-        slices=[sparse_lattice_to_array(topological_assembly.LatticeLayoutInitializer.simpleLayout(10))],
+        slices=[sparse_lattice_to_array(topological_assembly.LatticeLayoutInitializer.simpleLayout(5))],
         styles_map=styles_map))

@@ -17,19 +17,51 @@ class PauliMatrix(Enum):
 class LatticeLayoutInitializer:
 
 
-    def singleSquarePatch(cell: Tuple[int,int]):
-        return patches.Patch(patches.PatchType.Qubit, patches.InitializeableState.Zero, [cell],[
+    def singleSquarePatch(cell: Tuple[int,int], patch_type=patches.PatchType.Qubit, patch_state=patches.InitializeableState.Zero ):
+        return patches.Patch(patch_type, patch_state, [cell],[
             patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Top),
             patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Bottom),
             patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Left),
             patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Right)
         ])
 
+    def simpleRightFacingDistillery(top_left_corner: Tuple[int,int]) -> List[patches.Patch]:
+        # Requires
+        x,y = top_left_corner
+        return [
+            LatticeLayoutInitializer.singleSquarePatch((x+2,y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            LatticeLayoutInitializer.singleSquarePatch((x+3,y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            LatticeLayoutInitializer.singleSquarePatch((x+4,y+1), patches.PatchType.DistillationQubit, patches.InitializeableState.Plus),
+            LatticeLayoutInitializer.singleSquarePatch((x+3,y+2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            LatticeLayoutInitializer.singleSquarePatch((x+2,y+2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            patches.Patch(patches.PatchType.DistillationQubit, patches.InitializeableState.Zero, [(x, y), (x, y+1)],
+                          [
+                              patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Top),
+                              patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Left),
+                              patches.Edge(patches.EdgeType.Dashed,(x, y), patches.Orientation.Right),
+                              patches.Edge(patches.EdgeType.Dashed,(x, y+1), patches.Orientation.Left),
+                              patches.Edge(patches.EdgeType.Dashed,(x, y+1), patches.Orientation.Bottom),
+                              patches.Edge(patches.EdgeType.Solid, (x, y+1), patches.Orientation.Right),
+                          ]),
+            patches.Patch(patches.PatchType.DistillationQubit, patches.InitializeableState.Magic, [(x+1, y), (x+1, y+1)],
+                          [
+                              patches.Edge(patches.EdgeType.Dashed,  (x+1, y), patches.Orientation.Top),
+                              patches.Edge(patches.EdgeType.Solid,  (x+1, y), patches.Orientation.Left),
+                              patches.Edge(patches.EdgeType.Dashed, (x+1, y), patches.Orientation.Right),
+                              patches.Edge(patches.EdgeType.Solid, (x+1, y+1), patches.Orientation.Left),
+                              patches.Edge(patches.EdgeType.Dashed, (x+1, y+1), patches.Orientation.Bottom),
+                              patches.Edge(patches.EdgeType.Solid,  (x+1, y+1), patches.Orientation.Right),
+                          ]),
+        ]
+
+
+
     def simpleLayout(num_logical_qubits: int) -> patches.Lattice: # a linear array of one spaced square patches with a distillery on one side
         # TODO distillery
         return patches.Lattice([
             LatticeLayoutInitializer.singleSquarePatch((j*2,0)) for j in range(num_logical_qubits)
-        ],2,0)
+        ] + LatticeLayoutInitializer.simpleRightFacingDistillery((2*num_logical_qubits,0))
+        ,2,0)
 
 
 
