@@ -86,11 +86,11 @@
                        <div class="lattice-cell">
                            <div class="lattice-cell-inside"
                             style="
-                                    height: 46pt;
-                                    width: 46pt;
+                                    height: 42pt;
+                                    width: 42pt;
                                     vertical-align: middle;
                                     display: inline-block;
-                                    border-width: 2pt;
+                                    border-width: 4pt;
                                     border-style: solid;
                                     border-color: transparent;
                                     text-align: center;

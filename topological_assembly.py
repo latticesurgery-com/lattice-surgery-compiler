@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import reduce
 from typing import Dict,Union,Optional,List,Tuple
 import copy
 from ast import literal_eval as make_tuple
@@ -81,8 +82,8 @@ class TopologicalAssemblyComposer:
         new_layer = copy.deepcopy(self.qubit_patch_slices[-1])
 
         # Mark stiched edges
-        stiched_graph_edges:List[Tuple[Tuple[int,int],Tuple[int,int]]] = []
-        active_qubit_cells:List[Tuple[int,int]] = []
+        stiched_graph_edges:List[Tuple[str],Tuple[str]] = []
+        active_qubit_cells:List[str] = []
         for j, patch in enumerate(new_layer.patches):
             for i, edge in enumerate(patch.edges):
                 if edge.cell in patch_operator_map:
@@ -115,10 +116,18 @@ class TopologicalAssemblyComposer:
                     g.delete_vertices([str(cell)])
 
         g.add_vertices(active_qubit_cells)
-        g.add_edges(stiched_graph_edges)
 
+        # Now we add the correspoding to the active cell borders. To avoid routing finding paths that cross a patch
+        # we give a direction to the edges going in and out the active patches
+        g.to_directed(mutual=True)
+        g.add_edge(stiched_graph_edges[0][1],stiched_graph_edges[0][0])
+        g.add_edges(stiched_graph_edges[1:])
 
-        ancilla_cells = [make_tuple(v['name']) for v in g.vs if v['name'] not in active_qubit_cells]
+        # TODO find a better algorithm
+        shortest_paths = g.get_shortest_paths(active_qubit_cells[0],active_qubit_cells[1:],mode='in',output='vpath')
+        shortest_paths_union = [ g.vs[v_idx]["name"] for v_idx in reduce(lambda a,b:a+b, shortest_paths)]
+
+        ancilla_cells = [make_tuple(v) for v in shortest_paths_union if v not in active_qubit_cells]
         new_layer.patches.append(patches.Patch(patches.PatchType.Ancilla, None, ancilla_cells,[] ))
 
         self.qubit_patch_slices.append(new_layer)

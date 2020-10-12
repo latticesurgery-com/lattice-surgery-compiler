@@ -15,13 +15,13 @@ styles_map = {patches.PatchType.Qubit : "darkkhaki",
               patches.Orientation.Right : "right",
               patches.EdgeType.Solid : "solid",
               patches.EdgeType.SolidStiched : "solid",
-              patches.EdgeType.Dashed : "dashed",
-              patches.EdgeType.DashedStiched : "dashed",
+              patches.EdgeType.Dashed : "dotted",
+              patches.EdgeType.DashedStiched : "dotted",
               'edge_color': {
                    patches.EdgeType.Solid : "black",
-                   patches.EdgeType.SolidStiched : "blue",
+                   patches.EdgeType.SolidStiched : "#37beff",
                    patches.EdgeType.Dashed : "black",
-                   patches.EdgeType.DashedStiched : "blue",
+                   patches.EdgeType.DashedStiched : "#37beff",
               }
 }
 
