@@ -2,6 +2,14 @@ from typing import *
 from enum import Enum
 
 
+class PauliMatrix(Enum):
+    X = [[0,  1],
+         [1,  0]]
+    Y = [[0, -1j],
+         [1j, 0]]
+    Z = [[1,  0],
+         [0, -1]]
+
 class InitializeableState(Enum):
     Zero = '|0>'
     Plus = '|+>'
@@ -31,9 +39,38 @@ class Orientation(Enum):
     Left = "Left"
     Right = "Right"
 
+
+    def get_graph_edge(edge):
+        col,row = edge.cell
+        return ({
+            Orientation.Top:    ((col,row),(col,row-1)),
+            Orientation.Bottom: ((col,row),(col,row+1)),
+            Orientation.Left:   ((col,row),(col-1,row)),
+            Orientation.Right:  ((col,row),(col+1,row))
+        })[edge.orientation]
+
+
 class EdgeType(Enum):
     Solid = "Solid"
+    SolidStiched = "SolidStiched"
     Dashed = "Dashed"
+    DashedStiched = "DashedStiched"
+
+    def stitched_type(self):
+        if self == EdgeType.Solid: return EdgeType.SolidStiched
+        if self == EdgeType.Dashed: return EdgeType.DashedStiched
+        return self
+
+    def un_stitched_type(self):
+        if self == EdgeType.SolidStiched: return EdgeType.Solid
+        if self == EdgeType.DashedStiched: return EdgeType.Dashed
+        return self
+
+
+operator_to_edge_map : Dict[PauliMatrix,EdgeType] = {
+    PauliMatrix.X: EdgeType.Dashed,
+    PauliMatrix.Z: EdgeType.Solid
+}
 
 
 class PatchType(Enum):
@@ -77,6 +114,9 @@ class Lattice:
             1+max(map(lambda patch: max(patch.cells, key=lambda c: c[1])[1], self.patches)),
             self.min_rows
         )
+
+
+
 
 
 

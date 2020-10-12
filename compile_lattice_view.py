@@ -14,11 +14,14 @@ styles_map = {patches.PatchType.Qubit : "darkkhaki",
               patches.Orientation.Left : "left",
               patches.Orientation.Right : "right",
               patches.EdgeType.Solid : "solid",
+              patches.EdgeType.SolidStiched : "solid",
               patches.EdgeType.Dashed : "dashed",
-              'edge_color_by_patch_type': {
-                   patches.PatchType.Qubit : 'black',
-                   patches.PatchType.DistillationQubit : 'black',
-                   patches.PatchType.Ancilla : 'blue',
+              patches.EdgeType.DashedStiched : "dashed",
+              'edge_color': {
+                   patches.EdgeType.Solid : "black",
+                   patches.EdgeType.SolidStiched : "blue",
+                   patches.EdgeType.Dashed : "black",
+                   patches.EdgeType.DashedStiched : "blue",
               }
 }
 
@@ -46,44 +49,17 @@ def sparse_lattice_to_array(lattice: patches.Lattice):
     return array
 
 
-# Construct a sample lattice
-lattice = patches.Lattice([
-    patches.Patch(patches.PatchType.Qubit, patches.PatchQubitState(1,0), [(2,2)],[
-        patches.Edge(patches.EdgeType.Solid, (2, 2), patches.Orientation.Top),
-        patches.Edge(patches.EdgeType.Solid, (2, 2), patches.Orientation.Bottom),
-        patches.Edge(patches.EdgeType.Dashed, (2, 2), patches.Orientation.Left),
-        patches.Edge(patches.EdgeType.Dashed, (2, 2), patches.Orientation.Right)
-    ]),
-    patches.Patch(patches.PatchType.Ancilla, None, [(2,3)],[]),
-    patches.Patch(patches.PatchType.Qubit, patches.PatchQubitState(1/sqrt(2),1/sqrt(2)) , [(3,3),(4,3)],[
-        patches.Edge(patches.EdgeType.Solid, (3, 3), patches.Orientation.Top),
-        patches.Edge(patches.EdgeType.Solid, (3, 3), patches.Orientation.Bottom),
-        patches.Edge(patches.EdgeType.Dashed, (3, 3), patches.Orientation.Left),
-        patches.Edge(patches.EdgeType.Solid, (4, 3), patches.Orientation.Top),
-        patches.Edge(patches.EdgeType.Solid, (4, 3), patches.Orientation.Bottom),
-        patches.Edge(patches.EdgeType.Dashed, (4, 3), patches.Orientation.Right),
-    ]),
-],0,0)
 
-# Construct a sample lattice
-lattice1= patches.Lattice([
-    patches.Patch(patches.PatchType.Qubit, patches.PatchQubitState(1,0), [(2,2)],[
-        patches.Edge(patches.EdgeType.Solid, (2, 2), patches.Orientation.Top),
-        patches.Edge(patches.EdgeType.Solid, (2, 2), patches.Orientation.Bottom),
-        patches.Edge(patches.EdgeType.Dashed, (2, 2), patches.Orientation.Left),
-        patches.Edge(patches.EdgeType.Dashed, (2, 2), patches.Orientation.Right)
-    ])
-],0,0)
-
-
-array = sparse_lattice_to_array(lattice)
-array1 = sparse_lattice_to_array(lattice1)
-
-slices = [array,array1]
-
+# Example
+tac = topological_assembly.TopologicalAssemblyComposer(topological_assembly.LatticeLayoutInitializer.simpleLayout(5))
+tac.measureMultiPatch({
+    (0,0):patches.PauliMatrix.X,
+    (4,0):patches.PauliMatrix.Z,
+    (6,0):patches.PauliMatrix.X
+})
 
 template = Template(filename='index.mak')
 with open('index.html','w') as f:
     f.write(template.render(
-        slices=[sparse_lattice_to_array(topological_assembly.LatticeLayoutInitializer.simpleLayout(5))],
+        slices=map(sparse_lattice_to_array,tac.getSlices()),
         styles_map=styles_map))

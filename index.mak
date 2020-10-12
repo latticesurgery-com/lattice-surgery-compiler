@@ -58,7 +58,7 @@
         function change_slice(offset)
         {
             $('#slice-'+document.selected_slice).hide();
-            document.selected_slice = max(0,document.selected_slice+offset);
+            document.selected_slice = Math.max(0,document.selected_slice+offset);
             $('#slice-'+document.selected_slice).show();
             $('#slice-number').text(document.selected_slice);
         }
@@ -98,7 +98,7 @@
                                         background-color: ${styles_map[cell.patch_type]};
                                         % for orientation, edge_type in cell.edges.items():
                                             border-${styles_map[orientation]}-style: ${styles_map[edge_type]};
-                                            border-${styles_map[orientation]}-color: ${styles_map['edge_color_by_patch_type'][cell.patch_type]};
+                                            border-${styles_map[orientation]}-color: ${styles_map['edge_color'][edge_type]};
                                         % endfor
                                     %endif
                                "

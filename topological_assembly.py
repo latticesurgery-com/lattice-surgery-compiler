@@ -1,15 +1,11 @@
 from enum import Enum
 from typing import Dict,Union,Optional,List,Tuple
+import copy
+from ast import literal_eval as make_tuple
+
+import igraph
 
 import patches
-
-class PauliMatrix(Enum):
-    X = [[0,  1],
-         [1,  0]]
-    Y = [[0, -1j],
-         [1j, 0]]
-    Z = [[1,  0],
-         [0, -1]]
 
 
 
@@ -67,26 +63,76 @@ class LatticeLayoutInitializer:
 
 
 
+
 class TopologicalAssemblyComposer:
-    def __init__(self, number_of_qubit_patches:int):
-        self.qubit_patch_slices : List[patches.Lattice] = [] #initialize lattice here
+    def __init__(self, initial_layout: patches.Lattice):
+        self.qubit_patch_slices : List[patches.Lattice] = [initial_layout] #initialize lattice here
 
     def initQubit(self, patch_idx:int, state: patches.InitializeableState): # Only initialization of |0> and |+> is predictable
         self.qubit_patch_slices.append(self.qubit_patch_slices[-1])
 
-    def measureSinglePatch(self, patch_idx:int, basisMatrix:PauliMatrix):
-        if basisMatrix not in [PauliMatrix.X,PauliMatrix.Z]:
+    def measureSinglePatch(self, patch_idx:int, basisMatrix: patches.PauliMatrix):
+        if basisMatrix not in [patches.PauliMatrix.X,patches.PauliMatrix.Z]:
             raise Exception("can't measure with basis matrix "+basisMatrix)
         self.qubit_patches[patch_idx] = None
 
-    def measureMultiPatch(self, patch_operator_map: Dict[int,PauliMatrix]):
-        pass
+    def measureMultiPatch(self, patch_operator_map: Dict[Tuple[int,int], patches.PauliMatrix]):
+        # TODO graph search for optimal routing
+        new_layer = copy.deepcopy(self.qubit_patch_slices[-1])
+
+        # Mark stiched edges
+        stiched_graph_edges:List[Tuple[Tuple[int,int],Tuple[int,int]]] = []
+        active_qubit_cells:List[Tuple[int,int]] = []
+        for j, patch in enumerate(new_layer.patches):
+            for i, edge in enumerate(patch.edges):
+                if edge.cell in patch_operator_map:
+                    requested_edge_type = patches.operator_to_edge_map[patch_operator_map[edge.cell]]
+
+                    active_qubit_cells.append(str(edge.cell)) if str(edge.cell) not in active_qubit_cells else None
+
+                    if edge.orientation in [patches.Orientation.Right, patches.Orientation.Bottom] \
+                            and requested_edge_type == edge.border_type:
+                        new_layer.patches[j].edges[i].border_type = edge.border_type.stitched_type()
+                        stiched_graph_edges.append(tuple(map(str,patches.Orientation.get_graph_edge(edge))))
+
+
+        # Compute the ancilla patches
+
+        g = igraph.Graph()
+        for row in range(new_layer.getRows()):
+            for col in range(new_layer.getCols()):
+                g.add_vertex(str((col,row)))
+
+        for row in range(new_layer.getRows()):
+            for col in range(new_layer.getCols()):
+                for neighbour_col,neighbour_row in [(col,row+1),(col,row-1),(col+1,row),(col-1,row)]:
+                    if neighbour_col in range(new_layer.getCols()) and neighbour_row in range(new_layer.getRows()):
+                        g.add_edges([(str((col,row)),str((neighbour_col,neighbour_row)))])
+
+        for patch in new_layer.patches:
+            if patch.patch_type in [patches.PatchType.Qubit,patches.PatchType.DistillationQubit]:
+                for cell in patch.cells:
+                    g.delete_vertices([str(cell)])
+
+        g.add_vertices(active_qubit_cells)
+        g.add_edges(stiched_graph_edges)
+
+
+        ancilla_cells = [make_tuple(v['name']) for v in g.vs if v['name'] not in active_qubit_cells]
+        new_layer.patches.append(patches.Patch(patches.PatchType.Ancilla, None, ancilla_cells,[] ))
+
+        self.qubit_patch_slices.append(new_layer)
 
 
 
 
-    def rotateSquarePatch(self,patch_idx: int):
+
+    def rotateSquarePatch(self, patch_idx: int):
         # assumes: The patch is square, there is room to rotate it
         # TODO make multiple rotations possible at the same time
        pass
 
+
+
+    def getSlices(self) -> List[patches.Lattice]:
+        return self.qubit_patch_slices
