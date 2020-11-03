@@ -79,10 +79,10 @@ class TopologicalAssemblyComposer:
 
     def measureMultiPatch(self, patch_operator_map: Dict[Tuple[int,int], patches.PauliMatrix]):
         # TODO graph search for optimal routing
-        new_layer = copy.deepcopy(self.qubit_patch_slices[-1])
+        new_layer : patches.Lattice = copy.deepcopy(self.qubit_patch_slices[-1])
 
-        # Mark stiched edges
-        stiched_graph_edges:List[Tuple[str],Tuple[str]] = []
+        # Mark edges that need stitching
+        stitched_graph_edges:List[Tuple[Tuple[str],Tuple[str]]] = []
         active_qubit_cells:List[str] = []
         for j, patch in enumerate(new_layer.patches):
             for i, edge in enumerate(patch.edges):
@@ -91,10 +91,8 @@ class TopologicalAssemblyComposer:
 
                     active_qubit_cells.append(str(edge.cell)) if str(edge.cell) not in active_qubit_cells else None
 
-                    if edge.orientation in [patches.Orientation.Right, patches.Orientation.Bottom] \
-                            and requested_edge_type == edge.border_type:
-                        new_layer.patches[j].edges[i].border_type = edge.border_type.stitched_type()
-                        stiched_graph_edges.append(tuple(map(str,patches.Orientation.get_graph_edge(edge))))
+                    if requested_edge_type == edge.border_type:
+                        stitched_graph_edges.append(tuple(map(str,patches.Orientation.get_graph_edge(edge))))
 
 
         # Compute the ancilla patches
@@ -117,15 +115,42 @@ class TopologicalAssemblyComposer:
 
         g.add_vertices(active_qubit_cells)
 
-        # Now we add the correspoding to the active cell borders. To avoid routing finding paths that cross a patch
-        # we give a direction to the edges going in and out the active patches
-        g.to_directed(mutual=True)
-        g.add_edge(stiched_graph_edges[0][1],stiched_graph_edges[0][0])
-        g.add_edges(stiched_graph_edges[1:])
 
-        # TODO find a better algorithm
-        shortest_paths = g.get_shortest_paths(active_qubit_cells[0],active_qubit_cells[1:],mode='in',output='vpath')
+        # Now we add the corresponding to the active cell borders. To avoid finding paths that cross a patch
+        # we give a direction to the edges going in and out the active patches.
+
+        g.to_directed(mutual=True) # Exisiting egses are bidirectional
+
+        # Filter out the edges that are not connected to patches in the graph
+        def edge_in_graph(e):
+            v1, v2 = e
+            return str(v1) in g.vs.get_attribute_values("name") and str(v2) in g.vs.get_attribute_values("name")
+        good_edges = filter(edge_in_graph, stitched_graph_edges)
+
+        # Edges from the first patch are outward, the rest inward
+        outward_cells = new_layer.getPatchOfCell(list(patch_operator_map.keys())[0]).cells
+        for v1, v2 in good_edges:
+            if v1 in outward_cells:
+                g.add_edge(v1, v2)
+            else:
+                g.add_edge(v2, v1)
+
+
+        shortest_paths = g.get_shortest_paths(active_qubit_cells[0],active_qubit_cells[1:],mode='all',output='vpath')
         shortest_paths_union = [ g.vs[v_idx]["name"] for v_idx in reduce(lambda a,b:a+b, shortest_paths)]
+
+        def is_edge_on_path(egde : patches.Edge):
+            v1, v2 = patches.Orientation.get_graph_edge(edge)
+            for j in range(len(shortest_paths_union)-1):
+                if {str(v1),str(v2)} == {shortest_paths_union[j], shortest_paths_union[j + 1]}:
+                    return True
+            return False
+
+        # Mark the active edges
+        for j, patch in enumerate(new_layer.patches):
+            for i, edge in enumerate(patch.edges):
+                if edge.cell in patch_operator_map and is_edge_on_path(edge):
+                    new_layer.patches[j].edges[i].border_type = edge.border_type.stitched_type()
 
         ancilla_cells = [make_tuple(v) for v in shortest_paths_union if v not in active_qubit_cells]
         new_layer.patches.append(patches.Patch(patches.PatchType.Ancilla, None, ancilla_cells,[] ))

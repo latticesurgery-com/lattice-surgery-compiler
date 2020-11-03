@@ -115,6 +115,11 @@ class Lattice:
             self.min_rows
         )
 
+    def getPatchOfCell(self, target : Tuple[int,int]):
+        for patch in self.patches:
+            for cell in patch.cells:
+                if cell == target:
+                    return patch
 
 
 
