@@ -58,7 +58,7 @@
         function change_slice(offset)
         {
             $('#slice-'+document.selected_slice).hide();
-            document.selected_slice = Math.max(0,document.selected_slice+offset);
+            document.selected_slice = Math.min(Math.max(0,document.selected_slice+offset),${len(slices)-1});
             $('#slice-'+document.selected_slice).show();
             $('#slice-number').text(document.selected_slice);
         }

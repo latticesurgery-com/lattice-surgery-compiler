@@ -61,13 +61,13 @@ class EdgeType(Enum):
         if self == EdgeType.Dashed: return EdgeType.DashedStiched
         return self
 
-    def un_stitched_type(self):
+    def unstitched_type(self):
         if self == EdgeType.SolidStiched: return EdgeType.Solid
         if self == EdgeType.DashedStiched: return EdgeType.Dashed
         return self
 
 
-operator_to_edge_map : Dict[PauliMatrix,EdgeType] = {
+PAULI_OPERATOR_TO_EDGE_MAP : Dict[PauliMatrix, EdgeType] = {
     PauliMatrix.X: EdgeType.Dashed,
     PauliMatrix.Z: EdgeType.Solid
 }
@@ -120,6 +120,11 @@ class Lattice:
             for cell in patch.cells:
                 if cell == target:
                     return patch
+        return None
+
+    def getPatchRepresentative(self, cell : Tuple[int,int]):
+        maybe_patch = self.getPatchOfCell(cell)
+        return maybe_patch.cells[0] if maybe_patch is not None else cell
 
 
 

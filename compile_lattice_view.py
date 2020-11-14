@@ -1,7 +1,7 @@
 from mako.template import Template
 from typing import *
 import patches
-import topological_assembly
+from  topological_assembly import TopologicalAssemblyComposer,LatticeLayoutInitializer
 from math import sqrt
 
 
@@ -51,15 +51,38 @@ def sparse_lattice_to_array(lattice: patches.Lattice):
 
 
 # Example
-tac = topological_assembly.TopologicalAssemblyComposer(topological_assembly.LatticeLayoutInitializer.simpleLayout(5))
+# Construct the device layout
+tac = TopologicalAssemblyComposer(
+    LatticeLayoutInitializer.simpleLayout(5))
+
+# tac.newTimeSlice()
+# tac.measureMultiPatch({
+#     (0,0):patches.PauliMatrix.X,
+#     (4,0):patches.PauliMatrix.Z,
+#     (6,0):patches.PauliMatrix.X
+# })
+#
+# tac.newTimeSlice()
+# tac.clearAncilla()
+#
+# tac.newTimeSlice()
+# tac.measureMultiPatch({
+#     (0,0):patches.PauliMatrix.X,
+#     (10,0):patches.PauliMatrix.X
+# })
+
 tac.measureMultiPatch({
     (0,0):patches.PauliMatrix.X,
     (4,0):patches.PauliMatrix.Z,
-    (6,0):patches.PauliMatrix.X
+})
+
+tac.measureMultiPatch({
+    (8,0):patches.PauliMatrix.X,
+    (12,2):patches.PauliMatrix.X,
 })
 
 template = Template(filename='index.mak')
 with open('index.html','w') as f:
     f.write(template.render(
-        slices=map(sparse_lattice_to_array,tac.getSlices()),
+        slices=list(map(sparse_lattice_to_array,tac.getSlices())),
         styles_map=styles_map))

@@ -1,6 +1,6 @@
 from enum import Enum
 from functools import reduce
-from typing import Dict,Union,Optional,List,Tuple
+from typing import *
 import copy
 from ast import literal_eval as make_tuple
 
@@ -12,7 +12,6 @@ import patches
 
 
 class LatticeLayoutInitializer:
-
 
     def singleSquarePatch(cell: Tuple[int,int], patch_type=patches.PatchType.Qubit, patch_state=patches.InitializeableState.Zero ):
         return patches.Patch(patch_type, patch_state, [cell],[
@@ -73,43 +72,66 @@ class TopologicalAssemblyComposer:
         self.qubit_patch_slices.append(self.qubit_patch_slices[-1])
 
     def measureSinglePatch(self, patch_idx:int, basisMatrix: patches.PauliMatrix):
-        if basisMatrix not in [patches.PauliMatrix.X,patches.PauliMatrix.Z]:
+        if basisMatrix not in [patches.PauliMatrix.X, patches.PauliMatrix.Z]:
             raise Exception("can't measure with basis matrix "+basisMatrix)
         self.qubit_patches[patch_idx] = None
 
-    def measureMultiPatch(self, patch_operator_map: Dict[Tuple[int,int], patches.PauliMatrix]):
-        # TODO graph search for optimal routing
-        new_layer : patches.Lattice = copy.deepcopy(self.qubit_patch_slices[-1])
+
+
+    def newTimeSlice(self):
+        self.qubit_patch_slices.append(copy.deepcopy(self.qubit_patch_slices[-1]))
+
+    def measureMultiPatch(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliMatrix]):
+
+        get_patch_repr = lambda v: self.qubit_patch_slices[-1].getPatchRepresentative(v)
+
+        def get_pauli_op_listing(cell):  # TODO check overlapping with representative and document
+            l = list(filter(
+                lambda cell: cell in patch_pauli_operator_map,
+                self.qubit_patch_slices[-1].getPatchOfCell(cell).cells))
+
+            if len(l) == 0: return None
+            if l[0] != get_patch_repr(cell):
+                raise Exception("Non patch repr cell associated with operator: "+str(l[0])+". Repr is "+str(get_patch_repr(cell)))
+            return l[0] if len(l) > 0 else None
 
         # Mark edges that need stitching
         stitched_graph_edges:List[Tuple[Tuple[str],Tuple[str]]] = []
-        active_qubit_cells:List[str] = []
-        for j, patch in enumerate(new_layer.patches):
+        active_qubit_cells = set()
+        for j, patch in enumerate(self.qubit_patch_slices[-1].patches):
             for i, edge in enumerate(patch.edges):
-                if edge.cell in patch_operator_map:
-                    requested_edge_type = patches.operator_to_edge_map[patch_operator_map[edge.cell]]
+                maybe_cell_associated_with_operator = get_pauli_op_listing(edge.cell)
+                if maybe_cell_associated_with_operator is not None:
 
-                    active_qubit_cells.append(str(edge.cell)) if str(edge.cell) not in active_qubit_cells else None
+                    requested_edge_type = patches.PAULI_OPERATOR_TO_EDGE_MAP[patch_pauli_operator_map[maybe_cell_associated_with_operator]]
+                    active_qubit_cells.add(str(get_patch_repr(edge.cell)))
 
                     if requested_edge_type == edge.border_type:
-                        stitched_graph_edges.append(tuple(map(str,patches.Orientation.get_graph_edge(edge))))
+                        active_vertex, external_vertex = patches.Orientation.get_graph_edge(edge)
+                        edge_with_representative = (
+                            get_patch_repr(active_vertex),external_vertex)
+                        stitched_graph_edges.append(tuple(map(str,edge_with_representative)))
+
+        active_qubit_cells = list(active_qubit_cells)
 
 
         # Compute the ancilla patches
 
         g = igraph.Graph()
-        for row in range(new_layer.getRows()):
-            for col in range(new_layer.getCols()):
+        for row in range(self.qubit_patch_slices[-1].getRows()):
+            for col in range(self.qubit_patch_slices[-1].getCols()):
                 g.add_vertex(str((col,row)))
 
-        for row in range(new_layer.getRows()):
-            for col in range(new_layer.getCols()):
+        nrows = self.qubit_patch_slices[-1].getRows()
+        ncols = self.qubit_patch_slices[-1].getCols()
+        for row in range(nrows):
+            for col in range(ncols):
                 for neighbour_col,neighbour_row in [(col,row+1),(col,row-1),(col+1,row),(col-1,row)]:
-                    if neighbour_col in range(new_layer.getCols()) and neighbour_row in range(new_layer.getRows()):
+                    if neighbour_col in range(ncols) and neighbour_row in range(nrows):
                         g.add_edges([(str((col,row)),str((neighbour_col,neighbour_row)))])
 
-        for patch in new_layer.patches:
-            if patch.patch_type in [patches.PatchType.Qubit,patches.PatchType.DistillationQubit]:
+        for patch in self.qubit_patch_slices[-1].patches:
+            if patch.patch_type in [patches.PatchType.Qubit, patches.PatchType.DistillationQubit]:
                 for cell in patch.cells:
                     g.delete_vertices([str(cell)])
 
@@ -128,12 +150,12 @@ class TopologicalAssemblyComposer:
         good_edges = filter(edge_in_graph, stitched_graph_edges)
 
         # Edges from the first patch are outward, the rest inward
-        outward_cells = new_layer.getPatchOfCell(list(patch_operator_map.keys())[0]).cells
+        outward_cells = self.qubit_patch_slices[-1].getPatchOfCell(list(patch_pauli_operator_map.keys())[0]).cells
         for v1, v2 in good_edges:
             if v1 in outward_cells:
-                g.add_edge(v1, v2)
+                g.add_edge(get_patch_repr(v1), get_patch_repr(v2))
             else:
-                g.add_edge(v2, v1)
+                g.add_edge(get_patch_repr(v2), get_patch_repr(v1))
 
 
         shortest_paths = g.get_shortest_paths(active_qubit_cells[0],active_qubit_cells[1:],mode='all',output='vpath')
@@ -141,24 +163,32 @@ class TopologicalAssemblyComposer:
 
         def is_edge_on_path(egde : patches.Edge):
             v1, v2 = patches.Orientation.get_graph_edge(edge)
+            v1 = get_patch_repr(v1); v2 = get_patch_repr(v2)
             for j in range(len(shortest_paths_union)-1):
                 if {str(v1),str(v2)} == {shortest_paths_union[j], shortest_paths_union[j + 1]}:
                     return True
             return False
 
         # Mark the active edges
-        for j, patch in enumerate(new_layer.patches):
+        for j, patch in enumerate(self.qubit_patch_slices[-1].patches):
             for i, edge in enumerate(patch.edges):
-                if edge.cell in patch_operator_map and is_edge_on_path(edge):
-                    new_layer.patches[j].edges[i].border_type = edge.border_type.stitched_type()
+                if get_pauli_op_listing(edge.cell) in patch_pauli_operator_map and is_edge_on_path(edge):
+                    self.qubit_patch_slices[-1].patches[j].edges[i].border_type = edge.border_type.stitched_type()
 
         ancilla_cells = [make_tuple(v) for v in shortest_paths_union if v not in active_qubit_cells]
-        new_layer.patches.append(patches.Patch(patches.PatchType.Ancilla, None, ancilla_cells,[] ))
+        if len(ancilla_cells) > 0:
+            self.qubit_patch_slices[-1].patches.append(patches.Patch(patches.PatchType.Ancilla, None, ancilla_cells,[] ))
+        else:
+            print("WARNING: no ancilla patch generated for measurement:")
+            print(patch_pauli_operator_map)
 
-        self.qubit_patch_slices.append(new_layer)
+    def clearAncilla(self):
+        for j, patch in enumerate(self.qubit_patch_slices[-1].patches):
+            for i, edge in enumerate(patch.edges):
+                self.qubit_patch_slices[-1].patches[j].edges[i].border_type = edge.border_type.unstitched_type()
 
-
-
+        self.qubit_patch_slices[-1].patches = list(filter(
+            lambda patch: patch.patch_type != patches.PatchType.Ancilla, self.qubit_patch_slices[-1].patches))
 
 
     def rotateSquarePatch(self, patch_idx: int):
