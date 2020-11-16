@@ -1,3 +1,4 @@
 .idea
 __pycache__
 index.html
+.ipynb_*

@@ -50,39 +50,11 @@ def sparse_lattice_to_array(lattice: patches.Lattice):
 
 
 
-# Example
-# Construct the device layout
-tac = TopologicalAssemblyComposer(
-    LatticeLayoutInitializer.simpleLayout(5))
 
-# tac.newTimeSlice()
-# tac.measureMultiPatch({
-#     (0,0):patches.PauliMatrix.X,
-#     (4,0):patches.PauliMatrix.Z,
-#     (6,0):patches.PauliMatrix.X
-# })
-#
-# tac.newTimeSlice()
-# tac.clearAncilla()
-#
-# tac.newTimeSlice()
-# tac.measureMultiPatch({
-#     (0,0):patches.PauliMatrix.X,
-#     (10,0):patches.PauliMatrix.X
-# })
 
-tac.measureMultiPatch({
-    (0,0):patches.PauliMatrix.X,
-    (4,0):patches.PauliMatrix.Z,
-})
-
-tac.measureMultiPatch({
-    (8,0):patches.PauliMatrix.X,
-    (12,2):patches.PauliMatrix.X,
-})
-
-template = Template(filename='index.mak')
-with open('index.html','w') as f:
-    f.write(template.render(
-        slices=list(map(sparse_lattice_to_array,tac.getSlices())),
-        styles_map=styles_map))
+def to_file(slices : List[patches.Lattice], output_file_name : str) -> None:
+    template = Template(filename='lattice_view.mak')
+    with open(output_file_name, 'w') as f:
+        f.write(template.render(
+            slices=list(map(sparse_lattice_to_array, slices)),
+            styles_map=styles_map))
