@@ -40,7 +40,7 @@ class Orientation(Enum):
     Right = "Right"
 
 
-    def get_graph_edge(edge):
+    def get_graph_edge(edge): # DEPRECATED
         col,row = edge.cell
         return ({
             Orientation.Top:    ((col,row),(col,row-1)),
@@ -85,6 +85,14 @@ class Edge:
         self.orientation = orientation
         self.border_type = edge_type
 
+    def getNeighbouringCell(self):
+        col, row = self.cell
+        return ({
+                Orientation.Top:    (col, row - 1),
+                Orientation.Bottom: (col, row + 1),
+                Orientation.Left:   (col - 1, row),
+                Orientation.Right:  (col + 1, row)
+            })[self.orientation]
 
 class Patch:
     def __init__(self, patch_type: PatchType, state: PatchQubitState, cells: List[Tuple[int,int]], edges: List[Edge]):
@@ -94,6 +102,9 @@ class Patch:
         self.state = state
 
         # TODO sanity check
+
+    def getRepresentative(self)->Tuple[int,int]:
+        return self.cells[0]
 
 
 class Lattice:
@@ -115,12 +126,18 @@ class Lattice:
             self.min_rows
         )
 
+    def clear(self):
+        self.patches = []
+
     def getPatchOfCell(self, target : Tuple[int,int]):
         for patch in self.patches:
             for cell in patch.cells:
                 if cell == target:
                     return patch
         return None
+
+    def cellIsFree(self, target : Tuple[int,int]):
+        return self.getPatchOfCell(target) is None
 
     def getPatchRepresentative(self, cell : Tuple[int,int]):
         maybe_patch = self.getPatchOfCell(cell)

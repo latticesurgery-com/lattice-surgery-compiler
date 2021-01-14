@@ -9,21 +9,24 @@ from topological_assembly import TopologicalAssemblyComposer,LatticeLayoutInitia
 tac = TopologicalAssemblyComposer(
     LatticeLayoutInitializer.simpleLayout(5))
 
-# tac.newTimeSlice()
-# tac.measureMultiPatch({
-#     (0,0):patches.PauliMatrix.X,
-#     (4,0):patches.PauliMatrix.Z,
-#     (6,0):patches.PauliMatrix.X
-# })
-#
-# tac.newTimeSlice()
-# tac.clearAncilla()
-#
-# tac.newTimeSlice()
-# tac.measureMultiPatch({
-#     (0,0):patches.PauliMatrix.X,
-#     (10,0):patches.PauliMatrix.X
-# })
+tac.newTimeSlice()
+tac.measureMultiPatch({
+    (0,0):patches.PauliMatrix.X,
+    (4,0):patches.PauliMatrix.Z,
+    (6,0):patches.PauliMatrix.X
+})
+
+tac.newTimeSlice()
+tac.clearAncilla()
+
+tac.newTimeSlice()
+tac.measureMultiPatch({
+    (0,0):patches.PauliMatrix.X,
+    (10,0):patches.PauliMatrix.X
+})
+
+tac.newTimeSlice()
+tac.clearAncilla()
 
 tac.measureMultiPatch({
     (0,0):patches.PauliMatrix.X,
