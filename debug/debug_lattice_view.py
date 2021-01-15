@@ -1,7 +1,7 @@
 
 import patches
 import lattice_view
-from topological_assembly import TopologicalAssemblyComposer,LatticeLayoutInitializer
+from lattice_surgery_computation_composer import TopologicalAssemblyComposer,LatticeLayoutInitializer
 
 
 # Example
@@ -38,5 +38,19 @@ tac.measureMultiPatch({
     (11,0):patches.PauliMatrix.X,
 })
 
+
+tac.newTimeSlice()
+tac.clearAncilla()
+
+
+tac.measureMultiPatch({
+    (10,0):patches.PauliMatrix.Z,
+    (8,0):patches.PauliMatrix.X,
+})
+
+# tac.measureMultiPatch({
+#     (10,0):patches.PauliMatrix.X,
+#     (11,0):patches.PauliMatrix.Z,
+# })
 
 lattice_view.to_file(tac.getSlices(),"index.html")

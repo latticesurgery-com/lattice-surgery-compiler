@@ -1,7 +1,7 @@
 
 import patches
 import lattice_view
-from topological_assembly import TopologicalAssemblyComposer,LatticeLayoutInitializer
+from lattice_surgery_computation_composer import TopologicalAssemblyComposer,LatticeLayoutInitializer
 
 
 # Example
