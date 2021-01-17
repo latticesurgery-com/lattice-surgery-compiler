@@ -1,12 +1,11 @@
 
 import patches
 import lattice_view
-from lattice_surgery_computation_composer import TopologicalAssemblyComposer,LatticeLayoutInitializer
-
+from lattice_surgery_computation_composer import LatticeSurgeryComputationComposer,LatticeLayoutInitializer
 
 # Example
 # Construct the device layout
-tac = TopologicalAssemblyComposer(
+tac = LatticeSurgeryComputationComposer(
     LatticeLayoutInitializer.simpleLayout(5))
 
 tac.measureMultiPatch({
@@ -63,6 +62,11 @@ tac.measureMultiPatch({
 tac.measureMultiPatch({
     (0,0):patches.PauliMatrix.X,
     (10,0):patches.PauliMatrix.Z,
+})
+
+tac.measureMultiPatch({
+    (11,0):patches.PauliMatrix.X,
+    (12,0):patches.PauliMatrix.X
 })
 
 lattice_view.to_file(tac.getSlices(),"index.html")

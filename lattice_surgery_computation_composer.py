@@ -60,7 +60,7 @@ class LatticeLayoutInitializer:
 
 
 
-class TopologicalAssemblyComposer:
+class LatticeSurgeryComputationComposer:
     def __init__(self, initial_layout: patches.Lattice):
         self.qubit_patch_slices : List[patches.Lattice] = [initial_layout] #initialize lattice here
 

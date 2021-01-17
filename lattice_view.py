@@ -1,7 +1,7 @@
 from mako.template import Template
 from typing import *
 import patches
-from  lattice_surgery_computation_composer import TopologicalAssemblyComposer,LatticeLayoutInitializer
+from  lattice_surgery_computation_composer import LatticeSurgeryComputationComposer,LatticeLayoutInitializer
 from math import sqrt
 
 
