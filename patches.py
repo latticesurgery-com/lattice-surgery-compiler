@@ -40,14 +40,14 @@ class Orientation(Enum):
     Right = "Right"
 
 
-    def get_graph_edge(edge): # DEPRECATED
+    def get_graph_edge(edge)-> Optional[Tuple[int,int]]:
         col,row = edge.cell
         return ({
             Orientation.Top:    ((col,row),(col,row-1)),
             Orientation.Bottom: ((col,row),(col,row+1)),
             Orientation.Left:   ((col,row),(col-1,row)),
             Orientation.Right:  ((col,row),(col+1,row))
-        })[edge.orientation]
+        }).get(edge.orientation)
 
 
 class EdgeType(Enum):
@@ -85,17 +85,17 @@ class Edge:
         self.orientation = orientation
         self.border_type = edge_type
 
-    def getNeighbouringCell(self):
+    def getNeighbouringCell(self) -> Optional[Tuple[int,int]]:
         col, row = self.cell
         return ({
                 Orientation.Top:    (col, row - 1),
                 Orientation.Bottom: (col, row + 1),
                 Orientation.Left:   (col - 1, row),
                 Orientation.Right:  (col + 1, row)
-            })[self.orientation]
+            }).get(self.orientation)
 
 class Patch:
-    def __init__(self, patch_type: PatchType, state: PatchQubitState, cells: List[Tuple[int,int]], edges: List[Edge]):
+    def __init__(self, patch_type: PatchType, state: Optional[PatchQubitState], cells: List[Tuple[int,int]], edges: List[Edge]):
         self.patch_type = patch_type
         self.cells = cells
         self.edges = edges
@@ -105,6 +105,17 @@ class Patch:
 
     def getRepresentative(self)->Tuple[int,int]:
         return self.cells[0]
+
+
+    def borders(self, to_cell: Tuple[int,int]) -> List[Edge]:
+        """Get all the borders betwen self and to_cell"""
+        edges_between = list()
+        for from_cell in self.cells:
+            for edge in self.edges:
+                if edge.cell == from_cell and edge.orientation == get_border_orientation(from_cell,to_cell):
+                    edges_between.append(edge.cell)
+        return edges_between
+
 
 
 class Lattice:
@@ -144,6 +155,12 @@ class Lattice:
         return maybe_patch.cells[0] if maybe_patch is not None else cell
 
 
-
+def get_border_orientation(subject: Tuple[int,int], neighbour: Tuple[int,int]):
+    return ({
+        ( 0, -1): Orientation.Top    ,
+        ( 0, +1): Orientation.Bottom ,
+        (-1, 0 ): Orientation.Left   ,
+        (+1, 0 ): Orientation.Right
+    })[(neighbour[0]-subject[0], neighbour[1]-subject[1])]
 
 
