@@ -92,7 +92,11 @@
                                     display: inline-block;
                                     border-width: 4pt;
                                     border-style: solid;
-                                    border-color: transparent;
+                                    %if cell is not None and cell.patch_type==patches.PatchType.Ancilla:
+                                        border-color: white;
+                                    %else:
+                                        border-color: transparent;
+                                    %endif
                                     text-align: center;
                                     %if cell is not None:
                                         background-color: ${styles_map[cell.patch_type]};

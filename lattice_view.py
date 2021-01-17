@@ -17,11 +17,13 @@ styles_map = {patches.PatchType.Qubit : "darkkhaki",
               patches.EdgeType.SolidStiched : "solid",
               patches.EdgeType.Dashed : "dotted",
               patches.EdgeType.DashedStiched : "dotted",
+              patches.EdgeType.AncillaJoin : "solid",
               'edge_color': {
                    patches.EdgeType.Solid : "black",
                    patches.EdgeType.SolidStiched : "#37beff",
                    patches.EdgeType.Dashed : "black",
                    patches.EdgeType.DashedStiched : "#37beff",
+                   patches.EdgeType.AncillaJoin : "aquamarine",
               }
 }
 
@@ -57,4 +59,6 @@ def to_file(slices : List[patches.Lattice], output_file_name : str) -> None:
     with open(output_file_name, 'w') as f:
         f.write(template.render(
             slices=list(map(sparse_lattice_to_array, slices)),
-            styles_map=styles_map))
+            styles_map=styles_map,
+            patches=patches
+        ))

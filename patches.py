@@ -55,6 +55,7 @@ class EdgeType(Enum):
     SolidStiched = "SolidStiched"
     Dashed = "Dashed"
     DashedStiched = "DashedStiched"
+    AncillaJoin = "AncillaJoin"
 
     def stitched_type(self):
         if self == EdgeType.Solid: return EdgeType.SolidStiched
@@ -140,7 +141,7 @@ class Lattice:
     def clear(self):
         self.patches = []
 
-    def getPatchOfCell(self, target : Tuple[int,int]):
+    def getPatchOfCell(self, target : Tuple[int,int]) -> Optional[Patch]:
         for patch in self.patches:
             for cell in patch.cells:
                 if cell == target:
@@ -150,9 +151,13 @@ class Lattice:
     def cellIsFree(self, target : Tuple[int,int]):
         return self.getPatchOfCell(target) is None
 
-    def getPatchRepresentative(self, cell : Tuple[int,int]):
+    def getPatchRepresentative(self, cell: Tuple[int,int]):
         maybe_patch = self.getPatchOfCell(cell)
         return maybe_patch.cells[0] if maybe_patch is not None else cell
+
+    def patchTypeOfCell(self, cell: Tuple[int,int]) -> Optional[PatchType]:
+        maybe_patch = self.getPatchOfCell(cell)
+        return maybe_patch.patch_type if maybe_patch is not None else None
 
 
 def get_border_orientation(subject: Tuple[int,int], neighbour: Tuple[int,int]):

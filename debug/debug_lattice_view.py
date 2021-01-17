@@ -9,7 +9,6 @@ from lattice_surgery_computation_composer import TopologicalAssemblyComposer,Lat
 tac = TopologicalAssemblyComposer(
     LatticeLayoutInitializer.simpleLayout(5))
 
-tac.newTimeSlice()
 tac.measureMultiPatch({
     (0,0):patches.PauliMatrix.X,
     (4,0):patches.PauliMatrix.Z,
@@ -19,7 +18,7 @@ tac.measureMultiPatch({
 tac.newTimeSlice()
 tac.clearAncilla()
 
-tac.newTimeSlice()
+
 tac.measureMultiPatch({
     (0,0):patches.PauliMatrix.X,
     (10,0):patches.PauliMatrix.X
@@ -51,6 +50,19 @@ tac.measureMultiPatch({
 tac.measureMultiPatch({
     (10,0):patches.PauliMatrix.X,
     (11,0):patches.PauliMatrix.Z,
+})
+
+tac.newTimeSlice()
+tac.clearAncilla()
+
+tac.measureMultiPatch({
+    (4,0):patches.PauliMatrix.X,
+    (6,0):patches.PauliMatrix.Z,
+})
+
+tac.measureMultiPatch({
+    (0,0):patches.PauliMatrix.X,
+    (10,0):patches.PauliMatrix.Z,
 })
 
 lattice_view.to_file(tac.getSlices(),"index.html")

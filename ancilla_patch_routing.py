@@ -84,9 +84,14 @@ def add_ancilla_to_lattice_from_paths(
         paths: List[List[Tuple[int ,int]]] # Lists of cells
 ) -> None:
 
-    all_ancilla_cells = set()
-
     for path in paths:
+
+        # Shrink the path to the last cells that belong to a qubit patch
+        if lattice.getPatchRepresentative(path[0]) == lattice.getPatchRepresentative(path[1]):
+            path = path[1:]
+        if lattice.getPatchRepresentative(path[-1]) == lattice.getPatchRepresentative(path[-2]):
+            path = path[:-1]
+
         source_patch = lattice.getPatchOfCell(path[0])
         for edge in source_patch.edges:
             if edge.getNeighbouringCell() == path[1]:
@@ -97,28 +102,27 @@ def add_ancilla_to_lattice_from_paths(
             if edge.getNeighbouringCell() == path[-2]:
                 edge.border_type = edge.border_type.stitched_type()
 
-        all_ancilla_cells = all_ancilla_cells.union(set(path[1:-1]))
+        if len(path)>2:
+            for prev_cell, curr_cell, next_cell in zip(path[:-2],path[1:-1],path[2:]):
+                if lattice.cellIsFree(curr_cell):
+                    lattice.patches.append(patches.Patch(patches.PatchType.Ancilla, None, [curr_cell] ,[]))
 
-    if len(path)>2:
-        for prev_cell, curr_cell, next_cell in zip(path[:-2],path[1:-1],path[2:]):
-            if lattice.cellIsFree(curr_cell):
-                lattice.patches.append(patches.Patch(patches.PatchType.Ancilla, None, [curr_cell] ,[]))
+                if lattice.getPatchOfCell(curr_cell).patch_type == patches.PatchType.Ancilla:
+                    curr_patch = lattice.getPatchOfCell(curr_cell)
+                    curr_patch.edges.append(
+                        patches.Edge(
+                            patches.EdgeType.AncillaJoin,
+                            curr_cell,
+                            patches.get_border_orientation(curr_cell,next_cell)
+                        ))
+                    curr_patch = lattice.getPatchOfCell(curr_cell)
+                    curr_patch.edges.append(
+                        patches.Edge(
+                            patches.EdgeType.AncillaJoin,
+                            curr_cell,
+                            patches.get_border_orientation(curr_cell, prev_cell)
+                        ))
 
-            if lattice.getPatchOfCell(curr_cell).patch_type == patches.PatchType.Ancilla:
-                curr_patch = lattice.getPatchOfCell(curr_cell)
-                curr_patch.edges.append(
-                    patches.Edge(
-                        patches.EdgeType.SolidStiched,
-                        curr_cell,
-                        patches.get_border_orientation(curr_cell,next_cell)
-                    ))
-                curr_patch = lattice.getPatchOfCell(curr_cell)
-                curr_patch.edges.append(
-                    patches.Edge(
-                        patches.EdgeType.SolidStiched,
-                        curr_cell,
-                        patches.get_border_orientation(curr_cell, prev_cell)
-                    ))
 
 
 
