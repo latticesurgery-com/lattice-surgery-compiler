@@ -81,7 +81,7 @@ class PatchType(Enum):
 
 
 class Edge:
-    def __init__(self, edge_type: EdgeType, cell: Tuple[int, int], orientation: List[str]):
+    def __init__(self, edge_type: EdgeType, cell: Tuple[int, int], orientation: List[Orientation]):
         self.cell = cell
         self.orientation = orientation
         self.border_type = edge_type
@@ -96,7 +96,11 @@ class Edge:
             }).get(self.orientation)
 
 class Patch:
-    def __init__(self, patch_type: PatchType, state: Optional[PatchQubitState], cells: List[Tuple[int,int]], edges: List[Edge]):
+    def __init__(self,
+                 patch_type: PatchType,
+                 state: Union[None,PatchQubitState, InitializeableState],
+                 cells: List[Tuple[int,int]],
+                 edges: List[Edge]):
         self.patch_type = patch_type
         self.cells = cells
         self.edges = edges

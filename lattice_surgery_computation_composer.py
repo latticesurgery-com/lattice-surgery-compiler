@@ -7,9 +7,11 @@ import copy
 
 
 
-class LatticeLayoutInitializer:
+class PatchInitializer:
 
-    def singleSquarePatch(cell: Tuple[int,int], patch_type=patches.PatchType.Qubit, patch_state=patches.InitializeableState.Zero ):
+    def singleSquarePatch(cell:Tuple[int,int],
+                          patch_type:patches.PatchType = patches.PatchType.Qubit,
+                          patch_state:patches.InitializeableState = patches.InitializeableState.Zero ):
         return patches.Patch(patch_type, patch_state, [cell],[
             patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Top),
             patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Bottom),
@@ -21,11 +23,11 @@ class LatticeLayoutInitializer:
         # Requires
         x,y = top_left_corner
         return [
-            LatticeLayoutInitializer.singleSquarePatch((x+2,y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
-            LatticeLayoutInitializer.singleSquarePatch((x+3,y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
-            LatticeLayoutInitializer.singleSquarePatch((x+4,y+1), patches.PatchType.DistillationQubit, patches.InitializeableState.Plus),
-            LatticeLayoutInitializer.singleSquarePatch((x+3,y+2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
-            LatticeLayoutInitializer.singleSquarePatch((x+2,y+2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            PatchInitializer.singleSquarePatch((x + 2, y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            PatchInitializer.singleSquarePatch((x + 3, y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            PatchInitializer.singleSquarePatch((x + 4, y + 1), patches.PatchType.DistillationQubit, patches.InitializeableState.Plus),
+            PatchInitializer.singleSquarePatch((x + 3, y + 2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            PatchInitializer.singleSquarePatch((x + 2, y + 2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
             patches.Patch(patches.PatchType.DistillationQubit, patches.InitializeableState.Zero, [(x, y), (x, y+1)],
                           [
                               patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Top),
@@ -51,9 +53,9 @@ class LatticeLayoutInitializer:
     def simpleLayout(num_logical_qubits: int) -> patches.Lattice: # a linear array of one spaced square patches with a distillery on one side
         # TODO distillery
         return patches.Lattice([
-            LatticeLayoutInitializer.singleSquarePatch((j*2,0)) for j in range(num_logical_qubits)
-        ] + LatticeLayoutInitializer.simpleRightFacingDistillery((2*num_logical_qubits,0))
-        ,2,0)
+            PatchInitializer.singleSquarePatch((j * 2, 0)) for j in range(num_logical_qubits)
+        ] + PatchInitializer.simpleRightFacingDistillery((2 * num_logical_qubits, 0))
+                               , 2, 0)
 
 
 
@@ -64,13 +66,24 @@ class LatticeSurgeryComputationComposer:
     def __init__(self, initial_layout: patches.Lattice):
         self.qubit_patch_slices : List[patches.Lattice] = [initial_layout] #initialize lattice here
 
-    def initQubit(self, patch_idx:int, state: patches.InitializeableState): # Only initialization of |0> and |+> is predictable
-        self.qubit_patch_slices.append(self.qubit_patch_slices[-1])
+    def lattice(self):
+        return self.qubit_patch_slices[-1]
 
-    def measureSinglePatch(self, patch_idx:int, basisMatrix: patches.PauliMatrix):
-        if basisMatrix not in [patches.PauliMatrix.X, patches.PauliMatrix.Z]:
-            raise Exception("can't measure with basis matrix "+basisMatrix+" yet")
-        self.qubit_patches[patch_idx] = None
+    def addPatch(self, patch: patches.Patch):
+        self.lattice().patches.append(patch)
+
+    def measurePatch(self, cell_of_patch: Tuple[int, int], basis_matrix: patches.PauliMatrix):
+        if basis_matrix not in [patches.PauliMatrix.X, patches.PauliMatrix.Z]:
+            raise Exception("Can't measure with basis matrix "+basis_matrix+" yet")
+        index_to_remove = None
+        for i,patch in enumerate(self.qubit_patch_slices[-1].patches):
+            if patch.getRepresentative() == cell_of_patch:
+                index_to_remove = i
+                break
+        if index_to_remove is not None:
+            del self.qubit_patch_slices[-1].patches[index_to_remove]
+        else:
+            raise Exception("No patch to measure at " + cell_of_patch + "")
 
     def newTimeSlice(self):
         self.qubit_patch_slices.append(copy.deepcopy(self.qubit_patch_slices[-1]))

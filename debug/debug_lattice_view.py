@@ -1,12 +1,41 @@
 
 import patches
 import lattice_view
-from lattice_surgery_computation_composer import LatticeSurgeryComputationComposer,LatticeLayoutInitializer
+from lattice_surgery_computation_composer import LatticeSurgeryComputationComposer,PatchInitializer
 
 # Example
 # Construct the device layout
 tac = LatticeSurgeryComputationComposer(
-    LatticeLayoutInitializer.simpleLayout(5))
+    PatchInitializer.simpleLayout(5))
+
+tac.newTimeSlice()
+
+tac.addPatch(PatchInitializer.singleSquarePatch((4,2),patches.PatchType.Qubit, patches.InitializeableState.Plus))
+
+tac.newTimeSlice()
+
+tac.addPatch(PatchInitializer.singleSquarePatch((3,2),patches.PatchType.Qubit, patches.InitializeableState.Plus))
+
+tac.newTimeSlice()
+
+tac.measureMultiPatch({
+    (3,2):patches.PauliMatrix.X,
+    (4,2):patches.PauliMatrix.X
+})
+
+tac.newTimeSlice()
+
+tac.clearAncilla()
+tac.lattice().getPatchOfCell((3,2)).state = None
+tac.lattice().getPatchOfCell((4,2)).state = None
+
+tac.newTimeSlice()
+tac.measurePatch((4,2),patches.PauliMatrix.X)
+
+tac.newTimeSlice()
+tac.measurePatch((3,2),patches.PauliMatrix.X)
+
+tac.newTimeSlice()
 
 tac.measureMultiPatch({
     (0,0):patches.PauliMatrix.X,
@@ -16,6 +45,11 @@ tac.measureMultiPatch({
 
 tac.newTimeSlice()
 tac.clearAncilla()
+tac.lattice().getPatchOfCell((0,0)).state = None
+tac.lattice().getPatchOfCell((4,0)).state = None
+tac.lattice().getPatchOfCell((6,0)).state = None
+
+tac.newTimeSlice()
 
 
 tac.measureMultiPatch({
