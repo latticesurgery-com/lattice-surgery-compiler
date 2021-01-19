@@ -95,6 +95,9 @@ class Edge:
                 Orientation.Right:  (col + 1, row)
             }).get(self.orientation)
 
+    def isStiched(self):
+        return self.border_type in [EdgeType.SolidStiched, EdgeType.DashedStiched]
+
 class Patch:
     def __init__(self,
                  patch_type: PatchType,

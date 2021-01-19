@@ -9,98 +9,88 @@ tac = LatticeSurgeryComputationComposer(
     PatchInitializer.simpleLayout(5))
 
 tac.newTimeSlice()
-
-tac.addPatch(PatchInitializer.singleSquarePatch((4,2),patches.PatchType.Qubit, patches.InitializeableState.Plus))
-
-tac.newTimeSlice()
-
-tac.addPatch(PatchInitializer.singleSquarePatch((3,2),patches.PatchType.Qubit, patches.InitializeableState.Plus))
-
-tac.newTimeSlice()
-
-tac.measureMultiPatch({
-    (3,2):patches.PauliMatrix.X,
-    (4,2):patches.PauliMatrix.X
-})
-
-tac.newTimeSlice()
-
-tac.clearAncilla()
-tac.lattice().getPatchOfCell((3,2)).state = None
-tac.lattice().getPatchOfCell((4,2)).state = None
-
-tac.newTimeSlice()
-tac.measurePatch((4,2),patches.PauliMatrix.X)
-
-tac.newTimeSlice()
-tac.measurePatch((3,2),patches.PauliMatrix.X)
-
-tac.newTimeSlice()
-
-tac.measureMultiPatch({
-    (0,0):patches.PauliMatrix.X,
-    (4,0):patches.PauliMatrix.Z,
-    (6,0):patches.PauliMatrix.X
-})
-
-tac.newTimeSlice()
-tac.clearAncilla()
-tac.lattice().getPatchOfCell((0,0)).state = None
-tac.lattice().getPatchOfCell((4,0)).state = None
-tac.lattice().getPatchOfCell((6,0)).state = None
-
-tac.newTimeSlice()
+with tac.timestep() as slice:
+    slice.addPatch(PatchInitializer.singleSquarePatch((4,2),patches.PatchType.Qubit, patches.InitializeableState.Plus))
 
 
-tac.measureMultiPatch({
-    (0,0):patches.PauliMatrix.X,
-    (10,0):patches.PauliMatrix.X
-})
+with tac.timestep() as slice:
 
-tac.newTimeSlice()
-tac.clearAncilla()
+    slice.addPatch(PatchInitializer.singleSquarePatch((3,2),patches.PatchType.Qubit, patches.InitializeableState.Plus))
 
-tac.measureMultiPatch({
-    (0,0):patches.PauliMatrix.X,
-    (4,0):patches.PauliMatrix.Z,
-})
+with tac.timestep() as slice:
 
-tac.measureMultiPatch({
-    (8,0):patches.PauliMatrix.X,
-    (11,0):patches.PauliMatrix.X,
-})
+    slice.measureMultiPatch({
+        (3,2):patches.PauliMatrix.X,
+        (4,2):patches.PauliMatrix.X
+    })
+
+with tac.timestep() as slice:
+    pass
+
+with tac.timestep() as slice:
+    slice.measurePatch((4,2),patches.PauliMatrix.X)
+
+with tac.timestep() as slice:
+    slice.measurePatch((3,2),patches.PauliMatrix.X)
+
+with tac.timestep() as slice:
+
+    slice.measureMultiPatch({
+        (0,0):patches.PauliMatrix.X,
+        (4,0):patches.PauliMatrix.Z,
+        (6,0):patches.PauliMatrix.X
+    })
+
+with tac.timestep() as slice:
+    pass
+
+with tac.timestep() as slice:
 
 
-tac.newTimeSlice()
-tac.clearAncilla()
+    slice.measureMultiPatch({
+        (0,0):patches.PauliMatrix.X,
+        (10,0):patches.PauliMatrix.X
+    })
 
+with tac.timestep() as slice:
 
-tac.measureMultiPatch({
-    (10,0):patches.PauliMatrix.Z,
-    (8,0):patches.PauliMatrix.X,
-})
+    slice.measureMultiPatch({
+        (0,0):patches.PauliMatrix.X,
+        (4,0):patches.PauliMatrix.Z,
+    })
 
-tac.measureMultiPatch({
-    (10,0):patches.PauliMatrix.X,
-    (11,0):patches.PauliMatrix.Z,
-})
+    slice.measureMultiPatch({
+        (8,0):patches.PauliMatrix.X,
+        (11,0):patches.PauliMatrix.X,
+    })
 
-tac.newTimeSlice()
-tac.clearAncilla()
+with tac.timestep() as slice:
 
-tac.measureMultiPatch({
-    (4,0):patches.PauliMatrix.X,
-    (6,0):patches.PauliMatrix.Z,
-})
+    slice.measureMultiPatch({
+        (10,0):patches.PauliMatrix.Z,
+        (8,0):patches.PauliMatrix.X,
+    })
 
-tac.measureMultiPatch({
-    (0,0):patches.PauliMatrix.X,
-    (10,0):patches.PauliMatrix.Z,
-})
+    slice.measureMultiPatch({
+        (10,0):patches.PauliMatrix.X,
+        (11,0):patches.PauliMatrix.Z,
+    })
 
-tac.measureMultiPatch({
-    (11,0):patches.PauliMatrix.X,
-    (12,0):patches.PauliMatrix.X
-})
+with tac.timestep() as slice:
+
+    slice.measureMultiPatch({
+        (4,0):patches.PauliMatrix.X,
+        (6,0):patches.PauliMatrix.Z,
+    })
+
+    slice.measureMultiPatch({
+        (0,0):patches.PauliMatrix.X,
+        (10,0):patches.PauliMatrix.Z,
+    })
+
+    slice.measureMultiPatch({
+        (11,0):patches.PauliMatrix.X,
+        (12,0):patches.PauliMatrix.X
+    })
 
 lattice_view.to_file(tac.getSlices(),"index.html")

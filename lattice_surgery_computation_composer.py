@@ -132,7 +132,10 @@ class LatticeSurgeryComputationComposer:
     def clearAncilla(self):
         for j, patch in enumerate(self.qubit_patch_slices[-1].patches):
             for i, edge in enumerate(patch.edges):
-                self.qubit_patch_slices[-1].patches[j].edges[i].border_type = edge.border_type.unstitched_type()
+                if edge.isStiched():
+                    edge.border_type = edge.border_type.unstitched_type()
+                    # After measurement we are not ready to track state yet
+                    self.lattice().getPatchOfCell(edge.cell).state = None
 
         self.qubit_patch_slices[-1].patches = list(filter(
             lambda patch: patch.patch_type != patches.PatchType.Ancilla, self.qubit_patch_slices[-1].patches))
@@ -150,3 +153,20 @@ class LatticeSurgeryComputationComposer:
     def getSlices(self) -> List[patches.Lattice]:
         return self.qubit_patch_slices
 
+    def timestep(self):
+        class LatticeSurgeryComputationSliceContextManager:
+            def __init__(self, root_composer: LatticeSurgeryComputationComposer):
+                self.root_composer = root_composer
+
+            def __enter__(self):
+                return self.root_composer
+
+            def __exit__(self, exception_type, val, traceback):
+                self.root_composer.newTimeSlice()
+                self.root_composer.clearAncilla()
+
+
+                return False # re reaises the exception
+
+                # clear individually measured slices and states of patches
+        return LatticeSurgeryComputationSliceContextManager(self)
