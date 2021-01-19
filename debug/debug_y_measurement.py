@@ -1,13 +1,13 @@
 
 import patches
 import lattice_view
-from lattice_surgery_computation_composer import LatticeSurgeryComputationComposer,LatticeLayoutInitializer
+from lattice_surgery_computation_composer import LatticeSurgeryComputationComposer,PatchInitializer
 
 
 # Example
 # Construct the device layout
 tac = LatticeSurgeryComputationComposer(
-    LatticeLayoutInitializer.simpleLayout(5))
+    PatchInitializer.simpleLayout(5))
 
 
 # tac.measureMultiPatch({
