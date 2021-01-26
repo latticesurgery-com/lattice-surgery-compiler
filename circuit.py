@@ -71,7 +71,40 @@ class Circuit(object):
 
         """
         # TODO: Write the algorithm 
+
+        quarter_rotation = list()
+
+        # Build a stack of pi/4 rotations
+
+        for i in range(len(self.circuit)):
+            if isinstance(self.circuit[i], Rotation) and self.circuit[i].rotation_amount in {Fraction(1,4), Fraction(-1,4)}:
+                quarter_rotation.append(i)
+        
+        while quarter_rotation:
+            index = quarter_rotation.pop()
+            while index < len(self.circuit) - 1:
+
+                if isinstance(self.circuit[index + 1], Rotation):
+                    self.merge_measurement(index)
+                    break
+                
+                self.swap_rotation(index)
+                index += 1
+
+        pass
+    
+    def swap_rotation(self, index: int) -> None:
         pass
 
+    def is_commuting(self, gate1: int, gate2: int) -> None:
+        pass
     
+    def merge_measurement(self, index: int) -> None:
+        """
+        Merge a pi/4 rotation with it's neighbor measurement 
+
+        Args:
+            index (int): index of targeted rotation
+        """
+        pass
     

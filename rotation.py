@@ -91,7 +91,7 @@ class Rotation(object):
         return self.gate_list[qubit]
 
     
-
+        
 class Measurement(object):
     """
     Representing a Pauli Product Measurement Block
