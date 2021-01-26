@@ -49,18 +49,18 @@ class Circuit(object):
         self.rotations.insert(index, rotation)
 
 
-    def add_single_gate(self, qubit: int, gate_type: int, rotation_amount: Fraction, index: int = len(self) - 1) -> None:
+    def add_single_operator(self, qubit: int, operator_type: str, rotation_amount: Fraction, index: int = len(self) - 1) -> None:
         """
-        Add a single gate (I, X, Z, Y) to the circuit.
+        Add a single Pauli operator (I, X, Z, Y) to the circuit.
 
         Args:
             qubit (int): Targeted qubit
-            gate_type (int): Gate type (0 = I, 1 = X, 2 = Z, 3 = Y)
+            operator_type (str): Operator type ("I", "X", "Y", "Z")
             index (int, optional): Index location. Default: end of the circuit
         """
         
         new_rotation = Rotation(self.qubit_num, rotation_amount)
-        new_rotation.change_gate(qubit, gate_type)
+        new_rotation.change_single_op(qubit, operator_type)
 
         self.add_rotation(new_rotation, index)
 
