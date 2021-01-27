@@ -1,5 +1,5 @@
 import numpy as np 
-from rotation import Rotation, Gate
+from rotation import Rotation, Measurement, PauliOperator
 from fractions import Fraction
 
 class Circuit(object):
@@ -33,12 +33,12 @@ class Circuit(object):
         return len(self.rotations)
 
 
-    def copy(self) -> Circuit:
+    def copy(self) -> 'Circuit':
         new_circuit = Circuit(self.qubit_num, self.name)
         new_circuit.rotations = [r.copy() for r in self.rotations]
 
 
-    def add_rotation(self, rotation: Rotation, index: int = len(self) - 1) -> None:
+    def add_rotation(self, rotation: Rotation, index: int = None) -> None:
         """
         Add a rotation to the circuit
 
@@ -46,10 +46,14 @@ class Circuit(object):
             rotation (Rotation): Targeted rotation
             index (int, optional): Index location. Default: End of the circuit
         """
+
+        if index = None:
+            index = len(self)
+            
         self.rotations.insert(index, rotation)
 
 
-    def add_single_operator(self, qubit: int, operator_type: str, rotation_amount: Fraction, index: int = len(self) - 1) -> None:
+    def add_single_operator(self, qubit: int, operator_type: str, rotation_amount: Fraction, index: int = None) -> None:
         """
         Add a single Pauli operator (I, X, Z, Y) to the circuit.
 
@@ -59,6 +63,9 @@ class Circuit(object):
             index (int, optional): Index location. Default: end of the circuit
         """
         
+        if index is None:
+            index = len(self)
+
         new_rotation = Rotation(self.qubit_num, rotation_amount)
         new_rotation.change_single_op(qubit, operator_type)
 
@@ -107,4 +114,52 @@ class Circuit(object):
             index (int): index of targeted rotation
         """
         pass
+
+    @staticmethod
+    def load_from_pyzx(circuit) -> 'Circuit':
+        import pyzx as zx
+
+        basic_circ = circuit.to_basic_gates()
+        ret_circ = Circuit(basic_circ.qubits, input_circ.name)
+
+
+        for gate in basic_circ_gates:
+            gate_missed = 0
+            if isinstance(gate, zx.circuit.ZPhase):
+                pauli_rot = gate.phase / 2
+                ret_circ.add_single_operator(gate.target, "Z", pauli_rot)
+
+
+            elif isinstance(gate, zx.circuit.XPhase):
+                pauli_rot = gate.phase / 2
+                ret_circ.add_single_operator(gate.target, "X", pauli_rot)
+                
+            elif isinstance(gate, zx.circuit.HAD):
+                ret_circ.add_single_operator(gate.target, "X", Fraction(1,4))
+                ret_circ.add_single_operator(gate.target, "Z", Fraction(1,4))
+                ret_circ.add_single_operator(gate.target, "X", Fraction(1,4))
+
+            elif isinstance(gate, zx.circuit.CNOT):
+                temp = Rotation(ret_circ.no_of_qubit, Fraction(1,4))
+                temp.change_single_op(gate.control, "Z")
+                temp.change_single_op(gate.target, "X")
+                ret_circ.add_rotation(temp)
+
+                ret_circ.add_single_operator(gate.control, "Z", Fraction(-1,4))
+                ret_circ.add_single_operator(gate.target, "X", Fraction(-1,4))
+
+
+            elif isinstance(gate, zx.circuit.CZ):
+                temp = Rotation(ret_circ.no_of_qubit, Fraction(1,4))
+                temp.change_single_op(gate.control, "Z")
+                temp.change_single_op(gate.target, "Z")
+                ret_circ.add_rotation(temp)
+
+                ret_circ.add_single_operator(gate.control, "Z", Fraction(-1,4))
+                ret_circ.add_single_operator(gate.target, "Z", Fraction(-1,4))
+            else: 
+                gate_missed += 1
+                print("Failed to convert gate:", gate)
+
+        return ret_circ
     
