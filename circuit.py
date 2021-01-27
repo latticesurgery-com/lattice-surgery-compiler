@@ -47,7 +47,7 @@ class Circuit(object):
             index (int, optional): Index location. Default: End of the circuit
         """
 
-        if index = None:
+        if index is None:
             index = len(self)
             
         # print(rotation)
