@@ -50,6 +50,7 @@ class Circuit(object):
         if index = None:
             index = len(self)
             
+        # print(rotation)
         self.rotations.insert(index, rotation)
 
 
@@ -117,14 +118,22 @@ class Circuit(object):
 
     @staticmethod
     def load_from_pyzx(circuit) -> 'Circuit':
+        """
+        Generate circuit from PyZX Circuit
+
+        Returns:
+            circuit: PyZX Circuit
+        """
         import pyzx as zx
 
         basic_circ = circuit.to_basic_gates()
-        ret_circ = Circuit(basic_circ.qubits, input_circ.name)
+        ret_circ = Circuit(basic_circ.qubits, circuit.name)
 
+        gate_missed = 0
 
-        for gate in basic_circ_gates:
-            gate_missed = 0
+        for gate in basic_circ.gates:
+            # print("Original Gate:", gate)
+            
             if isinstance(gate, zx.circuit.ZPhase):
                 pauli_rot = gate.phase / 2
                 ret_circ.add_single_operator(gate.target, "Z", pauli_rot)
@@ -140,7 +149,7 @@ class Circuit(object):
                 ret_circ.add_single_operator(gate.target, "X", Fraction(1,4))
 
             elif isinstance(gate, zx.circuit.CNOT):
-                temp = Rotation(ret_circ.no_of_qubit, Fraction(1,4))
+                temp = Rotation(ret_circ.qubit_num, Fraction(1,4))
                 temp.change_single_op(gate.control, "Z")
                 temp.change_single_op(gate.target, "X")
                 ret_circ.add_rotation(temp)
@@ -150,7 +159,7 @@ class Circuit(object):
 
 
             elif isinstance(gate, zx.circuit.CZ):
-                temp = Rotation(ret_circ.no_of_qubit, Fraction(1,4))
+                temp = Rotation(ret_circ.qubit_num, Fraction(1,4))
                 temp.change_single_op(gate.control, "Z")
                 temp.change_single_op(gate.target, "Z")
                 ret_circ.add_rotation(temp)
@@ -160,6 +169,8 @@ class Circuit(object):
             else: 
                 gate_missed += 1
                 print("Failed to convert gate:", gate)
-
+        
+        print("Conversion completed")
+        print("Gate Missed: ", gate_missed)
         return ret_circ
     
