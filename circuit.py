@@ -49,18 +49,18 @@ class Circuit(object):
         self.rotations.insert(index, rotation)
 
 
-    def add_single_gate(self, qubit: int, gate_type: int, rotation_amount: Fraction, index: int = len(self) - 1) -> None:
+    def add_single_operator(self, qubit: int, operator_type: str, rotation_amount: Fraction, index: int = len(self) - 1) -> None:
         """
-        Add a single gate (I, X, Z, Y) to the circuit.
+        Add a single Pauli operator (I, X, Z, Y) to the circuit.
 
         Args:
             qubit (int): Targeted qubit
-            gate_type (int): Gate type (0 = I, 1 = X, 2 = Z, 3 = Y)
+            operator_type (str): Operator type ("I", "X", "Y", "Z")
             index (int, optional): Index location. Default: end of the circuit
         """
         
         new_rotation = Rotation(self.qubit_num, rotation_amount)
-        new_rotation.change_gate(qubit, gate_type)
+        new_rotation.change_single_op(qubit, operator_type)
 
         self.add_rotation(new_rotation, index)
 
@@ -71,7 +71,40 @@ class Circuit(object):
 
         """
         # TODO: Write the algorithm 
+
+        quarter_rotation = list()
+
+        # Build a stack of pi/4 rotations
+
+        for i in range(len(self.circuit)):
+            if isinstance(self.circuit[i], Rotation) and self.circuit[i].rotation_amount in {Fraction(1,4), Fraction(-1,4)}:
+                quarter_rotation.append(i)
+        
+        while quarter_rotation:
+            index = quarter_rotation.pop()
+            while index < len(self.circuit) - 1:
+
+                if isinstance(self.circuit[index + 1], Rotation):
+                    self.merge_measurement(index)
+                    break
+                
+                self.swap_rotation(index)
+                index += 1
+
+        pass
+    
+    def swap_rotation(self, index: int) -> None:
         pass
 
+    def is_commuting(self, gate1: int, gate2: int) -> None:
+        pass
     
+    def merge_measurement(self, index: int) -> None:
+        """
+        Merge a pi/4 rotation with it's neighbor measurement 
+
+        Args:
+            index (int): index of targeted rotation
+        """
+        pass
     
