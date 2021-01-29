@@ -3,7 +3,41 @@ import ancilla_patch_routing
 
 from typing import *
 import copy
+import enum
 
+class LayoutTypes:
+    Simple = "Simple"
+
+
+
+class LatticeSurgeryComputation:
+
+    def __init__(self,layout_type: LayoutTypes, *argv):
+        """
+        Layout arguments:
+            - Simple: n_logical_qubits: int
+        """
+        if layout_type == LayoutTypes.Simple:
+            self.composer = LatticeSurgeryComputationComposer(PatchInitializer.simpleLayout(argv[0]))
+            self.composer.newTimeSlice()
+        else:
+            raise Exception("Unsupported layout type:"+repr(layout_type))
+
+    def timestep(self):
+        class LatticeSurgeryComputationSliceContextManager:
+            def __init__(self, root_composer: LatticeSurgeryComputationComposer):
+                self.root_composer = root_composer
+
+            def __enter__(self):
+                return self.root_composer
+
+            def __exit__(self, exception_type, val, traceback):
+                self.root_composer.newTimeSlice()
+                self.root_composer.clearAncilla()
+
+                return False  # re reaises the exception
+
+        return LatticeSurgeryComputationSliceContextManager(self.composer)
 
 
 
@@ -153,20 +187,4 @@ class LatticeSurgeryComputationComposer:
     def getSlices(self) -> List[patches.Lattice]:
         return self.qubit_patch_slices
 
-    def timestep(self):
-        class LatticeSurgeryComputationSliceContextManager:
-            def __init__(self, root_composer: LatticeSurgeryComputationComposer):
-                self.root_composer = root_composer
 
-            def __enter__(self):
-                return self.root_composer
-
-            def __exit__(self, exception_type, val, traceback):
-                self.root_composer.newTimeSlice()
-                self.root_composer.clearAncilla()
-
-
-                return False # re reaises the exception
-
-                # clear individually measured slices and states of patches
-        return LatticeSurgeryComputationSliceContextManager(self)
