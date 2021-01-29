@@ -34,7 +34,7 @@ class Rotation(object):
 
         Args:
             no_of_qubit (int): Number of qubits on the circuit
-            rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8)
+            rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8). Implicitly multiplied by pi.
         """
 
         self.qubit_num = no_of_qubit

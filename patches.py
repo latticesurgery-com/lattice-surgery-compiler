@@ -1,25 +1,63 @@
 from typing import *
 from enum import Enum
+import rotation
+
+class PauliMatrix(rotation.PauliOperator):
+    # TODO refactor to use PauliOperator directly
+    pass
 
 
-class PauliMatrix(Enum):
-    X = [[0,  1],
-         [1,  0]]
-    Y = [[0, -1j],
-         [1j, 0]]
-    Z = [[1,  0],
-         [0, -1]]
+class QubitState:
+    def ket_repr(self):
+        raise Exception("Method not implemented")
 
-class InitializeableState(Enum):
+    def compose_operator(self, op: PauliMatrix):
+        return self # Do nothing
+
+    def is_active(self):
+        return False
+
+    def deactivate(self):
+        pass
+
+class InitializeableState(Enum,QubitState):
     Zero = '|0>'
     Plus = '|+>'
     Magic = '|m>' # magic state (|0>+e^(pi*i/4)|1>)/sqrt(2)
     def ket_repr(self):
         return self.value
 
-class NonTrivialState(Enum):
+    def compose_operator(self,op: PauliMatrix):
+        return CompositeState(self, [op])
+
+class NonTrivialState(QubitState):
     def ket_repr(self):
         return "|?>"
+
+
+
+class CompositeState(QubitState):
+    def __init__(self, init_state: InitializeableState, ops: List[PauliMatrix]):
+        """
+        :param init_state: base state
+        :param ops: pauli ops applied to base state in order of indexing
+        """
+        self.init_state = init_state
+        self.ops = list(ops)
+        self.set_active = True
+
+    def ket_repr(self):
+        out = self.init_state.ket_repr();
+        for op in self.ops:
+            out = str(op) + out
+        return out
+
+    def compose_operator(self,op: PauliMatrix):
+        return CompositeState(self.init_state, self.ops + [op])
+
+    def deactivate(self):
+        self.is_active = False
+
 
 class PatchQubitState:
     def __init__(self,zero_amplitude,one_amplitude):
@@ -101,7 +139,7 @@ class Edge:
 class Patch:
     def __init__(self,
                  patch_type: PatchType,
-                 state: Union[None,PatchQubitState, InitializeableState],
+                 state: Union[None, QubitState],
                  cells: List[Tuple[int,int]],
                  edges: List[Edge]):
         self.patch_type = patch_type
@@ -121,7 +159,7 @@ class Patch:
         for from_cell in self.cells:
             for edge in self.edges:
                 if edge.cell == from_cell and edge.orientation == get_border_orientation(from_cell,to_cell):
-                    edges_between.append(edge.cell)
+                    edges_between.append(edge)
         return edges_between
 
 

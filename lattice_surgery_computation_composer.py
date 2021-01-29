@@ -19,6 +19,7 @@ class LatticeSurgeryComputation:
         """
         if layout_type == LayoutTypes.Simple:
             self.composer = LatticeSurgeryComputationComposer(PatchInitializer.simpleLayout(argv[0]))
+            self.qubit_to_patch_mapping = dict([(j,PatchInitializer.simpleMapQubitToPatch(j)) for j in range(argv[0])])
             self.composer.newTimeSlice()
         else:
             raise Exception("Unsupported layout type:"+repr(layout_type))
@@ -34,11 +35,14 @@ class LatticeSurgeryComputation:
             def __exit__(self, exception_type, val, traceback):
                 self.root_composer.newTimeSlice()
                 self.root_composer.clearAncilla()
+                self.root_composer.clearActiveStates()
 
                 return False  # re reaises the exception
 
         return LatticeSurgeryComputationSliceContextManager(self.composer)
 
+    def get_patch_for_qubit(self, qubit_idx: int):
+        return self.qubit_to_patch_mapping[qubit_idx]
 
 
 class PatchInitializer:
@@ -87,10 +91,12 @@ class PatchInitializer:
     def simpleLayout(num_logical_qubits: int) -> patches.Lattice: # a linear array of one spaced square patches with a distillery on one side
         # TODO distillery
         return patches.Lattice([
-            PatchInitializer.singleSquarePatch((j * 2, 0)) for j in range(num_logical_qubits)
+            PatchInitializer.singleSquarePatch(PatchInitializer.simpleMapQubitToPatch(j)) for j in range(num_logical_qubits)
         ] + PatchInitializer.simpleRightFacingDistillery((2 * num_logical_qubits, 0))
                                , 2, 0)
 
+    def simpleMapQubitToPatch(qubit_n: int):
+        return (qubit_n * 2, 0)
 
 
 
@@ -159,7 +165,11 @@ class LatticeSurgeryComputationComposer:
         #     print(patch_pauli_operator_map)
 
 
+    def applyPauliProductOperator(self, cell_of_patch : Tuple[int,int], operator: patches.PauliMatrix):
 
+        for patch in self.lattice().patches:
+            if patch.getRepresentative() == cell_of_patch and patch.state is not None:
+                patch.state = patch.state.compose_operator(operator)
 
 
 
@@ -173,6 +183,12 @@ class LatticeSurgeryComputationComposer:
 
         self.qubit_patch_slices[-1].patches = list(filter(
             lambda patch: patch.patch_type != patches.PatchType.Ancilla, self.qubit_patch_slices[-1].patches))
+
+    def clearActiveStates(self):
+        for patch in self.lattice():
+            if patch.state is not None:
+                patch.state.deactivate()
+
 
     def clearLattice(self):
         self.qubit_patch_slices[-1].clear()
