@@ -1,6 +1,7 @@
 import numpy as np 
 from rotation import Rotation, Measurement, PauliOperator
 from fractions import Fraction
+from utils import decompose_pi_fraction
 
 class Circuit(object):
     """
@@ -135,18 +136,24 @@ class Circuit(object):
             # print("Original Gate:", gate)
             
             if isinstance(gate, zx.circuit.ZPhase):
-                pauli_rot = gate.phase / 2
-                ret_circ.add_single_operator(gate.target, "Z", pauli_rot)
+                pauli_rot = decompose_pi_fraction(gate.phase / 2)
+                for rotation in pauli_rot:
+                    if rotation != Fraction(1,1):
+                        ret_circ.add_single_operator(gate.target, "Z", rotation)
 
 
             elif isinstance(gate, zx.circuit.XPhase):
-                pauli_rot = gate.phase / 2
-                ret_circ.add_single_operator(gate.target, "X", pauli_rot)
-                
+                pauli_rot = decompose_pi_fraction(gate.phase / 2)
+                for rotation in pauli_rot:
+                    if rotation != Fraction(1,1):
+                        ret_circ.add_single_operator(gate.target, "X", rotation)
+
+
             elif isinstance(gate, zx.circuit.HAD):
                 ret_circ.add_single_operator(gate.target, "X", Fraction(1,4))
                 ret_circ.add_single_operator(gate.target, "Z", Fraction(1,4))
                 ret_circ.add_single_operator(gate.target, "X", Fraction(1,4))
+
 
             elif isinstance(gate, zx.circuit.CNOT):
                 temp = Rotation(ret_circ.qubit_num, Fraction(1,4))
@@ -166,6 +173,8 @@ class Circuit(object):
 
                 ret_circ.add_single_operator(gate.control, "Z", Fraction(-1,4))
                 ret_circ.add_single_operator(gate.target, "Z", Fraction(-1,4))
+
+
             else: 
                 gate_missed += 1
                 print("Failed to convert gate:", gate)
