@@ -1,65 +1,43 @@
 from typing import *
 from enum import Enum
-import rotation
-
-class PauliMatrix(rotation.PauliOperator):
-    # TODO refactor to use PauliOperator directly
-    pass
+from rotation import *
 
 
 class QubitState:
+
+    def __init__(self):
+        self.is_active = False
+
     def ket_repr(self):
         raise Exception("Method not implemented")
 
-    def compose_operator(self, op: PauliMatrix):
+    def compose_operator(self, op: PauliOperator):
         return self # Do nothing
 
-    def is_active(self):
-        return False
 
-    def deactivate(self):
-        pass
+class SymbolicState(QubitState):
+    def __init__(self, name : str):
+        self.name = name
 
-class InitializeableState(Enum,QubitState):
-    Zero = '|0>'
-    Plus = '|+>'
-    Magic = '|m>' # magic state (|0>+e^(pi*i/4)|1>)/sqrt(2)
+    def ket_repr(self):
+        return self.name
+
+
+class InitializeableState(Enum):
+    Zero = SymbolicState('|0>')
+    Plus = SymbolicState('|+>')
+    UnknownState = SymbolicState('|?>')
+    Magic = SymbolicState('|m>') # magic state (|0>+e^(pi*i/4)|1>)/sqrt(2)
+
     def ket_repr(self):
         return self.value
 
-    def compose_operator(self,op: PauliMatrix):
-        return CompositeState(self, [op])
-
-class NonTrivialState(QubitState):
-    def ket_repr(self):
-        return "|?>"
+    def compose_operator(self, op: PauliOperator):
+        return InitializeableState.UnknownState
 
 
 
-class CompositeState(QubitState):
-    def __init__(self, init_state: InitializeableState, ops: List[PauliMatrix]):
-        """
-        :param init_state: base state
-        :param ops: pauli ops applied to base state in order of indexing
-        """
-        self.init_state = init_state
-        self.ops = list(ops)
-        self.set_active = True
-
-    def ket_repr(self):
-        out = self.init_state.ket_repr();
-        for op in self.ops:
-            out = str(op) + out
-        return out
-
-    def compose_operator(self,op: PauliMatrix):
-        return CompositeState(self.init_state, self.ops + [op])
-
-    def deactivate(self):
-        self.is_active = False
-
-
-class PatchQubitState:
+class ExplicitPatchQubitState(QubitState):
     def __init__(self,zero_amplitude,one_amplitude):
         self.zero_amplitude = zero_amplitude
         self.one_amplitude = one_amplitude
@@ -106,9 +84,9 @@ class EdgeType(Enum):
         return self
 
 
-PAULI_OPERATOR_TO_EDGE_MAP : Dict[PauliMatrix, EdgeType] = {
-    PauliMatrix.X: EdgeType.Dashed,
-    PauliMatrix.Z: EdgeType.Solid
+PAULI_OPERATOR_TO_EDGE_MAP : Dict[PauliOperator, EdgeType] = {
+    PauliOperator.X: EdgeType.Dashed,
+    PauliOperator.Z: EdgeType.Solid
 }
 
 

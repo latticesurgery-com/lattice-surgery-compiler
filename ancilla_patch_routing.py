@@ -12,7 +12,7 @@ from ast import literal_eval as make_tuple
 def get_pauli_op_listing(
         cell: Tuple[int ,int],
         lattice: patches.Lattice,
-        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliMatrix]):
+        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
 
     # TODO check overlapping with representative and document
     l = list(filter(
@@ -51,7 +51,7 @@ def make_graph_of_free_cells(lattice: patches.Lattice) -> igraph.Graph:
 def add_directed_edges(
         ancilla_search_graph: igraph.Graph,
         lattice: patches.Lattice,
-        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliMatrix],
+        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator],
         source_patch_vertex: str,
         tagret_patch_vertex: str
     ):
@@ -128,7 +128,7 @@ def add_ancilla_to_lattice_from_paths(
 
 def compute_ancilla_cells(
         lattice: patches.Lattice,
-        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliMatrix]
+        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]
 ) -> None:
 
     assert(all(map(lambda cell: lattice.getPatchRepresentative(cell) == cell, patch_pauli_operator_map.keys())))
