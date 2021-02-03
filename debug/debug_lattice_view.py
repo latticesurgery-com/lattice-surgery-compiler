@@ -20,25 +20,25 @@ with lsc.timestep() as slice:
 with lsc.timestep() as slice:
 
     slice.measureMultiPatch({
-        (3,2):patches.PauliMatrix.X,
-        (4,2):patches.PauliMatrix.X
+        (3,2):patches.PauliOperator.X,
+        (4,2):patches.PauliOperator.X
     })
 
 with lsc.timestep() as slice:
     pass
 
 with lsc.timestep() as slice:
-    slice.measurePatch((4,2),patches.PauliMatrix.X)
+    slice.measurePatch((4,2), patches.PauliOperator.X)
 
 with lsc.timestep() as slice:
-    slice.measurePatch((3,2),patches.PauliMatrix.X)
+    slice.measurePatch((3,2), patches.PauliOperator.X)
 
 with lsc.timestep() as slice:
 
     slice.measureMultiPatch({
-        (0,0):patches.PauliMatrix.X,
-        (4,0):patches.PauliMatrix.Z,
-        (6,0):patches.PauliMatrix.X
+        (0,0):patches.PauliOperator.X,
+        (4,0):patches.PauliOperator.Z,
+        (6,0):patches.PauliOperator.X
     })
 
 with lsc.timestep() as slice:
@@ -48,49 +48,49 @@ with lsc.timestep() as slice:
 
 
     slice.measureMultiPatch({
-        (0,0):patches.PauliMatrix.X,
-        (10,0):patches.PauliMatrix.X
+        (0,0):patches.PauliOperator.X,
+        (10,0):patches.PauliOperator.X
     })
 
 with lsc.timestep() as slice:
 
     slice.measureMultiPatch({
-        (0,0):patches.PauliMatrix.X,
-        (4,0):patches.PauliMatrix.Z,
+        (0,0):patches.PauliOperator.X,
+        (4,0):patches.PauliOperator.Z,
     })
 
     slice.measureMultiPatch({
-        (8,0):patches.PauliMatrix.X,
-        (11,0):patches.PauliMatrix.X,
-    })
-
-with lsc.timestep() as slice:
-
-    slice.measureMultiPatch({
-        (10,0):patches.PauliMatrix.Z,
-        (8,0):patches.PauliMatrix.X,
-    })
-
-    slice.measureMultiPatch({
-        (10,0):patches.PauliMatrix.X,
-        (11,0):patches.PauliMatrix.Z,
+        (8,0):patches.PauliOperator.X,
+        (11,0):patches.PauliOperator.X,
     })
 
 with lsc.timestep() as slice:
 
     slice.measureMultiPatch({
-        (4,0):patches.PauliMatrix.X,
-        (6,0):patches.PauliMatrix.Z,
+        (10,0):patches.PauliOperator.Z,
+        (8,0):patches.PauliOperator.X,
     })
 
     slice.measureMultiPatch({
-        (0,0):patches.PauliMatrix.X,
-        (10,0):patches.PauliMatrix.Z,
+        (10,0):patches.PauliOperator.X,
+        (11,0):patches.PauliOperator.Z,
+    })
+
+with lsc.timestep() as slice:
+
+    slice.measureMultiPatch({
+        (4,0):patches.PauliOperator.X,
+        (6,0):patches.PauliOperator.Z,
     })
 
     slice.measureMultiPatch({
-        (11,0):patches.PauliMatrix.X,
-        (12,0):patches.PauliMatrix.X
+        (0,0):patches.PauliOperator.X,
+        (10,0):patches.PauliOperator.Z,
+    })
+
+    slice.measureMultiPatch({
+        (11,0):patches.PauliOperator.X,
+        (12,0):patches.PauliOperator.X
     })
 
 lattice_view.to_file(lsc.composer.getSlices(),"index.html")

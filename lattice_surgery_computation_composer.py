@@ -18,11 +18,15 @@ class LatticeSurgeryComputation:
             - Simple: n_logical_qubits: int
         """
         if layout_type == LayoutTypes.Simple:
-            self.composer = LatticeSurgeryComputationComposer(PatchInitializer.simpleLayout(argv[0]))
-            self.qubit_to_patch_mapping = dict([(j,PatchInitializer.simpleMapQubitToPatch(j)) for j in range(argv[0])])
-            self.composer.newTimeSlice()
+            self.num_qubits = argv[0]
+            self.composer = LatticeSurgeryComputationComposer(PatchInitializer.simpleLayout(self.num_qubits ))
+            self.qubit_idx_to_cell_mapping = dict([(j, PatchInitializer.simpleMapQubitToCell(j)) for j in range(self.num_qubits)])
+            self.ancilla_locations = [(2,j) for j in range(self.num_qubits)]
+            self.magic_state_queue = [(2,j+self.num_qubits) for j in range(self.num_qubits)]
         else:
             raise Exception("Unsupported layout type:"+repr(layout_type))
+
+        self.composer.newTimeSlice()
 
     def timestep(self):
         class LatticeSurgeryComputationSliceContextManager:
@@ -41,8 +45,8 @@ class LatticeSurgeryComputation:
 
         return LatticeSurgeryComputationSliceContextManager(self.composer)
 
-    def get_patch_for_qubit(self, qubit_idx: int):
-        return self.qubit_to_patch_mapping[qubit_idx]
+    def get_cell_for_qubit_idx(self, qubit_idx: int):
+        return self.qubit_idx_to_cell_mapping[qubit_idx]
 
 
 class PatchInitializer:
@@ -91,11 +95,11 @@ class PatchInitializer:
     def simpleLayout(num_logical_qubits: int) -> patches.Lattice: # a linear array of one spaced square patches with a distillery on one side
         # TODO distillery
         return patches.Lattice([
-            PatchInitializer.singleSquarePatch(PatchInitializer.simpleMapQubitToPatch(j)) for j in range(num_logical_qubits)
+            PatchInitializer.singleSquarePatch(PatchInitializer.simpleMapQubitToCell(j)) for j in range(num_logical_qubits)
         ] + PatchInitializer.simpleRightFacingDistillery((2 * num_logical_qubits, 0))
                                , 2, 0)
 
-    def simpleMapQubitToPatch(qubit_n: int):
+    def simpleMapQubitToCell(qubit_n: int):
         return (qubit_n * 2, 0)
 
 
@@ -103,7 +107,8 @@ class PatchInitializer:
 
 
 class LatticeSurgeryComputationComposer:
-    def __init__(self, initial_layout: patches.Lattice):
+    def __init__(self, computation: LatticeSurgeryComputation, initial_layout: patches.Lattice):
+        self.computation = computation
         self.qubit_patch_slices : List[patches.Lattice] = [initial_layout] #initialize lattice here
 
     def lattice(self):
@@ -112,8 +117,26 @@ class LatticeSurgeryComputationComposer:
     def addPatch(self, patch: patches.Patch):
         self.lattice().patches.append(patch)
 
-    def measurePatch(self, cell_of_patch: Tuple[int, int], basis_matrix: patches.PauliMatrix):
-        if basis_matrix not in [patches.PauliMatrix.X, patches.PauliMatrix.Z]:
+    def addSquareAncilla(self, patch_state: patches.InitializeableState) -> Optional[Tuple[int,int]]:
+        cell = self.getAncillaLocation()
+        if cell is None: return None
+        self.addPatch(PatchInitializer.singleSquarePatch(patches.PatchType.Qubit,patch_state))
+        return cell
+
+    def getAncillaLocation(self) -> Optional[Tuple[int,int]]:
+        for ancilla in self.computation.ancilla_locations:
+            if self.lattice().getPatchOfCell(ancilla) is None:
+                return ancilla
+        return None
+
+    def findMagicState(self) -> Optional[Tuple[int,int]]:
+        for magic_cell in self.computation.magic_state_queue:
+            if self.lattice().getPatchOfCell(magic_cell) is not None:
+                return magic_cell
+        return None
+
+    def measurePatch(self, cell_of_patch: Tuple[int, int], basis_matrix: patches.PauliOperator):
+        if basis_matrix not in [patches.PauliOperator.X, patches.PauliOperator.Z]:
             raise Exception("Can't measure with basis matrix "+basis_matrix+" yet")
         index_to_remove = None
         for i,patch in enumerate(self.qubit_patch_slices[-1].patches):
@@ -128,13 +151,13 @@ class LatticeSurgeryComputationComposer:
     def newTimeSlice(self):
         self.qubit_patch_slices.append(copy.deepcopy(self.qubit_patch_slices[-1]))
 
-    def measureMultiPatch(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliMatrix]):
+    def measureMultiPatch(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
         # TODO refactor this method
 
         # Break down Y measurements into an simultaneous X and Y measurement, as specified by Litnski's Game of
         # Surface codes in Fig.2.
 
-        def replace_operator(operator_map,old,new) -> Dict[Tuple[int, int], patches.PauliMatrix]:
+        def replace_operator(operator_map,old,new) -> Dict[Tuple[int, int], patches.PauliOperator]:
             new_operator_map = {}
             for cell, operator in operator_map.items():
                 if operator == old:
@@ -145,32 +168,16 @@ class LatticeSurgeryComputationComposer:
 
         ancilla_patch_routing.compute_ancilla_cells(self.qubit_patch_slices[-1], patch_pauli_operator_map)
 
-        # TODO fix removal of y operators
-        # if 1: return "FIX BELOW using compute_ancilla_cells directly on the lattice"
-        # # Try first without replacing the operator and then with replacing the operator
-        # ancilla_cells = compute_ancilla_cells(
-        #     self.qubit_patch_slices[-1],
-        #     replace_operator(patch_pauli_operator_map,patches.PauliMatrix.Y,patches.PauliMatrix.Z)
-        # )
-        # ancilla_cells.extend(compute_ancilla_cells(
-        #     self.qubit_patch_slices[-1],
-        #     replace_operator(patch_pauli_operator_map,patches.PauliMatrix.Y,patches.PauliMatrix.X)
-        # ))
-        #
-        # if len(ancilla_cells) > 0:
-        #     ancilla_cells = list(set(ancilla_cells)) # Eliminate duplicates
-        #     self.qubit_patch_slices[-1].patches.append(patches.Patch(patches.PatchType.Ancilla, None, ancilla_cells,[] ))
-        # else:
-        #     print("WARNING: no ancilla patch generated for measurement:")
-        #     print(patch_pauli_operator_map)
 
-
-    def applyPauliProductOperator(self, cell_of_patch : Tuple[int,int], operator: patches.PauliMatrix):
+    def applyPauliProductOperator(self,
+                                  cell_of_patch : Tuple[int,int],
+                                  operator: patches.PauliOperator,
+                                  conditional:bool = False):
 
         for patch in self.lattice().patches:
             if patch.getRepresentative() == cell_of_patch and patch.state is not None:
-                patch.state = patch.state.compose_operator(operator)
-
+                patch.state = patches.NonTrivialState()
+                patch.state.is_active = True
 
 
     def clearAncilla(self):
@@ -187,7 +194,7 @@ class LatticeSurgeryComputationComposer:
     def clearActiveStates(self):
         for patch in self.lattice():
             if patch.state is not None:
-                patch.state.deactivate()
+                patch.state.is_active = False
 
 
     def clearLattice(self):
