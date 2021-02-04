@@ -1,27 +1,43 @@
 from typing import *
 from enum import Enum
+from rotation import *
 
 
-class PauliMatrix(Enum):
-    X = [[0,  1],
-         [1,  0]]
-    Y = [[0, -1j],
-         [1j, 0]]
-    Z = [[1,  0],
-         [0, -1]]
+class QubitState:
+
+    def __init__(self):
+        self.is_active = False
+
+    def ket_repr(self):
+        raise Exception("Method not implemented")
+
+    def compose_operator(self, op: PauliOperator):
+        return self # Do nothing
+
+
+class SymbolicState(QubitState):
+    def __init__(self, name : str):
+        self.name = name
+
+    def ket_repr(self):
+        return self.name
+
 
 class InitializeableState(Enum):
-    Zero = '|0>'
-    Plus = '|+>'
-    Magic = '|m>' # magic state (|0>+e^(pi*i/4)|1>)/sqrt(2)
+    Zero = SymbolicState('|0>')
+    Plus = SymbolicState('|+>')
+    UnknownState = SymbolicState('|?>')
+    Magic = SymbolicState('|m>') # magic state (|0>+e^(pi*i/4)|1>)/sqrt(2)
+
     def ket_repr(self):
         return self.value
 
-class NonTrivialState(Enum):
-    def ket_repr(self):
-        return "|?>"
+    def compose_operator(self, op: PauliOperator):
+        return InitializeableState.UnknownState
 
-class PatchQubitState:
+
+
+class ExplicitPatchQubitState(QubitState):
     def __init__(self,zero_amplitude,one_amplitude):
         self.zero_amplitude = zero_amplitude
         self.one_amplitude = one_amplitude
@@ -68,9 +84,9 @@ class EdgeType(Enum):
         return self
 
 
-PAULI_OPERATOR_TO_EDGE_MAP : Dict[PauliMatrix, EdgeType] = {
-    PauliMatrix.X: EdgeType.Dashed,
-    PauliMatrix.Z: EdgeType.Solid
+PAULI_OPERATOR_TO_EDGE_MAP : Dict[PauliOperator, EdgeType] = {
+    PauliOperator.X: EdgeType.Dashed,
+    PauliOperator.Z: EdgeType.Solid
 }
 
 
@@ -101,7 +117,7 @@ class Edge:
 class Patch:
     def __init__(self,
                  patch_type: PatchType,
-                 state: Union[None,PatchQubitState, InitializeableState],
+                 state: Union[None, QubitState],
                  cells: List[Tuple[int,int]],
                  edges: List[Edge]):
         self.patch_type = patch_type
@@ -121,7 +137,7 @@ class Patch:
         for from_cell in self.cells:
             for edge in self.edges:
                 if edge.cell == from_cell and edge.orientation == get_border_orientation(from_cell,to_cell):
-                    edges_between.append(edge.cell)
+                    edges_between.append(edge)
         return edges_between
 
 
