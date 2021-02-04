@@ -1,8 +1,6 @@
 import numpy as np
-from typing import *
-from enum import Enum
+from enum import Enum 
 from fractions import Fraction
-
 
 
 class PauliOperator(Enum):
@@ -36,7 +34,7 @@ class Rotation(object):
 
         Args:
             no_of_qubit (int): Number of qubits on the circuit
-            rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8). Implicitly multiplied by pi.
+            rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8)
         """
 
         self.qubit_num = no_of_qubit
@@ -81,18 +79,8 @@ class Rotation(object):
         """
         return self.ops_list[qubit]
 
-    def get_ops_map(self) -> Dict[int,PauliOperator]:
-        """"Return a map of qubit_n -> operator"""
-        return dict([(qn, self.ops_list[qn]) for qn in range(self.qubit_num) if self.ops_list[qn]!=PauliOperator.I])
-
-    @staticmethod
-    def from_list(pauli_ops: List[PauliOperator], rotation: Fraction):
-        r = Rotation(len(pauli_ops),rotation)
-        for i,op in enumerate(pauli_ops):
-            r.change_single_op(i,op)
-        return r
-
-
+    
+        
 class Measurement(object):
     """
     Representing a Pauli Product Measurement Block

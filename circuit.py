@@ -2,8 +2,6 @@ import numpy as np
 from rotation import Rotation, Measurement, PauliOperator
 from fractions import Fraction
 from utils import decompose_pi_fraction
-from typing import *
-
 
 class Circuit(object):
     """
@@ -56,9 +54,6 @@ class Circuit(object):
         # print(rotation)
         self.rotations.insert(index, rotation)
 
-
-    def get_rotations(self) -> List[Rotation]:
-        return self.rotations
 
     def add_single_operator(self, qubit: int, operator_type: str, rotation_amount: Fraction, index: int = None) -> None:
         """
@@ -187,25 +182,4 @@ class Circuit(object):
         print("Conversion completed")
         print("Gate Missed: ", gate_missed)
         return ret_circ
-
-
-    def render_ascii(self) -> str:
-        cols : List[List[str]] = []
-
-        first_col = list(map(lambda n: 'q'+str(n),range(self.qubit_num))) + ["pi*"]
-        max_len = max(map(len,first_col))
-        # Space padding
-        first_col = list(map(lambda s: ' '*(max_len-len(s))+s,first_col))
-        cols.append(first_col)
-
-        for r in self.rotations:
-            cols.append(['-']*(self.qubit_num) + [" "])
-            cols.append(list(map(lambda op: "|"+op.value+"|", r.ops_list))
-                        + [str(r.rotation_amount.numerator)+"/"+str(r.rotation_amount.denominator)])
-            #Push these changes to master so alex can use them too
-
-        out = ""
-        for row_n in range(self.qubit_num+1):
-            out += "".join(map(lambda col: col[row_n],cols)) + "\n"
-        return out
     
