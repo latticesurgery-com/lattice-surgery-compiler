@@ -199,10 +199,14 @@ class Circuit(object):
         cols.append(first_col)
 
         for r in self.rotations:
-            cols.append(['-']*(self.qubit_num) + [" "])
-            cols.append(list(map(lambda op: "|"+op.value+"|", r.ops_list))
-                        + [str(r.rotation_amount.numerator)+"/"+str(r.rotation_amount.denominator)])
-            #Push these changes to master so alex can use them too
+
+            rotation_str = " " if r.rotation_amount.numerator > 0 else ""
+            rotation_str += str(r.rotation_amount.numerator) + "/" + str(r.rotation_amount.denominator)
+
+            qubit_line_separator = '-'*(len(rotation_str)-2)
+
+            cols.append([qubit_line_separator]*(self.qubit_num) + [" "])
+            cols.append(list(map(lambda op: "|"+op.value+"|", r.ops_list)) + [rotation_str])
 
         out = ""
         for row_n in range(self.qubit_num+1):
