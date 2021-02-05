@@ -188,6 +188,8 @@ class Circuit(object):
         print("Gate Missed: ", gate_missed)
         return ret_circ
 
+    def count_rotations_by(self, rotation_amount : Fraction):
+        return len(list(filter(lambda r: r.rotation_amount==rotation_amount, self.rotations)))
 
     def render_ascii(self) -> str:
         cols : List[List[str]] = []
