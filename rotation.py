@@ -22,9 +22,54 @@ class PauliOperator(Enum):
     def __repr__(self):
         return str(self)
 
-        
 
-class Rotation(object):
+
+class PauliProduct(object):
+
+    qubit_num:  int = None
+    ops_list:   List[PauliOperator] = None
+
+    def __str__(self) -> str:
+        pass
+
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    
+    def change_single_op(self, qubit: int, new_op: str) -> None:
+        """
+        Modify a Pauli Operator
+
+        Args:
+            qubit (int): Targeted qubit
+            new_op (int): New operator type (I, X, Z, Y)
+        """
+        self.ops_list[qubit] = PauliOperator(new_op)
+
+    
+    def return_operator(self, qubit: int) -> PauliOperator:
+        """
+        Return the current operator of qubit i. 
+
+        Args:
+            qubit (int): Targeted qubit
+
+        Returns:
+            PauliOperator: Pauli operator of targeted qubit.
+        """
+        return self.ops_list[qubit]
+
+
+    def get_ops_map(self) -> Dict[int,PauliOperator]:
+        """"
+        Return a map of qubit_n -> operator
+        """
+        return dict([(qn, self.ops_list[qn]) for qn in range(self.qubit_num) if self.ops_list[qn] != PauliOperator.I])
+
+
+    
+class Rotation(PauliProduct):
     """
     Class for representing a Pauli Product Rotation Block 
 
@@ -44,56 +89,20 @@ class Rotation(object):
         self.ops_list = [PauliOperator("I") for i in range(no_of_qubit)]
     
     
-    def __str__(self):
+    def __str__(self) -> str:
         return '{}: {}'.format(self.rotation_amount, self.ops_list) 
+            
         
-    
-    def __repr__(self):
-        return str(self)    
-    
-    
-    def copy(self):
-        new_rotation = Rotation(self.qubit_num, self.rotation_amount)
-        self.ops_list = [g.copy() for g in self.ops_list]
-        return new_rotation
-
-    
-    def change_single_op(self, qubit: int, new_op: str) -> None:
-        """
-        Modify a Pauli Operator in the Pauli Rotation Block
-
-        Args:
-            qubit (int): Targeted qubit
-            new_op (int): New operator type (I, X, Z, Y)
-        """
-        self.ops_list[qubit] = PauliOperator(new_op)
-
-    
-    def return_operator(self, qubit: int) -> PauliOperator:
-        """
-        Return the current operator of qubit i. 
-
-        Args:
-            qubit (int): Targeted qubit
-
-        Returns:
-            PauliOperator: Pauli operator of targeted qubit.
-        """
-        return self.ops_list[qubit]
-
-    def get_ops_map(self) -> Dict[int,PauliOperator]:
-        """"Return a map of qubit_n -> operator"""
-        return dict([(qn, self.ops_list[qn]) for qn in range(self.qubit_num) if self.ops_list[qn]!=PauliOperator.I])
-
     @staticmethod
-    def from_list(pauli_ops: List[PauliOperator], rotation: Fraction):
-        r = Rotation(len(pauli_ops),rotation)
+    def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> 'Rotation':
+        r = Rotation(len(pauli_ops), rotation)
         for i,op in enumerate(pauli_ops):
             r.change_single_op(i,op)
         return r
 
 
-class Measurement(object):
+
+class Measurement(PauliProduct):
     """
     Representing a Pauli Product Measurement Block
 
@@ -111,39 +120,14 @@ class Measurement(object):
         self.isNegative = isNegative
         self.ops_list = [PauliOperator("I") for i in range(no_of_qubit)]
         
-    def __str__(self):
+
+    def __str__(self) -> str:
         return '{}M: {}'.format('-' if self.isNegative else '', self.ops_list) 
-        
-    
-    def __repr__(self):
-        return str(self)    
-    
-    
-    def copy(self):
-        new_rotation = Rotation(self.qubit_num, self.isNegative)
-        self.ops_list = [g.copy() for g in self.ops_list]
-        return new_rotation
 
-    
-    def change_single_op(self, qubit: int, new_op: str) -> None:
-        """
-        Modify a Pauli Operator in the Pauli Rotation Block
 
-        Args:
-            qubit (int): Targeted qubit
-            new_op (int): New operator type (I, X, Z, Y)
-        """
-        self.ops_list[qubit] = PauliOperator(new_op)
-
-    
-    def return_operator(self, qubit: int) -> PauliOperator:
-        """
-        Return the current operator of qubit i. 
-
-        Args:
-            qubit (int): Targeted qubit
-
-        Returns:
-            PauliOperator: Pauli operator of targeted qubit.
-        """
-        return self.ops_list[qubit]
+    @staticmethod
+    def from_list(pauli_ops: List[PauliOperator], isNegative: bool = False) -> 'Measurement':
+        m = Measurement(len(pauli_ops), isNegative)
+        for i,op in enumerate(pauli_ops):
+            m.change_single_op(i,op)
+        return m
