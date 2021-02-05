@@ -41,7 +41,7 @@ class Circuit(object):
         new_circuit.ops = [r.copy() for r in self.ops]
 
 
-    def add_rotation(self, rotation: Rotation, index: int = None) -> None:
+    def add_pauli_block(self, new_block: PauliProduct, index: int = None) -> None:
         """
         Add a rotation to the circuit
 
@@ -49,13 +49,13 @@ class Circuit(object):
             rotation (Rotation): Targeted rotation
             index (int, optional): Index location. Default: End of the circuit
         """
-        assert rotation.qubit_num == self.qubit_num
+        assert new_block.qubit_num == self.qubit_num
 
         if index is None:
             index = len(self)
             
         # print(rotation)
-        self.ops.insert(index, rotation)
+        self.ops.insert(index, new_block)
 
 
     def get_rotations(self) -> List[Rotation]:
@@ -78,19 +78,7 @@ class Circuit(object):
         new_rotation = Rotation(self.qubit_num, rotation_amount)
         new_rotation.change_single_op(qubit, operator_type)
 
-        self.add_rotation(new_rotation, index)
-
-
-
-    def add_measurement(self, measurement: Measurement, index : int = None):
-
-        assert measurement.qubit_num == self.qubit_num
-
-        if index is None:
-            index = len(self)
-
-        # print(rotation)
-        self.ops.insert(index, measurement)
+        self.add_pauli_block(new_rotation, index)
 
 
     def apply_transformation(self) -> None:
@@ -181,7 +169,7 @@ class Circuit(object):
                 temp = Rotation(ret_circ.qubit_num, Fraction(1,4))
                 temp.change_single_op(gate.control, Z)
                 temp.change_single_op(gate.target, X)
-                ret_circ.add_rotation(temp)
+                ret_circ.add_pauli_block(temp)
 
                 ret_circ.add_single_operator(gate.control, Z, Fraction(-1,4))
                 ret_circ.add_single_operator(gate.target, X, Fraction(-1,4))
@@ -191,7 +179,7 @@ class Circuit(object):
                 temp = Rotation(ret_circ.qubit_num, Fraction(1,4))
                 temp.change_single_op(gate.control, Z)
                 temp.change_single_op(gate.target, Z)
-                ret_circ.add_rotation(temp)
+                ret_circ.add_pauli_block(temp)
 
                 ret_circ.add_single_operator(gate.control, Z, Fraction(-1,4))
                 ret_circ.add_single_operator(gate.target, Z, Fraction(-1,4))

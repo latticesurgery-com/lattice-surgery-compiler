@@ -18,14 +18,14 @@ if __name__ == "__main__":
     Y = PauliOperator.Y
     Z = PauliOperator.Z
 
-    c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(1,2)))
-    c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(1,4)))
-    c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(1,8)))
-    c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(-1,8)))
-    c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(1,16)))
-    c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(-1,16)))
-    c.add_measurement(Measurement.from_list([I,X,Y,Z]))
-    c.add_measurement(Measurement.from_list([I,X,Y,Z],True))
+    c.add_pauli_block(Rotation.from_list([I,X,Y,Z],Fraction(1,2)))
+    c.add_pauli_block(Rotation.from_list([I,X,Y,Z],Fraction(1,4)))
+    c.add_pauli_block(Rotation.from_list([I,X,Y,Z],Fraction(1,8)))
+    c.add_pauli_block(Rotation.from_list([I,X,Y,Z],Fraction(-1,8)))
+    c.add_pauli_block(Rotation.from_list([I,X,Y,Z],Fraction(1,16)))
+    c.add_pauli_block(Rotation.from_list([I,X,Y,Z],Fraction(-1,16)))
+    c.add_pauli_block(Measurement.from_list([I,X,Y,Z]))
+    c.add_pauli_block(Measurement.from_list([I,X,Y,Z],True))
 
 
     print(c.render_ascii())
