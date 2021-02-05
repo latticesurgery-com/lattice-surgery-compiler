@@ -218,15 +218,18 @@ class Circuit(object):
         first_col = list(map(lambda s: ' '*(max_len-len(s))+s,first_col))
         cols.append(first_col)
 
-        for r in self.ops:
+        for op in self.ops:
+            if isinstance(op, Rotation):
+                operator_str = " " if op.rotation_amount.numerator > 0 else ""
+                operator_str += str(op.rotation_amount.numerator) + "/" + str(op.rotation_amount.denominator)
+            elif isinstance(op, Measurement):
+                operator_str = ' -M ' if op.isNegative else '  M '
 
-            rotation_str = " " if r.rotation_amount.numerator > 0 else ""
-            rotation_str += str(r.rotation_amount.numerator) + "/" + str(r.rotation_amount.denominator)
 
-            qubit_line_separator = '-'*(len(rotation_str)-2)
+            qubit_line_separator = '-'*(len(operator_str)-2)
 
             cols.append([qubit_line_separator]*(self.qubit_num) + [" "])
-            cols.append(list(map(lambda op: "|"+op.value+"|", r.ops_list)) + [rotation_str])
+            cols.append(list(map(lambda op: "|"+op.value+"|", op.ops_list)) + [operator_str])
 
         out = ""
         for row_n in range(self.qubit_num+1):
