@@ -1,5 +1,5 @@
 import numpy as np 
-from rotation import Rotation, Measurement, PauliOperator
+from rotation import PauliProduct, Rotation, Measurement, PauliOperator
 from fractions import Fraction
 from utils import decompose_pi_fraction
 from typing import *
@@ -19,9 +19,9 @@ class Circuit(object):
             no_of_qubit (int): Number of qubits in the circuit
             name (str, optional): Circuit's name (for display). Defaults to ''.
         """
-        self.qubit_num = no_of_qubit
-        self.ops: List[Union[Rotation,Measurement]] = list()
-        self.name = name 
+        self.qubit_num:     int = no_of_qubit
+        self.ops:           List[PauliProduct] = list()
+        self.name:          str = name 
 
 
     def __str__(self) -> str:
@@ -60,6 +60,7 @@ class Circuit(object):
 
     def get_rotations(self) -> List[Rotation]:
         return self.ops
+
 
     def add_single_operator(self, qubit: int, operator_type: PauliOperator, rotation_amount: Fraction, index: int = None) -> None:
         """
@@ -145,10 +146,8 @@ class Circuit(object):
         """
         import pyzx as zx
         
-        I = PauliOperator.I
         X = PauliOperator.X
         Z = PauliOperator.Z
-        Y = PauliOperator.Y
 
         basic_circ = circuit.to_basic_gates()
         ret_circ = Circuit(basic_circ.qubits, circuit.name)
@@ -206,10 +205,16 @@ class Circuit(object):
         print("Gate Missed: ", gate_missed)
         return ret_circ
 
-    def count_rotations_by(self, rotation_amount : Fraction):
-        return len(list(filter(lambda r: r.rotation_amount==rotation_amount, self.ops)))
+   
+    def count_rotations_by(self, rotation_amount : Fraction) -> int:
+        return len(list(filter(lambda r: isinstance(r, Rotation) and r.rotation_amount==rotation_amount, self.ops)))
 
+   
     def render_ascii(self) -> str:
+        """
+        Return circuit diagram in text format 
+        """
+
         cols : List[List[str]] = []
 
         first_col = list(map(lambda n: 'q'+str(n),range(self.qubit_num))) + ["pi*"]
@@ -235,4 +240,3 @@ class Circuit(object):
         for row_n in range(self.qubit_num+1):
             out += "".join(map(lambda col: col[row_n],cols)) + "\n"
         return out
-    
