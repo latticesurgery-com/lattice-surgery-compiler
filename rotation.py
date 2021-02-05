@@ -37,15 +37,15 @@ class PauliProduct(object):
         return str(self)
 
     
-    def change_single_op(self, qubit: int, new_op: str) -> None:
+    def change_single_op(self, qubit: int, new_op: PauliOperator) -> None:
         """
         Modify a Pauli Operator
 
         Args:
             qubit (int): Targeted qubit
-            new_op (int): New operator type (I, X, Z, Y)
+            new_op (PauliOperator): New operator type (I, X, Z, Y)
         """
-        self.ops_list[qubit] = PauliOperator(new_op)
+        self.ops_list[qubit] = new_op
 
     
     def return_operator(self, qubit: int) -> PauliOperator:

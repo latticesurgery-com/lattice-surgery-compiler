@@ -3,11 +3,11 @@ from rotation import *
 
 
 output = """\
- q0--|I|--|I|--|I|--|I|---|I|---|I|
- q1--|Z|--|Z|--|Z|--|Z|---|Z|---|Z|
- q2--|Y|--|Y|--|Y|--|Y|---|Y|---|Y|
- q3--|Z|--|Z|--|Z|--|Z|---|Z|---|Z|
-pi*  1/2  1/4  1/8 -1/8  1/16 -1/16
+ q0--|I|--|I|--|I|--|I|---|I|---|I|--|I|--|I|
+ q1--|Z|--|Z|--|Z|--|Z|---|Z|---|Z|--|Z|--|Z|
+ q2--|Y|--|Y|--|Y|--|Y|---|Y|---|Y|--|Y|--|Y|
+ q3--|Z|--|Z|--|Z|--|Z|---|Z|---|Z|--|Z|--|Z|
+pi*  1/2  1/4  1/8 -1/8  1/16 -1/16   M   -M 
 """
 
 if __name__ == "__main__":
@@ -24,6 +24,9 @@ if __name__ == "__main__":
     c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(-1,8)))
     c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(1,16)))
     c.add_rotation(Rotation.from_list([I,X,Y,Z],Fraction(-1,16)))
+    c.add_measurement(Measurement.from_list([I,X,Y,Z]))
+    c.add_measurement(Measurement.from_list([I,X,Y,Z],True))
+
 
     print(c.render_ascii())
 

@@ -20,7 +20,7 @@ class Circuit(object):
             name (str, optional): Circuit's name (for display). Defaults to ''.
         """
         self.qubit_num = no_of_qubit
-        self.rotations = list()
+        self.ops: List[Union[Rotation,Measurement]] = list()
         self.name = name 
 
 
@@ -33,12 +33,12 @@ class Circuit(object):
 
 
     def  __len__(self) -> int:
-        return len(self.rotations)
+        return len(self.ops)
 
 
     def copy(self) -> 'Circuit':
         new_circuit = Circuit(self.qubit_num, self.name)
-        new_circuit.rotations = [r.copy() for r in self.rotations]
+        new_circuit.ops = [r.copy() for r in self.ops]
 
 
     def add_rotation(self, rotation: Rotation, index: int = None) -> None:
@@ -49,27 +49,28 @@ class Circuit(object):
             rotation (Rotation): Targeted rotation
             index (int, optional): Index location. Default: End of the circuit
         """
+        assert rotation.qubit_num == self.qubit_num
 
         if index is None:
             index = len(self)
             
         # print(rotation)
-        self.rotations.insert(index, rotation)
+        self.ops.insert(index, rotation)
 
 
     def get_rotations(self) -> List[Rotation]:
-        return self.rotations
+        return self.ops
 
-    def add_single_operator(self, qubit: int, operator_type: str, rotation_amount: Fraction, index: int = None) -> None:
+    def add_single_operator(self, qubit: int, operator_type: PauliOperator, rotation_amount: Fraction, index: int = None) -> None:
         """
         Add a single Pauli operator (I, X, Z, Y) to the circuit.
 
         Args:
             qubit (int): Targeted qubit
-            operator_type (str): Operator type ("I", "X", "Y", "Z")
+            operator_type (PauliOperator): Operator type (I, X, Y, Z)
             index (int, optional): Index location. Default: end of the circuit
         """
-        
+
         if index is None:
             index = len(self)
 
@@ -77,6 +78,18 @@ class Circuit(object):
         new_rotation.change_single_op(qubit, operator_type)
 
         self.add_rotation(new_rotation, index)
+
+
+
+    def add_measurement(self, measurement: Measurement, index : int = None):
+
+        assert measurement.qubit_num == self.qubit_num
+
+        if index is None:
+            index = len(self)
+
+        # print(rotation)
+        self.ops.insert(index, measurement)
 
 
     def apply_transformation(self) -> None:
@@ -131,6 +144,11 @@ class Circuit(object):
             circuit: PyZX Circuit
         """
         import pyzx as zx
+        
+        I = PauliOperator.I
+        X = PauliOperator.X
+        Z = PauliOperator.Z
+        Y = PauliOperator.Y
 
         basic_circ = circuit.to_basic_gates()
         ret_circ = Circuit(basic_circ.qubits, circuit.name)
@@ -144,40 +162,40 @@ class Circuit(object):
                 pauli_rot = decompose_pi_fraction(gate.phase / 2)
                 for rotation in pauli_rot:
                     if rotation != Fraction(1,1):
-                        ret_circ.add_single_operator(gate.target, "Z", rotation)
+                        ret_circ.add_single_operator(gate.target, Z, rotation)
 
 
             elif isinstance(gate, zx.circuit.XPhase):
                 pauli_rot = decompose_pi_fraction(gate.phase / 2)
                 for rotation in pauli_rot:
                     if rotation != Fraction(1,1):
-                        ret_circ.add_single_operator(gate.target, "X", rotation)
+                        ret_circ.add_single_operator(gate.target, X, rotation)
 
 
             elif isinstance(gate, zx.circuit.HAD):
-                ret_circ.add_single_operator(gate.target, "X", Fraction(1,4))
-                ret_circ.add_single_operator(gate.target, "Z", Fraction(1,4))
-                ret_circ.add_single_operator(gate.target, "X", Fraction(1,4))
+                ret_circ.add_single_operator(gate.target, X, Fraction(1,4))
+                ret_circ.add_single_operator(gate.target, Z, Fraction(1,4))
+                ret_circ.add_single_operator(gate.target, X, Fraction(1,4))
 
 
             elif isinstance(gate, zx.circuit.CNOT):
                 temp = Rotation(ret_circ.qubit_num, Fraction(1,4))
-                temp.change_single_op(gate.control, "Z")
-                temp.change_single_op(gate.target, "X")
+                temp.change_single_op(gate.control, Z)
+                temp.change_single_op(gate.target, X)
                 ret_circ.add_rotation(temp)
 
-                ret_circ.add_single_operator(gate.control, "Z", Fraction(-1,4))
-                ret_circ.add_single_operator(gate.target, "X", Fraction(-1,4))
+                ret_circ.add_single_operator(gate.control, Z, Fraction(-1,4))
+                ret_circ.add_single_operator(gate.target, X, Fraction(-1,4))
 
 
             elif isinstance(gate, zx.circuit.CZ):
                 temp = Rotation(ret_circ.qubit_num, Fraction(1,4))
-                temp.change_single_op(gate.control, "Z")
-                temp.change_single_op(gate.target, "Z")
+                temp.change_single_op(gate.control, Z)
+                temp.change_single_op(gate.target, Z)
                 ret_circ.add_rotation(temp)
 
-                ret_circ.add_single_operator(gate.control, "Z", Fraction(-1,4))
-                ret_circ.add_single_operator(gate.target, "Z", Fraction(-1,4))
+                ret_circ.add_single_operator(gate.control, Z, Fraction(-1,4))
+                ret_circ.add_single_operator(gate.target, Z, Fraction(-1,4))
 
 
             else: 
@@ -189,7 +207,7 @@ class Circuit(object):
         return ret_circ
 
     def count_rotations_by(self, rotation_amount : Fraction):
-        return len(list(filter(lambda r: r.rotation_amount==rotation_amount, self.rotations)))
+        return len(list(filter(lambda r: r.rotation_amount==rotation_amount, self.ops)))
 
     def render_ascii(self) -> str:
         cols : List[List[str]] = []
@@ -200,15 +218,18 @@ class Circuit(object):
         first_col = list(map(lambda s: ' '*(max_len-len(s))+s,first_col))
         cols.append(first_col)
 
-        for r in self.rotations:
+        for op in self.ops:
+            if isinstance(op, Rotation):
+                operator_str = " " if op.rotation_amount.numerator > 0 else ""
+                operator_str += str(op.rotation_amount.numerator) + "/" + str(op.rotation_amount.denominator)
+            elif isinstance(op, Measurement):
+                operator_str = ' -M ' if op.isNegative else '  M '
 
-            rotation_str = " " if r.rotation_amount.numerator > 0 else ""
-            rotation_str += str(r.rotation_amount.numerator) + "/" + str(r.rotation_amount.denominator)
 
-            qubit_line_separator = '-'*(len(rotation_str)-2)
+            qubit_line_separator = '-'*(len(operator_str)-2)
 
             cols.append([qubit_line_separator]*(self.qubit_num) + [" "])
-            cols.append(list(map(lambda op: "|"+op.value+"|", r.ops_list)) + [rotation_str])
+            cols.append(list(map(lambda op: "|"+op.value+"|", op.ops_list)) + [operator_str])
 
         out = ""
         for row_n in range(self.qubit_num+1):
