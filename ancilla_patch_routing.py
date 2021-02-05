@@ -63,6 +63,7 @@ def add_directed_edges(
         if patch_representative != source_patch_vertex and patch_representative not in tagret_patch_vertex: continue
 
         # Add the directed edges
+        # TODO add Y support
         requested_edge_type = patches.PAULI_OPERATOR_TO_EDGE_MAP[patch_pauli_operator_map[patch.getRepresentative()]]
         for edge in patch.edges:
             in_patch_neighbour = str(edge.cell)

@@ -1,7 +1,7 @@
 from typing import *
 from enum import Enum
 from rotation import *
-
+import itertools
 
 class QubitState:
 
@@ -22,18 +22,16 @@ class SymbolicState(QubitState):
     def ket_repr(self):
         return self.name
 
+    def compose_operator(self, op: PauliOperator):
+        return InitializeableState.UnknownState
 
-class InitializeableState(Enum):
+class InitializeableState(SymbolicState):
+
     Zero = SymbolicState('|0>')
     Plus = SymbolicState('|+>')
     UnknownState = SymbolicState('|?>')
     Magic = SymbolicState('|m>') # magic state (|0>+e^(pi*i/4)|1>)/sqrt(2)
 
-    def ket_repr(self):
-        return self.value
-
-    def compose_operator(self, op: PauliOperator):
-        return InitializeableState.UnknownState
 
 
 
@@ -97,7 +95,7 @@ class PatchType(Enum):
 
 
 class Edge:
-    def __init__(self, edge_type: EdgeType, cell: Tuple[int, int], orientation: List[Orientation]):
+    def __init__(self, edge_type: EdgeType, cell: Tuple[int, int], orientation: Orientation):
         self.cell = cell
         self.orientation = orientation
         self.border_type = edge_type
@@ -113,6 +111,12 @@ class Edge:
 
     def isStiched(self):
         return self.border_type in [EdgeType.SolidStiched, EdgeType.DashedStiched]
+
+
+class CoordType(Enum):
+    Col=0
+    Row=1
+
 
 class Patch:
     def __init__(self,
@@ -140,6 +144,8 @@ class Patch:
                     edges_between.append(edge)
         return edges_between
 
+    def getCoordList(self, coord_type: CoordType) -> List[int]:
+        return list(map(lambda cell: cell[coord_type.value], self.cells))
 
 
 class Lattice:
@@ -149,17 +155,17 @@ class Lattice:
         self.min_cols = min_cols
 
 
+    def getMaxCoord(self, coord_type: CoordType)->int:
+        all_coords = itertools.chain.from_iterable(map(lambda patch: patch.getCoordList(coord_type), self.patches))
+        lower_bound = self.min_rows if coord_type == CoordType.Row else self.min_cols
+
+        return max(1 + max(all_coords), lower_bound)
+
     def getCols(self):
-        return max(
-            1+max(map(lambda patch: max(patch.cells, key=lambda c: c[0])[0], self.patches)),
-            self.min_cols
-        )
+        return self.getMaxCoord(CoordType.Col)
 
     def getRows(self):
-        return max(
-            1+max(map(lambda patch: max(patch.cells, key=lambda c: c[1])[1], self.patches)),
-            self.min_rows
-        )
+        return self.getMaxCoord(CoordType.Row)
 
     def clear(self):
         self.patches = []
@@ -190,5 +196,4 @@ def get_border_orientation(subject: Tuple[int,int], neighbour: Tuple[int,int]):
         (-1, 0 ): Orientation.Left   ,
         (+1, 0 ): Orientation.Right
     })[(neighbour[0]-subject[0], neighbour[1]-subject[1])]
-
 
