@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
 
 
-    c.add_rotation(Rotation.from_list([X],Fraction(1,8)))
+    c.add_pauli_block(Rotation.from_list([X],Fraction(1,8)))
 
 
     print(c.render_ascii())

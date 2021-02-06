@@ -16,10 +16,10 @@ class PauliOperator(Enum):
     Y = "Y"
     Z = "Z"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
 
@@ -84,9 +84,9 @@ class Rotation(PauliProduct):
             rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8). Implicitly multiplied by pi.
         """
 
-        self.qubit_num = no_of_qubit
-        self.rotation_amount = rotation_amount
-        self.ops_list = [PauliOperator("I") for i in range(no_of_qubit)]
+        self.qubit_num:         int = no_of_qubit
+        self.rotation_amount:   Fraction = rotation_amount
+        self.ops_list:          List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
     
     
     def __str__(self) -> str:
@@ -116,9 +116,9 @@ class Measurement(PauliProduct):
             no_of_qubit (int): Number of qubits in the circuit
             isNegative (bool, optional): Set to negative. Defaults to False.
         """
-        self.qubit_num = no_of_qubit
-        self.isNegative = isNegative
-        self.ops_list = [PauliOperator("I") for i in range(no_of_qubit)]
+        self.qubit_num:     int = no_of_qubit
+        self.isNegative:    bool = isNegative
+        self.ops_list:      List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
         
 
     def __str__(self) -> str:
@@ -128,6 +128,8 @@ class Measurement(PauliProduct):
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], isNegative: bool = False) -> 'Measurement':
         m = Measurement(len(pauli_ops), isNegative)
+        
         for i,op in enumerate(pauli_ops):
             m.change_single_op(i,op)
+        
         return m
