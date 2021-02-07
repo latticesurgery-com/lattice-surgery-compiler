@@ -58,7 +58,7 @@ class Circuit(object):
         self.ops.insert(index, new_block)
 
 
-    def get_rotations(self) -> List[Rotation]:
+    def get_rotations(self) -> List[PauliProduct]:
         return self.ops
 
 
@@ -109,20 +109,47 @@ class Circuit(object):
 
         pass
     
-    def swap_rotation(self, index: int) -> None:
-        pass
 
-    def is_commuting(self, gate1: int, gate2: int) -> None:
-        pass
+    def commute_rotation(self, index: int) -> None:
+        """
+        Commute a rotation block pass its' neighbor.
+        """
+
+        next_block = index + 1
+        if not self.is_commute(index, next_block):
+            for i in range(self.qubit_num):
+                new_op = PauliOperator.multiply_by_i(self.ops[index].get_op(i), self.ops[next_block].get_op(i))
+                self.ops[next_block].change_single_op(i, new_op)
+            
+            if self.ops[index].rotation_amount < 0:
+                self.ops[next_block].rotation_amount *= -1
     
+        temp = self.ops[index]
+        self.ops[index] = self.ops[next_block]
+        self.ops[next_block] = temp
+        
+
+    def is_commute(self, block1: int, block2: int) -> bool:
+        """
+        Check if 2 Pauli Product blocks in the circuit (provided by indices) are commute or anti-commute. 
+
+        Returns:
+            bool: True if commute, False if anti-commute
+        """
+        ret_val = 1 
+
+        for i in range(self.qubit_num):
+            ret_val *= 1 if PauliOperator.is_commute(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
+
+        return (ret_val > 0) 
+    
+
     def merge_measurement(self, index: int) -> None:
         """
-        Merge a pi/4 rotation with it's neighbor measurement 
-
-        Args:
-            index (int): index of targeted rotation
+        Merge a rotation block with it's neighbor measurement block. 
         """
         pass
+
 
     @staticmethod
     def load_from_pyzx(circuit) -> 'Circuit':

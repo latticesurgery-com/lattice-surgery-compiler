@@ -22,6 +22,39 @@ class PauliOperator(Enum):
     def __repr__(self) -> str:
         return str(self)
 
+    @staticmethod
+    def is_commute(a: 'PauliOperator', b: 'PauliOperator') -> bool:
+        """
+        Check if 2 PauliOperators are commute or anti-commute.
+
+        Returns:
+            bool: True if commute, False if anti-commute
+        """
+        return True if PauliOperator.I in (a,b) or a == b else False
+
+    @staticmethod
+    def multiply_by_i(a: 'PauliOperator', b: 'PauliOperator') -> 'PauliOperator':
+        """
+        Return iAB. 
+        """
+        if a == b:
+            return PauliOperator.I
+        
+        if a == PauliOperator.I: 
+            return b
+        
+        if b == PauliOperator.I:
+            return a
+
+        if {a,b} == {PauliOperator.X, PauliOperator.Z}:
+            return PauliOperator.Y
+
+        if {a,b} == {PauliOperator.X, PauliOperator.Y}:
+            return PauliOperator.Z
+        
+        if {a,b} == {PauliOperator.Z, PauliOperator.Y}:
+            return PauliOperator.X
+
 
 
 class PauliProduct(object):
@@ -48,7 +81,7 @@ class PauliProduct(object):
         self.ops_list[qubit] = new_op
 
     
-    def return_operator(self, qubit: int) -> PauliOperator:
+    def get_op(self, qubit: int) -> PauliOperator:
         """
         Return the current operator of qubit i. 
 
@@ -61,7 +94,7 @@ class PauliProduct(object):
         return self.ops_list[qubit]
 
 
-    def get_ops_map(self) -> Dict[int,PauliOperator]:
+    def get_ops_map(self) -> Dict[int, PauliOperator]:
         """"
         Return a map of qubit_n -> operator
         """
