@@ -87,29 +87,28 @@ class Circuit(object):
         Apply Litinski's Transformation
 
         """
-        # TODO: Write the algorithm 
+
+        # Moving pi/4 to the end of the circuit done. 
+        # TODO: Implement merging pi/4 to measurements. 
 
         quarter_rotation = list()
 
         # Build a stack of pi/4 rotations
 
-        for i in range(len(self.circuit)):
-            if isinstance(self.circuit[i], Rotation) and self.circuit[i].rotation_amount in {Fraction(1,4), Fraction(-1,4)}:
+        for i in range(len(self)):
+            if isinstance(self.ops[i], Rotation) and self.ops[i].rotation_amount in {Fraction(1,4), Fraction(-1,4)}:
                 quarter_rotation.append(i)
         
         while quarter_rotation:
             index = quarter_rotation.pop()
-            while index < len(self.circuit) - 1:
+            while index < len(self) - 1:
 
-                if isinstance(self.circuit[index + 1], Rotation):
-                    self.merge_measurement(index)
+                if isinstance(self.ops[index + 1], Measurement):
                     break
                 
-                self.swap_rotation(index)
+                self.commute_rotation(index)
                 index += 1
 
-        pass
-    
 
     def commute_rotation(self, index: int) -> None:
         """
@@ -128,6 +127,7 @@ class Circuit(object):
         temp = self.ops[index]
         self.ops[index] = self.ops[next_block]
         self.ops[next_block] = temp
+        # print(self.render_ascii())
         
 
     def is_commute(self, block1: int, block2: int) -> bool:
