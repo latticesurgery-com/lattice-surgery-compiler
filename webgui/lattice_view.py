@@ -1,9 +1,6 @@
 from mako.template import Template
 from typing import *
 import patches
-from  lattice_surgery_computation_composer import LatticeSurgeryComputationComposer,PatchInitializer
-from math import sqrt
-
 
 # TODO separate
 styles_map = {patches.PatchType.Qubit : "darkkhaki",
@@ -55,7 +52,7 @@ def sparse_lattice_to_array(lattice: patches.Lattice):
 
 
 def to_file(slices : List[patches.Lattice], output_file_name : str) -> None:
-    template = Template(filename='lattice_view.mak')
+    template = Template(filename='templates/lattice_view.mak')
     with open(output_file_name, 'w') as f:
         f.write(template.render(
             slices=list(map(sparse_lattice_to_array, slices)),

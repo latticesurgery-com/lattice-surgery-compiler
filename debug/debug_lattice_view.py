@@ -1,6 +1,6 @@
 
 import patches
-import lattice_view
+from webgui import lattice_view
 from lattice_surgery_computation_composer import LatticeSurgeryComputation,PatchInitializer,LayoutTypes
 
 # Example
@@ -93,4 +93,4 @@ with lsc.timestep() as slice:
         (12,0):patches.PauliOperator.X
     })
 
-lattice_view.to_file(lsc.composer.getSlices(),"index.html")
+lattice_view.to_file(lsc.composer.getSlices(), "index.html")

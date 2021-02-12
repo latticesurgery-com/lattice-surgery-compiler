@@ -1,5 +1,5 @@
 from pauli_rotations_to_lattice_surgery import *
-import lattice_view
+from webgui import lattice_view
 
 if __name__ == "__main__":
     c = Circuit(1)
