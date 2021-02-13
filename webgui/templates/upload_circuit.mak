@@ -85,7 +85,7 @@ footer {
   <article>
     <h2>Get Started</h2>
       <p>Upload a quantum circuit. <a>What is supported</a>.
-        <form action="${request.route_url('lattice_view')}" method="post" accept-charset="utf-8"
+        <form action="${request.route_path('lattice_view')}" method="post" accept-charset="utf-8"
           enctype="multipart/form-data">
             <input id="circuit" name="circuit" type="file" value="" />
             <input type="submit" value="Go!" />
