@@ -51,7 +51,7 @@ def sparse_lattice_to_array(lattice: patches.Lattice):
 
 
 
-def to_file(slices : List[patches.Lattice], output_file_name : str) -> None:
+def render_to_file(slices : List[patches.Lattice], output_file_name : str) -> str:
     template = Template(filename='templates/lattice_view.mak')
     with open(output_file_name, 'w') as f:
         f.write(template.render(
@@ -59,3 +59,11 @@ def to_file(slices : List[patches.Lattice], output_file_name : str) -> None:
             styles_map=styles_map,
             patches=patches
         ))
+
+def render_html(slices : List[patches.Lattice]) -> str:
+    template = Template(filename='templates/lattice_view.mak')
+    return template.render(
+        slices=list(map(sparse_lattice_to_array, slices)),
+        styles_map=styles_map,
+        patches=patches
+    )

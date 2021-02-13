@@ -17,4 +17,4 @@ if __name__ == "__main__":
 
 
     lsc = pauli_rotation_to_lattice_surgery_computation(c)
-    lattice_view.to_file(lsc.composer.getSlices(), "rotations.html")
+    lattice_view.render_to_file(lsc.composer.getSlices(), "rotations.html")
