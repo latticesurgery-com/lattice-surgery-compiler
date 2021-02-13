@@ -29,13 +29,21 @@ def pauli_rotation_to_lattice_surgery_computation(circuit : Circuit) -> LatticeS
                 slice.measurePatch(current_op.cell_of_patch, current_op.op)
 
             elif isinstance(current_op,Rotation):
-                if current_op.rotation_amount == Fraction(1/2):
+                if current_op.rotation_amount == Fraction(1,2):
                     rotations_composer.pi_over_two(current_op.get_ops_map())
-                elif current_op.rotation_amount == Fraction(1/4):
+                elif current_op.rotation_amount == Fraction(1,4):
                     corrections = rotations_composer.add_pi_over_four(current_op.get_ops_map())
                     rotations_queue.extendleft(corrections)
-                elif current_op.rotation_amount == Fraction(1/8):
+                elif current_op.rotation_amount == Fraction(-1,4):
+                    corrections = rotations_composer.add_pi_over_four(current_op.get_ops_map())
+                    corrections = invert_correction_apply_condition(corrections)
+                    rotations_queue.extendleft(corrections)
+                elif current_op.rotation_amount == Fraction(1,8):
                     corrections = rotations_composer.add_pi_over_eight(current_op.get_ops_map())
+                    rotations_queue.extendleft(corrections)
+                elif current_op.rotation_amount == Fraction(-1,8):
+                    corrections = rotations_composer.add_pi_over_eight(current_op.get_ops_map())
+                    corrections = invert_correction_apply_condition(corrections)
                     rotations_queue.extendleft(corrections)
                 else:
                     raise Exception("Unsupported pauli rotation angle")
@@ -73,7 +81,7 @@ class RotationsToLatticeSurgeryComputationHelpers:
         for qubit_idx, op in ops_map.items():
             patch = self.computation.get_cell_for_qubit_idx(qubit_idx)
             pauli_op_map[patch] = op
-            corrective_rotation.change_single_op(qubit_idx, op.value)
+            corrective_rotation.change_single_op(qubit_idx, op)
 
 
         self.slice.measureMultiPatch(pauli_op_map)
@@ -96,11 +104,17 @@ class RotationsToLatticeSurgeryComputationHelpers:
         for qubit_idx, op in ops_map.items():
             patch = self.computation.get_cell_for_qubit_idx(qubit_idx)
             pauli_op_map[patch] = op
-            first_corrective_rotation.change_single_op(qubit_idx, op.value)
-            second_corrective_rotation.change_single_op(qubit_idx, op.value)
+            first_corrective_rotation.change_single_op(qubit_idx, op)
+            second_corrective_rotation.change_single_op(qubit_idx, op)
 
 
         self.slice.measureMultiPatch(pauli_op_map)
 
         return [first_corrective_rotation, SinglePatchMeasurement(magic_state_cell, PauliOperator.X), second_corrective_rotation]
+
+
+def invert_correction_apply_condition(corrections:List[Union[Rotation,SinglePatchMeasurement]])\
+    -> List[Union[Rotation,SinglePatchMeasurement]]:
+    # TODO
+    return corrections
 
