@@ -23,7 +23,7 @@ then
   echo "================ [`date`] Back to $0 ================ " >> $DEPLOY_LOG
   echo "Starting the server." >> $DEPLOY_LOG
   source env/bin/activate
-  PYTHONPATH="..:$PYTHONPATH" python serve.py &
+  PYTHONPATH="..:$PYTHONPATH" python serve.py > /dev/null &
   echo $! > $SERVER_PID_FILE
   echo "Server started with pid $(cat $SERVER_PID_FILE)." >> $DEPLOY_LOG
   echo "================ [`date`] Done running $0 ================ " >> $DEPLOY_LOG
