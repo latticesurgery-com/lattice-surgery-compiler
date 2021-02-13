@@ -7,7 +7,7 @@ DEPLOY_BRANCH=webgui-deploy
 SERVER_PID_FILE=server_pid
 DEPLOY_LOG=deploy.log
 
-git fetch origin webgui-deploy > /dev/null
+git fetch origin webgui-deploy &> /dev/null
 new_commits=$(git log HEAD..origin/$DEPLOY_BRANCH --oneline)
 if [ -n "$new_commits" ]
 then
