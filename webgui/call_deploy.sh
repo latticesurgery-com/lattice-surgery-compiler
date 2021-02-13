@@ -22,6 +22,7 @@ then
   ./deploy.sh 2>&1 | tee -a $DEPLOY_LOG
   echo "================ [`date`] Back to $0 ================ " >> $DEPLOY_LOG
   echo "Starting the server." >> $DEPLOY_LOG
+  source env/bin/activate
   PYTHONPATH="..:$PYTHONPATH" python serve.py &
   echo $! > $SERVER_PID_FILE
   echo "Server started with pid $(cat $SERVER_PID_FILE)." >> $DEPLOY_LOG
