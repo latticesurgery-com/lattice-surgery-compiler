@@ -5,7 +5,6 @@ from patches import *
 from collections import deque
 from fractions import Fraction
 
-
 class SinglePatchMeasurement:
     def __init__(self, cell_of_patch: Tuple[int,int], op: PauliOperator):
         self.cell_of_patch = cell_of_patch

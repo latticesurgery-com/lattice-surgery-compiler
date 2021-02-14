@@ -141,7 +141,7 @@ def compute_ancilla_cells(
 
     # For path finding purposes separate take one qubit to be the source and the others to be the targets
     source_qubit : str = active_qubits[0]
-    target_qubits : str = active_qubits[1:]
+    target_qubits : List[str] = active_qubits[1:]
 
     # Connect the active patches each with a single directed edge along the border of the desired operator
     add_directed_edges(

@@ -1,6 +1,7 @@
 from mako.template import Template
 from typing import *
 import patches
+from qubit_state import *
 
 # TODO separate
 styles_map = {patches.PatchType.Qubit : "darkkhaki",
@@ -21,7 +22,12 @@ styles_map = {patches.PatchType.Qubit : "darkkhaki",
                    patches.EdgeType.Dashed : "black",
                    patches.EdgeType.DashedStiched : "#37beff",
                    patches.EdgeType.AncillaJoin : "aquamarine",
-              }
+              },
+              'activity_color':
+                  {
+                      ActivityType.Unitary : "#00baff",
+                      ActivityType.Measurement : "#ff0000",
+                  }
 }
 
 
@@ -31,8 +37,9 @@ class VisualArrayCell:
         self.edges = edges
         self.patch_type = patch_type
         self.text = None
+        self.activity: Optional[QubitActivity] = None
 
-def sparse_lattice_to_array(lattice: patches.Lattice):
+def sparse_lattice_to_array(lattice: patches.Lattice) -> List[List[Optional[VisualArrayCell]]]:
     array = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
 
     for patch in lattice.patches:
@@ -41,6 +48,8 @@ def sparse_lattice_to_array(lattice: patches.Lattice):
             if(patch.state is not None):
                 if(cell_idx_in_patch == 0): # Only display the value in the first cell of the patch
                     array[y][x].text = patch.state.ket_repr()
+                    if isinstance(patch.state,ActiveState):
+                        array[y][x].activity = patch.state.activity
 
         for edge in patch.edges:
             array[edge.cell[1]][edge.cell[0]].edges[edge.orientation] = edge.border_type

@@ -104,6 +104,11 @@
                                             border-${styles_map[orientation]}-style: ${styles_map[edge_type]};
                                             border-${styles_map[orientation]}-color: ${styles_map['edge_color'][edge_type]};
                                         % endfor
+                                        % if cell.activity is not None:
+                                            background-image:
+                                                    radial-gradient(${styles_map['activity_color'][cell.activity.activity_type]} 7%,
+                                                    transparent 90%);
+                                        % endif
                                     %endif
                                "
                             >

@@ -2,50 +2,7 @@ from typing import *
 from enum import Enum
 from rotation import *
 import itertools
-
-class QubitState:
-
-    def __init__(self):
-        self.is_active = False
-
-    def ket_repr(self):
-        raise Exception("Method not implemented")
-
-    def compose_operator(self, op: PauliOperator):
-        return self # Do nothing
-
-
-class SymbolicState(QubitState):
-    def __init__(self, name : str):
-        self.name = name
-
-    def ket_repr(self):
-        return self.name
-
-    def compose_operator(self, op: PauliOperator):
-        return InitializeableState.UnknownState
-
-class InitializeableState(SymbolicState):
-
-    Zero = SymbolicState('|0>')
-    Plus = SymbolicState('|+>')
-    UnknownState = SymbolicState('|?>')
-    Magic = SymbolicState('|m>') # magic state (|0>+e^(pi*i/4)|1>)/sqrt(2)
-
-
-
-
-class ExplicitPatchQubitState(QubitState):
-    def __init__(self,zero_amplitude,one_amplitude):
-        self.zero_amplitude = zero_amplitude
-        self.one_amplitude = one_amplitude
-        # TODO check normalization
-
-    def ket_repr(self):
-        out = []
-        if self.zero_amplitude != 0: out.append("%1.2f|0>"%self.zero_amplitude)
-        if self.one_amplitude != 0: out.append("%1.2f|1>"%self.one_amplitude)
-        return "<br>".join(out)
+from qubit_state import *
 
 class Orientation(Enum):
     Top = "Top"

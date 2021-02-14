@@ -164,34 +164,16 @@ class LatticeSurgeryComputationComposer:
 
     def measurePatch(self, cell_of_patch: Tuple[int, int], basis_matrix: patches.PauliOperator):
         if basis_matrix not in [patches.PauliOperator.X, patches.PauliOperator.Z]:
-            raise Exception("Can't measure with basis matrix "+basis_matrix+" yet")
+            raise Exception("Can't measure with basis matrix "+basis_matrix.value+" yet")
         index_to_remove = None
-        for i,patch in enumerate(self.qubit_patch_slices[-1].patches):
+        for patch in self.qubit_patch_slices[-1].patches:
             if patch.getRepresentative() == cell_of_patch:
-                index_to_remove = i
-                break
-        if index_to_remove is not None:
-            del self.qubit_patch_slices[-1].patches[index_to_remove]
-        else:
-            raise Exception("No patch to measure at " + cell_of_patch + "")
+                patch.state = patch.state.apply_measurement(basis_matrix)
 
     def newTimeSlice(self):
         self.qubit_patch_slices.append(copy.deepcopy(self.lattice()))
 
     def measureMultiPatch(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
-        # TODO refactor this method
-
-        # Break down Y measurements into an simultaneous X and Y measurement, as specified by Litnski's Game of
-        # Surface codes in Fig.2.
-
-        def replace_operator(operator_map,old,new) -> Dict[Tuple[int, int], patches.PauliOperator]:
-            new_operator_map = {}
-            for cell, operator in operator_map.items():
-                if operator == old:
-                    new_operator_map[cell] = new
-                else:
-                    new_operator_map[cell] = operator
-            return new_operator_map
 
         ancilla_patch_routing.compute_ancilla_cells(self.qubit_patch_slices[-1], patch_pauli_operator_map)
 
@@ -203,8 +185,7 @@ class LatticeSurgeryComputationComposer:
 
         for patch in self.lattice().patches:
             if patch.getRepresentative() == cell_of_patch and patch.state is not None:
-                patch.state = patches.InitializeableState.UnknownState
-                patch.state.is_active = True
+                patch.state = patch.state.compose_operator(operator)
 
 
     def clearAncilla(self):
@@ -220,9 +201,18 @@ class LatticeSurgeryComputationComposer:
         self.qubit_patch_slices[-1].patches = list(filter(is_not_ancilla, self.lattice().patches))
 
     def clearActiveStates(self):
+        # Make measured patches disappear
+        def patch_stays(patch : patches.Patch) -> bool:
+            if patch.state is not None and isinstance(patch.state,patches.ActiveState) and patch.state.disappears():
+                return False
+            return True
+
+        self.lattice().patches = list(filter(patch_stays,self.lattice().patches))
+
+        # Clear other activity
         for patch in self.lattice().patches:
-            if patch.state is not None:
-                patch.state.is_active = False
+            if patch.state is not None and isinstance(patch.state,patches.ActiveState):
+                patch.state = patch.state.next
 
 
     def clearLattice(self):
