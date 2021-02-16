@@ -104,6 +104,11 @@
                                             border-${styles_map[orientation]}-style: ${styles_map[edge_type]};
                                             border-${styles_map[orientation]}-color: ${styles_map['edge_color'][edge_type]};
                                         % endfor
+                                        % if cell.activity is not None:
+                                            background-image:
+                                                    radial-gradient(${styles_map['activity_color'][cell.activity.activity_type]} 7%,
+                                                    transparent 90%);
+                                        % endif
                                     %endif
                                "
                             >
@@ -112,7 +117,7 @@
                                </span><br>
                                <span>
                                    %if cell is not None and cell.text is not None:
-                                        <span style="font-size: 20px"><b>${cell.text}</b></span>
+                                        <span style="font-size: 17px"><b>${cell.text}</b></span>
                                    %endif
                                </span>
 
