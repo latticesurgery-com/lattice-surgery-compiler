@@ -5,6 +5,8 @@ from typing import *
 import copy
 import enum
 
+import uuid
+
 class QubitLayoutTypes:
     Simple = "Simple"
 
@@ -23,6 +25,8 @@ class LatticeSurgeryComputation:
 
         self.ancilla_locations = [(j,2) for j in range(self.num_qubits)]
         self.magic_state_queue = [(j + self.num_qubits,2) for j in range(self.num_qubits)]
+
+
         self.composer.lattice().min_cols = 2*self.num_qubits
         self.composer.lattice().min_rows = 3
 
@@ -44,8 +48,17 @@ class LatticeSurgeryComputation:
 
         return LatticeSurgeryComputationSliceContextManager(self.composer)
 
-    def get_cell_for_qubit_idx(self, qubit_idx: int):
+    def get_cell_for_qubit_idx(self, qubit_idx: int) -> Tuple[int,int]:
         return self.qubit_idx_to_cell_mapping[qubit_idx]
+
+    def grab_magic_state(self, patch_uuid : uuid.UUID)->Optional[patches.Patch]:
+        for cell in self.magic_state_queue:
+            p = self.composer.lattice().getPatchOfCell(cell)
+            if p.patch_uuid is None:
+                p.patch_uuid = patch_uuid
+                return p
+        return None
+
 
 class LatticeSurgeryComputationPreparedMagicStates(LatticeSurgeryComputation):
     def __init__(self, num_qubits : int, num_magic_states : int):
@@ -144,10 +157,13 @@ class LatticeSurgeryComputationComposer:
     def addPatch(self, patch: patches.Patch):
         self.lattice().patches.append(patch)
 
-    def addSquareAncilla(self, patch_state: patches.SymbolicState) -> Optional[Tuple[int,int]]:
+    def addSquareAncilla(self, patch_state: patches.SymbolicState, patch_uuid: Optional[uuid.UUID] = None) \
+            -> Optional[Tuple[int,int]]:
         cell = self.getAncillaLocation()
         if cell is None: return None
-        self.addPatch(PatchInitializer.singleSquarePatch(cell, patches.PatchType.Qubit, patch_state))
+        new_patch = PatchInitializer.singleSquarePatch(cell, patches.PatchType.Qubit, patch_state)
+        new_patch.patch_uuid = patch_uuid
+        self.addPatch(new_patch)
         return cell
 
     def getAncillaLocation(self) -> Optional[Tuple[int,int]]:
@@ -165,7 +181,6 @@ class LatticeSurgeryComputationComposer:
     def measurePatch(self, cell_of_patch: Tuple[int, int], basis_matrix: patches.PauliOperator):
         if basis_matrix not in [patches.PauliOperator.X, patches.PauliOperator.Z]:
             raise Exception("Can't measure with basis matrix "+basis_matrix.value+" yet")
-        index_to_remove = None
         for patch in self.qubit_patch_slices[-1].patches:
             if patch.getRepresentative() == cell_of_patch:
                 patch.state = patch.state.apply_measurement(basis_matrix)
@@ -177,6 +192,10 @@ class LatticeSurgeryComputationComposer:
         """
         Corresponds to a lattice surgery merge followed by a split.
         """
+        for v in patch_pauli_operator_map.values():
+            if v not in {patches.PauliOperator.X,patches.PauliOperator.Z}:
+                raise Exception("Only X and Y operators are supported in multibody mesurement, got "+repr(v))
+
         ancilla_patch_routing.compute_ancilla_cells(self.qubit_patch_slices[-1], patch_pauli_operator_map)
 
 
