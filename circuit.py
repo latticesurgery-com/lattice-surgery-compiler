@@ -153,7 +153,6 @@ class Circuit(object):
         for i in range(self.qubit_num):
             ret_val *= 1 if PauliOperator.are_commuting(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
 
-
         return (ret_val > 0) 
     
 

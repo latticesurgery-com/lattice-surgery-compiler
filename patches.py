@@ -4,6 +4,9 @@ from rotation import *
 import itertools
 from qubit_state import *
 
+import uuid
+
+
 class Orientation(Enum):
     Top = "Top"
     Bottom = "Bottom"
@@ -85,7 +88,7 @@ class Patch:
         self.cells = cells
         self.edges = edges
         self.state = state
-
+        self.patch_uuid = None
         # TODO sanity check
 
     def getRepresentative(self)->Tuple[int,int]:
@@ -103,6 +106,9 @@ class Patch:
 
     def getCoordList(self, coord_type: CoordType) -> List[int]:
         return list(map(lambda cell: cell[coord_type.value], self.cells))
+
+    def set_uuid(self, patch_uuid: uuid.UUID):
+        self.patch_uuid = patch_uuid
 
 
 class Lattice:
@@ -145,6 +151,11 @@ class Lattice:
         maybe_patch = self.getPatchOfCell(cell)
         return maybe_patch.patch_type if maybe_patch is not None else None
 
+    def getPatchByUuid(self, patch_uuid:uuid.UUID) -> Optional[Patch]:
+        for p in self.patches:
+            if p.patch_uuid is not None and p.patch_uuid == patch_uuid:
+                return p
+        return None
 
 def get_border_orientation(subject: Tuple[int,int], neighbour: Tuple[int,int]):
     return ({
