@@ -1,5 +1,5 @@
 import numpy as np 
-from rotation import PauliProduct, Rotation, Measurement, PauliOperator
+from rotation import PauliProductOperation, Rotation, Measurement, PauliOperator
 from fractions import Fraction
 from utils import decompose_pi_fraction
 import pyzx as zx
@@ -21,7 +21,7 @@ class Circuit(object):
             name (str, optional): Circuit's name (for display). Defaults to ''.
         """
         self.qubit_num:     int = no_of_qubit
-        self.ops:           List[PauliProduct] = list()
+        self.ops:           List[PauliProductOperation] = list()
         self.name:          str = name 
 
 
@@ -42,7 +42,7 @@ class Circuit(object):
         new_circuit.ops = [r.copy() for r in self.ops]
 
 
-    def add_pauli_block(self, new_block: PauliProduct, index: int = None) -> None:
+    def add_pauli_block(self, new_block: PauliProductOperation, index: int = None) -> None:
         """
         Add a rotation to the circuit
 
@@ -59,9 +59,8 @@ class Circuit(object):
         self.ops.insert(index, new_block)
 
 
-    def get_rotations(self) -> List[PauliProduct]:
+    def get_operations(self) -> List[PauliProductOperation]:
         return self.ops
-
 
     def add_single_operator(self, qubit: int, operator_type: PauliOperator, rotation_amount: Fraction, index: int = None) -> None:
         """

@@ -16,7 +16,7 @@ def pauli_rotation_to_lattice_surgery_computation(circuit : Circuit) -> LatticeS
     lsc = LatticeSurgeryComputationPreparedMagicStates(circuit.qubit_num, circuit.count_rotations_by(Fraction(1,8)))
     with lsc.timestep() as blank_slice: pass
 
-    rotations_queue : Deque[Union[Rotation,SinglePatchMeasurement]] = deque(circuit.get_rotations())
+    rotations_queue : Deque[Union[Rotation,SinglePatchMeasurement]] = deque(circuit.get_operations())
 
     while len(rotations_queue)>0:
         with lsc.timestep() as slice: #TODO be more clever about making slices to allow concurrent operations

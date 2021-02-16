@@ -57,7 +57,7 @@ class PauliOperator(Enum):
 
 
 
-class PauliProduct(object):
+class PauliProductOperation(object):
 
     qubit_num:  int = None
     ops_list:   List[PauliOperator] = None
@@ -102,7 +102,7 @@ class PauliProduct(object):
 
 
     
-class Rotation(PauliProduct):
+class Rotation(PauliProductOperation):
     """
     Class for representing a Pauli Product Rotation Block 
 
@@ -135,7 +135,7 @@ class Rotation(PauliProduct):
 
 
 
-class Measurement(PauliProduct):
+class Measurement(PauliProductOperation):
     """
     Representing a Pauli Product Measurement Block
 
