@@ -173,8 +173,10 @@ class LatticeSurgeryComputationComposer:
     def newTimeSlice(self):
         self.qubit_patch_slices.append(copy.deepcopy(self.lattice()))
 
-    def measureMultiPatch(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
-
+    def multiBodyMeasurePatches(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
+        """
+        Corresponds to a lattice surgery merge followed by a split.
+        """
         ancilla_patch_routing.compute_ancilla_cells(self.qubit_patch_slices[-1], patch_pauli_operator_map)
 
 

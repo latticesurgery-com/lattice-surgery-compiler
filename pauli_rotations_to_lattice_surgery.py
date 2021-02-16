@@ -83,7 +83,7 @@ class RotationsToLatticeSurgeryComputationHelpers:
             corrective_rotation.change_single_op(qubit_idx, op)
 
 
-        self.slice.measureMultiPatch(pauli_op_map)
+        self.slice.multiBodyMeasurePatches(pauli_op_map)
 
         return [SinglePatchMeasurement(zero_ancilla,PauliOperator.X),corrective_rotation]
 
@@ -107,7 +107,7 @@ class RotationsToLatticeSurgeryComputationHelpers:
             second_corrective_rotation.change_single_op(qubit_idx, op)
 
 
-        self.slice.measureMultiPatch(pauli_op_map)
+        self.slice.multiBodyMeasurePatches(pauli_op_map)
 
         return [first_corrective_rotation, SinglePatchMeasurement(magic_state_cell, PauliOperator.X), second_corrective_rotation]
 

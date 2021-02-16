@@ -19,7 +19,7 @@ with lsc.timestep() as slice:
 
 with lsc.timestep() as slice:
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (3,2):patches.PauliOperator.X,
         (4,2):patches.PauliOperator.X
     })
@@ -35,7 +35,7 @@ with lsc.timestep() as slice:
 
 with lsc.timestep() as slice:
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (0,0):patches.PauliOperator.X,
         (4,0):patches.PauliOperator.Z,
         (6,0):patches.PauliOperator.X
@@ -47,48 +47,48 @@ with lsc.timestep() as slice:
 with lsc.timestep() as slice:
 
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (0,0):patches.PauliOperator.X,
         (10,0):patches.PauliOperator.X
     })
 
 with lsc.timestep() as slice:
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (0,0):patches.PauliOperator.X,
         (4,0):patches.PauliOperator.Z,
     })
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (8,0):patches.PauliOperator.X,
         (11,0):patches.PauliOperator.X,
     })
 
 with lsc.timestep() as slice:
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (10,0):patches.PauliOperator.Z,
         (8,0):patches.PauliOperator.X,
     })
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (10,0):patches.PauliOperator.X,
         (11,0):patches.PauliOperator.Z,
     })
 
 with lsc.timestep() as slice:
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (4,0):patches.PauliOperator.X,
         (6,0):patches.PauliOperator.Z,
     })
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (0,0):patches.PauliOperator.X,
         (10,0):patches.PauliOperator.Z,
     })
 
-    slice.measureMultiPatch({
+    slice.multiBodyMeasurePatches({
         (11,0):patches.PauliOperator.X,
         (12,0):patches.PauliOperator.X
     })
