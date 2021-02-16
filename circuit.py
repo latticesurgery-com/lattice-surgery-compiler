@@ -139,8 +139,21 @@ class Circuit(object):
         """
         ret_val = 1 
 
+        # Use the fact that:
+        # P*Q = (P_1 otimes ... otimes P_n)*(Q_1 otimes ... otimes Q_n)
+        #     = (P_1*Q_1 otimes ... otimes P_n*Q_n)
+        #
+        # Since P_j's and Q_j's are Pauli product blocks, there are coefficients c_j=+-1,
+        # such that P_j*Q_j = c_j * Q_j*P_j.
+        #
+        # Then, since the multiplication by a scalar can be taken out of a tensor product:
+        # Q*P = (c_1*Q_1*P_1 otimes...otimes c_n*Q_n*P_n)
+        #     = (c_1*...*c_n)*P*Q
+        #
+        # The loop below computes (c_1*...*c_n) in ret_val
         for i in range(self.qubit_num):
-            ret_val *= 1 if PauliOperator.is_commute(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
+            ret_val *= 1 if PauliOperator.are_commuting(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
+
 
         return (ret_val > 0) 
     
