@@ -23,19 +23,19 @@ class PauliOperator(Enum):
         return str(self)
 
     @staticmethod
-    def is_commute(a: 'PauliOperator', b: 'PauliOperator') -> bool:
+    def are_commuting(a: 'PauliOperator', b: 'PauliOperator') -> bool:
         """
-        Check if 2 PauliOperators are commute or anti-commute.
+        Check if 2 PauliOperators commute or anti-commute.
 
         Returns:
-            bool: True if commute, False if anti-commute
+            bool: True if they commute, False if they anti-commute
         """
         return True if PauliOperator.I in (a,b) or a == b else False
 
     @staticmethod
     def multiply_by_i(a: 'PauliOperator', b: 'PauliOperator') -> 'PauliOperator':
         """
-        Return iAB. 
+        Return iAB.
         """
         if a == b:
             return PauliOperator.I

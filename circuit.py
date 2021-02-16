@@ -116,7 +116,7 @@ class Circuit(object):
         """
 
         next_block = index + 1
-        if not self.is_commute(index, next_block):
+        if not self.are_commuting(index, next_block):
             for i in range(self.qubit_num):
                 new_op = PauliOperator.multiply_by_i(self.ops[index].get_op(i), self.ops[next_block].get_op(i))
                 self.ops[next_block].change_single_op(i, new_op)
@@ -130,12 +130,12 @@ class Circuit(object):
         # print(self.render_ascii())
         
 
-    def is_commute(self, block1: int, block2: int) -> bool:
+    def are_commuting(self, block1: int, block2: int) -> bool:
         """
-        Check if 2 Pauli Product blocks in the circuit (provided by indices) are commute or anti-commute. 
+        Check if 2 Pauli Product blocks in the circuit (identified by indices) commute or anti-commute.
 
         Returns:
-            bool: True if commute, False if anti-commute
+            bool: True if they commute, False if they anti-commute
         """
         ret_val = 1 
 
