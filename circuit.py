@@ -1,5 +1,5 @@
 import numpy as np 
-from rotation import PauliProduct, Rotation, Measurement, PauliOperator
+from rotation import PauliProductOperation, Rotation, Measurement, PauliOperator
 from fractions import Fraction
 from utils import decompose_pi_fraction
 import pyzx as zx
@@ -21,7 +21,7 @@ class Circuit(object):
             name (str, optional): Circuit's name (for display). Defaults to ''.
         """
         self.qubit_num:     int = no_of_qubit
-        self.ops:           List[PauliProduct] = list()
+        self.ops:           List[PauliProductOperation] = list()
         self.name:          str = name 
 
 
@@ -42,7 +42,7 @@ class Circuit(object):
         new_circuit.ops = [r.copy() for r in self.ops]
 
 
-    def add_pauli_block(self, new_block: PauliProduct, index: int = None) -> None:
+    def add_pauli_block(self, new_block: PauliProductOperation, index: int = None) -> None:
         """
         Add a rotation to the circuit
 
@@ -59,9 +59,8 @@ class Circuit(object):
         self.ops.insert(index, new_block)
 
 
-    def get_rotations(self) -> List[PauliProduct]:
+    def get_operations(self) -> List[PauliProductOperation]:
         return self.ops
-
 
     def add_single_operator(self, qubit: int, operator_type: PauliOperator, rotation_amount: Fraction, index: int = None) -> None:
         """
@@ -116,7 +115,7 @@ class Circuit(object):
         """
 
         next_block = index + 1
-        if not self.is_commute(index, next_block):
+        if not self.are_commuting(index, next_block):
             for i in range(self.qubit_num):
                 new_op = PauliOperator.multiply_by_i(self.ops[index].get_op(i), self.ops[next_block].get_op(i))
                 self.ops[next_block].change_single_op(i, new_op)
@@ -130,17 +129,29 @@ class Circuit(object):
         # print(self.render_ascii())
         
 
-    def is_commute(self, block1: int, block2: int) -> bool:
+    def are_commuting(self, block1: int, block2: int) -> bool:
         """
-        Check if 2 Pauli Product blocks in the circuit (provided by indices) are commute or anti-commute. 
+        Check if 2 Pauli Product blocks in the circuit (identified by indices) commute or anti-commute.
 
         Returns:
-            bool: True if commute, False if anti-commute
+            bool: True if they commute, False if they anti-commute
         """
         ret_val = 1 
 
+        # Use the fact that:
+        # P*Q = (P_1 otimes ... otimes P_n)*(Q_1 otimes ... otimes Q_n)
+        #     = (P_1*Q_1 otimes ... otimes P_n*Q_n)
+        #
+        # Since P_j's and Q_j's are Pauli product blocks, there are coefficients c_j=+-1,
+        # such that P_j*Q_j = c_j * Q_j*P_j.
+        #
+        # Then, since the multiplication by a scalar can be taken out of a tensor product:
+        # Q*P = (c_1*Q_1*P_1 otimes...otimes c_n*Q_n*P_n)
+        #     = (c_1*...*c_n)*P*Q
+        #
+        # The loop below computes (c_1*...*c_n) in ret_val
         for i in range(self.qubit_num):
-            ret_val *= 1 if PauliOperator.is_commute(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
+            ret_val *= 1 if PauliOperator.are_commuting(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
 
         return (ret_val > 0) 
     

@@ -23,6 +23,8 @@ class QubitState:
     def compose_operator(self, op: PauliOperator):
         return self # Do nothing
 
+    def apply_measurement(self, basis: PauliOperator):
+        raise Exception("Method not implemented")
 
 class SymbolicState(QubitState):
     def __init__(self, name : str):

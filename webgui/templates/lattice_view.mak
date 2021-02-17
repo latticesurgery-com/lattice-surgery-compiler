@@ -62,6 +62,14 @@
             $('#slice-'+document.selected_slice).show();
             $('#slice-number').text(document.selected_slice);
         }
+        $(document).ready(function(){
+            $(document).keydown(function(event){
+            if(event.which===78)
+                change_slice(+1);
+            else if(event.which===80)
+                change_slice(-1);
+            });
+        });
     </script>
 </head>
 <body>
