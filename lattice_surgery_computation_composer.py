@@ -60,6 +60,10 @@ class LatticeSurgeryComputation:
         return None
 
 
+    def iterate_over_qubit_patches(self) -> Iterator[Tuple[int,int]]:
+        for j in range(self.num_qubits):
+            yield self.get_cell_for_qubit_idx(j)
+
 class LatticeSurgeryComputationPreparedMagicStates(LatticeSurgeryComputation):
     def __init__(self, num_qubits : int, num_magic_states : int):
         super().__init__(num_qubits)
@@ -246,6 +250,7 @@ class LatticeSurgeryComputationComposer:
 
 
 
+    # TODO maybe slices should belong to the computation
     def getSlices(self) -> List[patches.Lattice]:
         return self.qubit_patch_slices
 
