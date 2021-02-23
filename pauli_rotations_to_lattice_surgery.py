@@ -9,21 +9,13 @@ from logical_lattice_ops import *
 
 
 
-
-LatticeOperation = Union[Rotation,
-                         SinglePatchMeasurement,
-                         MultiBodyMeasurement,
-                         AncillaQubitPatchInitialization,
-                         IndividualPauliOperators]
-
-
-def to_lattice_operation(op:PauliProductOperation) -> LatticeOperation:
+def to_lattice_operation(op:PauliProductOperation) -> LogicalLatticeOperation:
     if isinstance(op, Rotation): return op
     if isinstance(op, Measurement): return circuit_to_patch_measurement(op)
     raise Exception("Unsupported PauliProductOperation "+repr(op))
 
 
-def is_composite(op:LatticeOperation) -> bool:
+def is_composite(op:LogicalLatticeOperation) -> bool:
     """Decide if op needs to decomposed further or it has a direct translation to a lattice operation"""
     return isinstance(op,Rotation)
 
@@ -32,7 +24,7 @@ def pauli_rotation_to_lattice_surgery_computation(circuit : Circuit) -> LatticeS
     lsc = LatticeSurgeryComputationPreparedMagicStates(circuit.qubit_num, circuit.count_rotations_by(Fraction(1,8)))
     with lsc.timestep() as blank_slice: pass
 
-    operations_queue : Deque[LatticeOperation] = deque(map(to_lattice_operation,circuit.get_operations()))
+    operations_queue : Deque[LogicalLatticeOperation] = deque(map(to_lattice_operation, circuit.get_operations()))
 
     while len(operations_queue)>0:
         current_op = operations_queue.popleft()
@@ -74,7 +66,7 @@ class RotationsToLatticeSurgeryComputationHelpers:
     def __init__(self, computation :LatticeSurgeryComputation):
         self.computation = computation
 
-    def expand_rotation(self, r: Rotation) -> List[LatticeOperation]:
+    def expand_rotation(self, r: Rotation) -> List[LogicalLatticeOperation]:
         if r.rotation_amount == Fraction(1, 2):
             return self.pi_over_two(r.get_ops_map())
         elif r.rotation_amount == Fraction(1, 4):
@@ -89,14 +81,14 @@ class RotationsToLatticeSurgeryComputationHelpers:
             raise Exception("Unsupported pauli rotation angle pi*%d/%d"
                             % (r.rotation_amount.numerator, r.rotation_amount.denominator))
 
-    def pi_over_two(self, ops_map :  Dict[int, PauliOperator]) -> [LatticeOperation]:
+    def pi_over_two(self, ops_map :  Dict[int, PauliOperator]) -> [LogicalLatticeOperation]:
         paulis = IndividualPauliOperators(dict())
         for qubit_id, op in ops_map.items():
             cell = self.computation.get_cell_for_qubit_idx(qubit_id)
             paulis.patch_pauli_operator_map[cell] = op
         return [paulis]
 
-    def add_pi_over_four(self, ops_map: Dict[int, PauliOperator], invert_correction:bool) -> List[LatticeOperation]:
+    def add_pi_over_four(self, ops_map: Dict[int, PauliOperator], invert_correction:bool) -> List[LogicalLatticeOperation]:
         """See Figure 11 of Litinski's GoSC
         """
         ancilla_uuid = uuid.uuid4()
@@ -118,7 +110,7 @@ class RotationsToLatticeSurgeryComputationHelpers:
                 ancilla_measurement,
                 corrective_rotation]
 
-    def add_pi_over_eight(self, ops_map :  Dict[int, PauliOperator], invert_correction:bool) -> List[LatticeOperation]:
+    def add_pi_over_eight(self, ops_map :  Dict[int, PauliOperator], invert_correction:bool) -> List[LogicalLatticeOperation]:
         """Returns the correction terms. See Figure 11 of Litinski's GoSC"""
 
         magic_state_uuid = uuid.uuid4()

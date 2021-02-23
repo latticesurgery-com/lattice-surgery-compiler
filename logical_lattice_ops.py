@@ -49,3 +49,11 @@ class AncillaQubitPatchInitialization:
 class IndividualPauliOperators:
     def __init__(self,patch_pauli_operator_map: Dict[Tuple[int, int], PauliOperator] ):
         self.patch_pauli_operator_map = patch_pauli_operator_map
+
+
+
+LogicalLatticeOperation = Union[Rotation,
+                                SinglePatchMeasurement,
+                                MultiBodyMeasurement,
+                                AncillaQubitPatchInitialization,
+                                IndividualPauliOperators]
