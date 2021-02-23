@@ -1,11 +1,14 @@
 import patches
 import ancilla_patch_routing
+from logical_lattice_ops import *
 
 from typing import *
 import copy
 import enum
 
 import uuid
+
+
 
 class QubitLayoutTypes:
     Simple = "Simple"
@@ -254,4 +257,27 @@ class LatticeSurgeryComputationComposer:
     def getSlices(self) -> List[patches.Lattice]:
         return self.qubit_patch_slices
 
+
+
+    def addLogicalOperation(self, current_op: LogicalLatticeOperation):
+        if isinstance(current_op, SinglePatchMeasurement):
+            self.measurePatch(self.lattice().get_measurement_cell(current_op), current_op.op)
+
+        elif isinstance(current_op, AncillaQubitPatchInitialization):
+            maybe_cell_location = self.addSquareAncilla(current_op.patch_state, current_op.patch_uuid)
+            if maybe_cell_location is None: raise Exception("Could not allocate ancilla")
+
+        elif isinstance(current_op, IndividualPauliOperators):
+            for cell, op, in current_op.patch_pauli_operator_map.items():
+                self.applyPauliProductOperator(cell, op)
+
+        elif isinstance(current_op, MultiBodyMeasurement):
+            patch_pauli_operator_map = current_op.patch_pauli_operator_map  # .copy()
+            if current_op.ancilla_pauli_op is not None:
+                cell = self.lattice().getPatchByUuid(current_op.ancilla_uuid).getRepresentative()
+                patch_pauli_operator_map[cell] = current_op.ancilla_pauli_op
+            self.multiBodyMeasurePatches(patch_pauli_operator_map)
+
+        else:
+            raise Exception("Unsupported operation %s" % repr(current_op))
 

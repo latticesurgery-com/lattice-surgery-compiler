@@ -8,6 +8,17 @@ from logical_lattice_ops import *
 
 
 
+def circuit_to_patch_measurement( lsc: LatticeSurgeryComputation, m: Measurement) \
+        -> Union[SinglePatchMeasurement,MultiBodyMeasurement]:
+    ret : Dict[Tuple[int, int], PauliOperator] = dict()
+    for qubit_idx in range(m.qubit_num):
+        if m.get_op(qubit_idx)!=PauliOperator.I:
+            ret[lsc.get_cell_for_qubit_idx(qubit_idx)] = m.get_op(qubit_idx)
+
+    if len(ret) == 1:
+        return SinglePatchMeasurement(next(iter(ret)),ret[next(iter(ret))])
+    return  MultiBodyMeasurement(ret)
+
 
 def to_lattice_operation(op:PauliProductOperation) -> LogicalLatticeOperation:
     if isinstance(op, Rotation): return op
@@ -15,16 +26,13 @@ def to_lattice_operation(op:PauliProductOperation) -> LogicalLatticeOperation:
     raise Exception("Unsupported PauliProductOperation "+repr(op))
 
 
-def is_composite(op:LogicalLatticeOperation) -> bool:
-    """Decide if op needs to decomposed further or it has a direct translation to a lattice operation"""
-    return isinstance(op,Rotation)
-
 def pauli_rotation_to_lattice_surgery_computation(circuit : Circuit) -> LatticeSurgeryComputation:
 
     lsc = LatticeSurgeryComputationPreparedMagicStates(circuit.qubit_num, circuit.count_rotations_by(Fraction(1,8)))
     with lsc.timestep() as blank_slice: pass
 
-    operations_queue : Deque[LogicalLatticeOperation] = deque(map(to_lattice_operation, circuit.get_operations()))
+    operations_queue : Deque[Union[Rotation,LogicalLatticeOperation]] \
+        = deque(map(to_lattice_operation, circuit.get_operations()))
 
     while len(operations_queue)>0:
         current_op = operations_queue.popleft()
@@ -35,29 +43,10 @@ def pauli_rotation_to_lattice_surgery_computation(circuit : Circuit) -> LatticeS
             # Rotations need to be broken down further
             operations_queue.extendleft(reversed(rotations_composer.expand_rotation(current_op)))
         else:
-            # Other operations translate directly to lattice lattice suregery
-            assert not is_composite(current_op)
+            # Other operations translate directly to lattice lattice surgery
             with lsc.timestep() as slice:
-                if isinstance(current_op, SinglePatchMeasurement):
-                    slice.measurePatch(current_op.get_cell(lsc), current_op.op)
+                slice.addLogicalOperation(current_op)
 
-                elif isinstance(current_op, AncillaQubitPatchInitialization):
-                    maybe_cell_location = slice.addSquareAncilla(current_op.patch_state, current_op.patch_uuid)
-                    if maybe_cell_location is None: raise Exception("Could not allocate ancilla")
-
-                elif isinstance(current_op, IndividualPauliOperators):
-                    for cell,op, in current_op.patch_pauli_operator_map.items():
-                        slice.applyPauliProductOperator(cell,op)
-
-                elif isinstance(current_op, MultiBodyMeasurement):
-                    patch_pauli_operator_map = current_op.patch_pauli_operator_map # .copy()
-                    if current_op.ancilla_pauli_op is not None:
-                        cell = slice.lattice().getPatchByUuid(current_op.ancilla_uuid).getRepresentative()
-                        patch_pauli_operator_map[cell] = current_op.ancilla_pauli_op
-                    slice.multiBodyMeasurePatches(patch_pauli_operator_map)
-
-                else:
-                    raise Exception("Unsupported operation %s" % repr(current_op))
     return lsc
 
 
