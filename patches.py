@@ -117,7 +117,7 @@ class Lattice:
         self.patches = patches
         self.min_rows = min_rows
         self.min_cols = min_cols
-
+        self.logical_ops : List[LogicalLatticeOperation] = []
 
     def getMaxCoord(self, coord_type: CoordType)->int:
         all_coords = itertools.chain.from_iterable(map(lambda patch: patch.getCoordList(coord_type), self.patches))

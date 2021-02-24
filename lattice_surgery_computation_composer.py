@@ -194,6 +194,7 @@ class LatticeSurgeryComputationComposer:
 
     def newTimeSlice(self):
         self.qubit_patch_slices.append(copy.deepcopy(self.lattice()))
+        self.qubit_patch_slices[-1].logical_ops = []
 
     def multiBodyMeasurePatches(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
         """
@@ -260,6 +261,8 @@ class LatticeSurgeryComputationComposer:
 
 
     def addLogicalOperation(self, current_op: LogicalLatticeOperation):
+        self.lattice().logical_ops.append(current_op)
+
         if isinstance(current_op, SinglePatchMeasurement):
             self.measurePatch(self.lattice().get_measurement_cell(current_op), current_op.op)
 
