@@ -31,19 +31,3 @@ if __name__ == "__main__":
     sim_states = simulate_slices(comp.composer.getSlices())
     for sim_state in sim_states:
         print(sim_state)
-
-
-
-#    # Do a multi-body measuremt
-#    # Part 3 of the operator flow tutorial + N&C measurement observable
-#
-#    # Create an observable of the desired form
-#    observable = qk.X^qk.Z
-#
-#    print( sim_circ.to_matrix_op().eval())
-#    print( observable)
-#    projector = ProjectiveMeasurement.get_projectors_from_pauli_observable(observable)[0]
-#    print( projector )
-#    #print( qk.StateFn(projector).adjoint().eval(sim_circ.to_matrix_op().eval()))
-#    print( ProjectiveMeasurement.measure_pauli_product(observable, sim_circ.eval()) )
-#    print( ProjectiveMeasurement.measure_pauli_product(observable, sim_circ.eval())[0][0].eval())
