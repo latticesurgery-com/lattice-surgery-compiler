@@ -2,7 +2,7 @@ import numpy as np
 from typing import *
 from enum import Enum
 from fractions import Fraction
-
+import qiskit.aqua.operators
 
 
 class PauliOperator(Enum):
@@ -55,6 +55,15 @@ class PauliOperator(Enum):
         if {a,b} == {PauliOperator.Z, PauliOperator.Y}:
             return PauliOperator.X
 
+
+def lattice_surgery_op_to_quiskit_op( op :PauliOperator) -> Optional[qiskit.aqua.operators.PrimitiveOp]:
+    known_map : Dict[PauliOperator, qiskit.aqua.operators.PrimitiveOp] = {
+        PauliOperator.I : qiskit.aqua.operators.I,
+        PauliOperator.X : qiskit.aqua.operators.X,
+        PauliOperator.Y : qiskit.aqua.operators.Y,
+        PauliOperator.Z : qiskit.aqua.operators.Z
+    }
+    return known_map[op]
 
 
 class PauliProductOperation(object):

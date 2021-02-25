@@ -1,11 +1,14 @@
 import patches
 import ancilla_patch_routing
+from logical_lattice_ops import *
 
 from typing import *
 import copy
 import enum
 
 import uuid
+
+
 
 class QubitLayoutTypes:
     Simple = "Simple"
@@ -59,6 +62,10 @@ class LatticeSurgeryComputation:
                 return p
         return None
 
+
+    def iterate_over_qubit_patches(self) -> Iterator[Tuple[int,int]]:
+        for j in range(self.num_qubits):
+            yield self.get_cell_for_qubit_idx(j)
 
 class LatticeSurgeryComputationPreparedMagicStates(LatticeSurgeryComputation):
     def __init__(self, num_qubits : int, num_magic_states : int):
@@ -187,6 +194,7 @@ class LatticeSurgeryComputationComposer:
 
     def newTimeSlice(self):
         self.qubit_patch_slices.append(copy.deepcopy(self.lattice()))
+        self.qubit_patch_slices[-1].logical_ops = []
 
     def multiBodyMeasurePatches(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
         """
@@ -246,7 +254,33 @@ class LatticeSurgeryComputationComposer:
 
 
 
+    # TODO maybe slices should belong to the computation
     def getSlices(self) -> List[patches.Lattice]:
         return self.qubit_patch_slices
 
+
+
+    def addLogicalOperation(self, current_op: LogicalLatticeOperation):
+        self.lattice().logical_ops.append(current_op)
+
+        if isinstance(current_op, SinglePatchMeasurement):
+            self.measurePatch(self.lattice().get_measurement_cell(current_op), current_op.op)
+
+        elif isinstance(current_op, AncillaQubitPatchInitialization):
+            maybe_cell_location = self.addSquareAncilla(current_op.patch_state, current_op.patch_uuid)
+            if maybe_cell_location is None: raise Exception("Could not allocate ancilla")
+
+        elif isinstance(current_op, IndividualPauliOperators):
+            for cell, op, in current_op.patch_pauli_operator_map.items():
+                self.applyPauliProductOperator(cell, op)
+
+        elif isinstance(current_op, MultiBodyMeasurement):
+            patch_pauli_operator_map = current_op.patch_pauli_operator_map  # .copy()
+            if current_op.ancilla_pauli_op is not None:
+                cell = self.lattice().getPatchByUuid(current_op.ancilla_uuid).getRepresentative()
+                patch_pauli_operator_map[cell] = current_op.ancilla_pauli_op
+            self.multiBodyMeasurePatches(patch_pauli_operator_map)
+
+        else:
+            raise Exception("Unsupported operation %s" % repr(current_op))
 

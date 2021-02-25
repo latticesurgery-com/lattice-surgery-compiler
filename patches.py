@@ -3,6 +3,7 @@ from enum import Enum
 from rotation import *
 import itertools
 from qubit_state import *
+from logical_lattice_ops import *
 
 import uuid
 
@@ -116,7 +117,7 @@ class Lattice:
         self.patches = patches
         self.min_rows = min_rows
         self.min_cols = min_cols
-
+        self.logical_ops : List[LogicalLatticeOperation] = []
 
     def getMaxCoord(self, coord_type: CoordType)->int:
         all_coords = itertools.chain.from_iterable(map(lambda patch: patch.getCoordList(coord_type), self.patches))
@@ -156,6 +157,14 @@ class Lattice:
             if p.patch_uuid is not None and p.patch_uuid == patch_uuid:
                 return p
         return None
+
+    def get_measurement_cell(self, measurement: SinglePatchMeasurement):
+        if isinstance(measurement.cell_of_patch,uuid.UUID):
+            maybe_patch = self.getPatchByUuid(measurement.cell_of_patch)
+            if maybe_patch is None:
+                raise Exception("Failed to find patch")
+            return maybe_patch.getRepresentative()
+        return measurement.cell_of_patch
 
 def get_border_orientation(subject: Tuple[int,int], neighbour: Tuple[int,int]):
     return ({
