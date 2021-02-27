@@ -22,38 +22,31 @@ class PauliOperator(Enum):
     def __repr__(self) -> str:
         return str(self)
 
-    @staticmethod
-    def are_commuting(a: 'PauliOperator', b: 'PauliOperator') -> bool:
-        """
-        Check if 2 PauliOperators commute or anti-commute.
-
-        Returns:
-            bool: True if they commute, False if they anti-commute
-        """
-        return True if PauliOperator.I in (a,b) or a == b else False
 
     @staticmethod
-    def multiply_by_i(a: 'PauliOperator', b: 'PauliOperator') -> 'PauliOperator':
+    def are_commuting(a: 'PauliOperator', b: 'PauliOperator') -> Tuple[bool, 'PauliOperator']:
         """
-        Return iAB.
+        Check if 2 PauliOperators A and Bcommute or anti-commute. 
+        Returns True and AB if commute or False and iAB if anti-commute.
+
         """
         if a == b:
-            return PauliOperator.I
+            return True, PauliOperator.I
         
         if a == PauliOperator.I: 
-            return b
+            return True, b
         
         if b == PauliOperator.I:
-            return a
+            return True, a
 
         if {a,b} == {PauliOperator.X, PauliOperator.Z}:
-            return PauliOperator.Y
+            return False, PauliOperator.Y
 
         if {a,b} == {PauliOperator.X, PauliOperator.Y}:
-            return PauliOperator.Z
+            return False, PauliOperator.Z
         
         if {a,b} == {PauliOperator.Z, PauliOperator.Y}:
-            return PauliOperator.X
+            return False, PauliOperator.X
 
 
 def lattice_surgery_op_to_quiskit_op( op :PauliOperator) -> Optional[qiskit.aqua.operators.PrimitiveOp]:
