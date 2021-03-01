@@ -105,17 +105,30 @@ class Circuit(object):
                 if isinstance(self.ops[index + 1], Measurement):
                     break
                 
-                self.commute_rotation(index)
+                self.commute_pi_over_four_rotation(index)
                 index += 1
 
 
-    def commute_rotation(self, index: int) -> None:
+    def commute_pi_over_four_rotation(self, index: int) -> None:
         """
-        Commute a rotation block pass its' neighbor.
+        Commute a pi/4 rotation block pass its' next block.
         """
-
         next_block = index + 1
+
+        if index+1 >= len(self.ops):
+            raise Exception("No operation to commute past")
+
+        if not isinstance(self.ops[index], Rotation) or not isinstance(self.ops[index+1],Rotation):
+            raise Exception("Can only commute rotations")
+
+        if not cast(Rotation,self.ops[index]).rotation_amount in {Fraction(1,4),Fraction(-1,4)}:
+            raise Exception("First operand must be +-pi/4 Pauli rotation")
+
         if not self.are_commuting(index, next_block):
+
+            if cast(Rotation,self.ops[index]).rotation_amount != Fraction(1,4):
+                raise NotImplemented("Can only commute pi/4 rotations when rotation exponents anticommute")
+
             # for tracking # of i (see issue #28)
             # i is required for an anti-commute operators pair
             i_count = 0     
@@ -125,10 +138,7 @@ class Circuit(object):
                 
                 self.ops[next_block].change_single_op(i, new_op[1])
                 if not new_op[0]: i_count += 1
-            
-            # Flip the phase if the current rotation's phase is negative 
-            if self.ops[index].rotation_amount < 0:
-                self.ops[next_block].rotation_amount *= -1
+
 
             # Adjust the rotation based on i_count (see issue 28).
             # It flips the phase when there is an odd number of i pairs, excluding the first i.
