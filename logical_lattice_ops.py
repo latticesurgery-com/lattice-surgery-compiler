@@ -12,6 +12,7 @@ class LogicalLatticeOperation:
         raise NotImplemented()
 
 
+
 class SinglePatchMeasurement(LogicalLatticeOperation):
     def __init__(self, cell_of_patch: Union[Tuple[int,int],uuid.UUID], op: PauliOperator):
         self.cell_of_patch = cell_of_patch

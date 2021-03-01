@@ -67,6 +67,15 @@ class LatticeSurgeryComputation:
         for j in range(self.num_qubits):
             yield self.get_cell_for_qubit_idx(j)
 
+    def add_logical_lattice_operations(
+            self, logical_ops: List[LogicalLatticeOperation]) -> None:
+
+        with self.timestep() as blank_slice: pass
+
+        for logical_op in logical_ops:
+            with self.timestep() as slice:
+                slice.addLogicalOperation(logical_op)
+
 class LatticeSurgeryComputationPreparedMagicStates(LatticeSurgeryComputation):
     def __init__(self, num_qubits : int, num_magic_states : int):
         super().__init__(num_qubits)
@@ -283,4 +292,6 @@ class LatticeSurgeryComputationComposer:
 
         else:
             raise Exception("Unsupported operation %s" % repr(current_op))
+
+
 

@@ -26,13 +26,13 @@ def to_lattice_operation(op:PauliProductOperation) -> LogicalLatticeOperation:
     raise Exception("Unsupported PauliProductOperation "+repr(op))
 
 
-def pauli_rotation_to_lattice_surgery_computation(circuit : Circuit) -> LatticeSurgeryComputation:
 
-    lsc = LatticeSurgeryComputationPreparedMagicStates(circuit.qubit_num, circuit.count_rotations_by(Fraction(1,8)))
-    with lsc.timestep() as blank_slice: pass
+def pauli_rotation_to_logical_lattice_operations(circuit : Circuit) -> List[LogicalLatticeOperation]:
 
     operations_queue : Deque[Union[Rotation,LogicalLatticeOperation]] \
         = deque(map(to_lattice_operation, circuit.get_operations()))
+
+    logical_ops : List[LogicalLatticeOperation] = list()
 
     while len(operations_queue)>0:
         current_op = operations_queue.popleft()
@@ -44,8 +44,19 @@ def pauli_rotation_to_lattice_surgery_computation(circuit : Circuit) -> LatticeS
             operations_queue.extendleft(reversed(rotations_composer.expand_rotation(current_op)))
         else:
             # Other operations translate directly to lattice lattice surgery
-            with lsc.timestep() as slice:
-                slice.addLogicalOperation(current_op)
+            logical_ops.append(current_op)
+
+    return logical_ops
+
+
+
+
+def pauli_rotation_to_lattice_surgery_computation(circuit : Circuit) -> LatticeSurgeryComputation:
+    lsc = LatticeSurgeryComputationPreparedMagicStates(circuit.qubit_num,
+                                                       circuit.count_rotations_by(Fraction(1, 8)))
+
+    logical_ops = pauli_rotation_to_logical_lattice_operations(circuit)
+    lsc.add_logical_lattice_operations(logical_ops)
 
     return lsc
 
