@@ -116,11 +116,23 @@ class Circuit(object):
 
         next_block = index + 1
         if not self.are_commuting(index, next_block):
-            for i in range(self.qubit_num):
-                new_op = PauliOperator.multiply_by_i(self.ops[index].get_op(i), self.ops[next_block].get_op(i))
-                self.ops[next_block].change_single_op(i, new_op)
+            # for tracking # of i (see issue #28)
+            # i is required for an anti-commute operators pair
+            i_count = 0     
             
+            for i in range(self.qubit_num):
+                new_op = PauliOperator.are_commuting(self.ops[index].get_op(i), self.ops[next_block].get_op(i))
+                
+                self.ops[next_block].change_single_op(i, new_op[1])
+                if not new_op[0]: i_count += 1
+            
+            # Flip the phase if the current rotation's phase is negative 
             if self.ops[index].rotation_amount < 0:
+                self.ops[next_block].rotation_amount *= -1
+
+            # Adjust the rotation based on i_count (see issue 28).
+            # It flips the phase when there is an odd number of i pairs, excluding the first i.
+            if ((i_count - 1) / 2) % 2 != 0: 
                 self.ops[next_block].rotation_amount *= -1
     
         temp = self.ops[index]
@@ -150,8 +162,9 @@ class Circuit(object):
         #     = (c_1*...*c_n)*P*Q
         #
         # The loop below computes (c_1*...*c_n) in ret_val
+        
         for i in range(self.qubit_num):
-            ret_val *= 1 if PauliOperator.are_commuting(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
+            ret_val *= 1 if PauliOperator.are_commuting(self.ops[block1].get_op(i), self.ops[block2].get_op(i))[0] else -1
 
         return (ret_val > 0) 
     
