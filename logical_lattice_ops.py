@@ -18,12 +18,12 @@ class LogicalLatticeOperation:
 
 
 class SinglePatchMeasurement(LogicalLatticeOperation):
-    def __init__(self, cell_of_patch: uuid.UUID, op: PauliOperator):
-        self.cell_of_patch = cell_of_patch
+    def __init__(self, qubit_uuid: uuid.UUID, op: PauliOperator):
+        self.qubit_uuid = qubit_uuid
         self.op = op
 
     def get_operating_patches(self) -> List[uuid.UUID]:
-        return [self.cell_of_patch]
+        return [self.qubit_uuid]
 
 
 class MultiBodyMeasurement(LogicalLatticeOperation):
@@ -35,22 +35,29 @@ class MultiBodyMeasurement(LogicalLatticeOperation):
 
 
 class AncillaQubitPatchInitialization(LogicalLatticeOperation):
-    def __init__(self, patch_state: QubitState, patch_uuid : uuid.UUID):
-        self.patch_state = patch_state
-        self.patch_uuid = patch_uuid
+    def __init__(self, qubit_state: QubitState, qubit_uuid : uuid.UUID):
+        self.qubit_state = qubit_state
+        self.qubit_uuid = qubit_uuid
 
     def get_operating_patches(self) -> List[uuid.UUID]:
-        return [self.patch_uuid]
+        return [self.qubit_uuid]
 
 
 class LogicalPauli(LogicalLatticeOperation):
-    def __init__(self,patch: uuid.UUID, op:PauliOperator ):
-        self.patch = patch
+    def __init__(self,qubit_uuid: uuid.UUID, op:PauliOperator ):
+        self.qubit_uuid = qubit_uuid
         self.op = op
 
     def get_operating_patches(self) -> List[uuid.UUID]:
-        return [self.patch]
+        return [self.qubit_uuid]
 
+
+class MagicStateRequest(LogicalLatticeOperation):
+    def __init__(self, qubit_uuid: uuid.UUID,):
+        self.qubit_uuid = qubit_uuid
+
+    def get_operating_patches(self) -> List[uuid.UUID]:
+        return [self.qubit_uuid]
 
 
 
@@ -60,8 +67,6 @@ class LogicalLatticeComputation:
     def __init__(self, circuit: Circuit):
         self.circuit = circuit
         self.logical_qubit_uuid_map = dict([(j,uuid.uuid4()) for j in range(circuit.qubit_num)])
-        self.ancilla_states : List[uuid.UUID] = []
-        self.magic_states : List[uuid.UUID] = []
         self.ops : List[LogicalLatticeOperation] = []
 
         self._load_circuit()
@@ -85,14 +90,6 @@ class LogicalLatticeComputation:
             else:
                 self.ops.append(current_op)
 
-    def request_magic_state(self) -> uuid.UUID:
-        self.magic_states.append(uuid.uuid4())
-        return self.magic_states[-1]
-
-    def allocate_ancilla_state(self) -> uuid.UUID:
-        self.ancilla_states.append(uuid.uuid4())
-        return self.ancilla_states[-1]
-
     def circuit_to_patch_measurement(self,m: Measurement) -> Union[SinglePatchMeasurement, MultiBodyMeasurement]:
 
         ret: Dict[uuid.UUID, PauliOperator] = dict()
@@ -104,6 +101,16 @@ class LogicalLatticeComputation:
             return SinglePatchMeasurement(next(iter(ret)), ret[next(iter(ret))])
         return MultiBodyMeasurement(ret)
 
+
+    def num_logical_qubits(self) -> int:
+        return len(self.logical_qubit_uuid_map)
+
+    def count_magic_states(self) -> int:
+        c=0
+        for op in self.ops:
+            if isinstance(op,MagicStateRequest):
+                c += 1
+        return c
 
 
 class RotationsComposer:
@@ -135,7 +142,7 @@ class RotationsComposer:
     def add_pi_over_four(self, ops_map: Dict[int, PauliOperator], invert_correction:bool) -> List[LogicalLatticeOperation]:
         """See Figure 11 of Litinski's GoSC
         """
-        ancilla_uuid = self.computation.allocate_ancilla_state()
+        ancilla_uuid = uuid.uuid4()
         ancilla_initialization = AncillaQubitPatchInitialization(SymbolicState("|Y>"), ancilla_uuid)
 
         multi_body_measurement = MultiBodyMeasurement({})
@@ -159,7 +166,7 @@ class RotationsComposer:
 
     def add_pi_over_eight(self, ops_map :  Dict[int, PauliOperator], invert_correction:bool) -> List[LogicalLatticeOperation]:
         """Returns the correction terms. See Figure 11 of Litinski's GoSC"""
-        magic_state_uuid = self.computation.request_magic_state()
+        magic_state_uuid = uuid.uuid4()
 
         multi_body_measurement = MultiBodyMeasurement({})
         multi_body_measurement.patch_pauli_operator_map[magic_state_uuid] = PauliOperator.Z
@@ -173,7 +180,8 @@ class RotationsComposer:
             first_corrective_rotation.change_single_op(qubit_idx, op)
             second_corrective_rotation.change_single_op(qubit_idx, op)
 
-        return [multi_body_measurement,
+        return [MagicStateRequest(magic_state_uuid),
+                multi_body_measurement,
                 first_corrective_rotation,
                 SinglePatchMeasurement(magic_state_uuid, PauliOperator.X),
                 second_corrective_rotation]

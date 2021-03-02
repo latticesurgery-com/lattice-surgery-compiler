@@ -87,7 +87,7 @@ def simulate_slices(slices: List[Lattice]) -> List[List[qk.DictStateFn]]:
 
         for current_op in slice.logical_ops:
             if isinstance(current_op, SinglePatchMeasurement):
-                measure_idx = mapper.get_idx(current_op.cell_of_patch)
+                measure_idx = mapper.get_idx(current_op.qubit_uuid)
                 local_observable = lattice_surgery_op_to_quiskit_op(current_op.op)
                 global_observable = (qk.I ^ measure_idx) ^ local_observable ^ (
                             qk.I ^ (mapper.qubit_num() - measure_idx - 1))
