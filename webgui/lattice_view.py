@@ -60,8 +60,10 @@ def sparse_lattice_to_array(lattice: patches.Lattice) -> List[List[Optional[Visu
 
 
 
-def render_to_file(slices : List[patches.Lattice], output_file_name : str) -> str:
-    template = Template(filename='templates/lattice_view.mak')
+def render_to_file(slices : List[patches.Lattice],
+                   output_file_name : str,
+                   template='templates/lattice_view.mak') -> str:
+    template = Template(filename=template)
     with open(output_file_name, 'w') as f:
         f.write(template.render(
             slices=list(map(sparse_lattice_to_array, slices)),

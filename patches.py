@@ -84,12 +84,14 @@ class Patch:
                  patch_type: PatchType,
                  state: Union[None, QubitState],
                  cells: List[Tuple[int,int]],
-                 edges: List[Edge]):
+                 edges: List[Edge],
+                 qubit_uuid: Optional[uuid.UUID] = None
+                 ):
         self.patch_type = patch_type
         self.cells = cells
         self.edges = edges
         self.state = state
-        self.patch_uuid = None
+        self.patch_uuid = qubit_uuid
         # TODO sanity check
 
     def getRepresentative(self)->Tuple[int,int]:
@@ -158,13 +160,6 @@ class Lattice:
                 return p
         return None
 
-    def get_measurement_cell(self, measurement: SinglePatchMeasurement):
-        if isinstance(measurement.cell_of_patch,uuid.UUID):
-            maybe_patch = self.getPatchByUuid(measurement.cell_of_patch)
-            if maybe_patch is None:
-                raise Exception("Failed to find patch")
-            return maybe_patch.getRepresentative()
-        return measurement.cell_of_patch
 
 def get_border_orientation(subject: Tuple[int,int], neighbour: Tuple[int,int]):
     return ({

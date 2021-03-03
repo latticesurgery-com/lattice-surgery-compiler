@@ -39,15 +39,16 @@ class ProjectiveMeasurement:
             return (eye + pauli_observable) / 2, (eye - pauli_observable) / 2
 
         @staticmethod
-        def measure_projectors(projs: List[qk.PrimitiveOp], state: qk.OperatorBase) \
+        def apply_projectors(projs: List[qk.PrimitiveOp], state: qk.OperatorBase) \
                 -> List[Tuple[qk.OperatorBase, float]]:
             return [ProjectiveMeasurement.compute_outcome(proj, state) for proj in projs]
 
         @staticmethod
-        def measure_pauli_product(pauli_observable: qk.OperatorBase, state: qk.OperatorBase) \
-                -> List[Tuple[qk.OperatorBase, float]]:
+        def pauli_product_measurement_distribution(pauli_observable: qk.OperatorBase, state: qk.OperatorBase) \
+                -> Tuple[Tuple[qk.OperatorBase, float], Tuple[qk.OperatorBase, float]] :
             p1, p2 = ProjectiveMeasurement.get_projectors_from_pauli_observable(pauli_observable)
-            return ProjectiveMeasurement.measure_projectors([p1, p2], state)
+            appl1, appl2 = ProjectiveMeasurement.apply_projectors([p1, p2], state)
+            return appl1, appl2 # Unpacked for typing
 
 
 class PatchToQubitMapper:
@@ -86,11 +87,11 @@ def simulate_slices(slices: List[Lattice]) -> List[List[qk.DictStateFn]]:
 
         for current_op in slice.logical_ops:
             if isinstance(current_op, SinglePatchMeasurement):
-                measure_idx = mapper.get_idx(current_op.cell_of_patch)
+                measure_idx = mapper.get_idx(current_op.qubit_uuid)
                 local_observable = lattice_surgery_op_to_quiskit_op(current_op.op)
                 global_observable = (qk.I ^ measure_idx) ^ local_observable ^ (
                             qk.I ^ (mapper.qubit_num() - measure_idx - 1))
-                logical_state = ProjectiveMeasurement.measure_pauli_product(global_observable, logical_state)
+                logical_state = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable, logical_state)
             # elif isinstance(current_op, AncillaQubitPatchInitialization):
             # TODO init ahead of time
 

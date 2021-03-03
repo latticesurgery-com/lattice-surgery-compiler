@@ -10,84 +10,24 @@ import uuid
 
 
 
-class QubitLayoutTypes:
-    Simple = "Simple"
+class LayoutType(enum.Enum):
+    SimplePreDistilledStates = "Simple"
 
 
 
-class LatticeSurgeryComputation:
 
-    def __init__(self, num_qubits: int):
-        """
-        Layout arguments:
-            - Simple: n_logical_qubits: int
-        """
-        self.num_qubits = num_qubits
-        self.composer = LatticeSurgeryComputationComposer(self, PatchInitializer.simpleLayout(self.num_qubits))
-        self.qubit_idx_to_cell_mapping = dict([(j, PatchInitializer.simpleMapQubitToCell(j)) for j in range(self.num_qubits)])
+class LayoutInitializer:
 
-        self.ancilla_locations = [(j,2) for j in range(self.num_qubits)]
-        self.magic_state_queue = [(j + self.num_qubits,2) for j in range(self.num_qubits)]
+    def get_layout(self)->patches.Lattice:
+        raise NotImplemented()
 
+    def map_qubit_to_cell(self, qubit_n: int):
+        raise NotImplemented()
 
-        self.composer.lattice().min_cols = 2*self.num_qubits
-        self.composer.lattice().min_rows = 3
-
-
-    def timestep(self):
-        class LatticeSurgeryComputationSliceContextManager:
-            def __init__(self, root_composer: LatticeSurgeryComputationComposer):
-                self.root_composer = root_composer
-
-            def __enter__(self):
-                return self.root_composer
-
-            def __exit__(self, exception_type, val, traceback):
-                self.root_composer.newTimeSlice()
-                self.root_composer.clearAncilla()
-                self.root_composer.clearActiveStates()
-
-                return False  # re reaises the exception
-
-        return LatticeSurgeryComputationSliceContextManager(self.composer)
-
-    def get_cell_for_qubit_idx(self, qubit_idx: int) -> Tuple[int,int]:
-        return self.qubit_idx_to_cell_mapping[qubit_idx]
-
-    def grab_magic_state(self, patch_uuid : uuid.UUID)->Optional[patches.Patch]:
-        for cell in self.magic_state_queue:
-            p = self.composer.lattice().getPatchOfCell(cell)
-            if p.patch_uuid is None:
-                p.patch_uuid = patch_uuid
-                return p
-        return None
-
-
-    def iterate_over_qubit_patches(self) -> Iterator[Tuple[int,int]]:
-        for j in range(self.num_qubits):
-            yield self.get_cell_for_qubit_idx(j)
-
-class LatticeSurgeryComputationPreparedMagicStates(LatticeSurgeryComputation):
-    def __init__(self, num_qubits : int, num_magic_states : int):
-        super().__init__(num_qubits)
-        self.magic_state_queue = []
-        start_magic_state_array = self.composer.lattice().getCols()
-        for j in range(start_magic_state_array, start_magic_state_array+num_magic_states):
-            magic_state_pos = (j,0)
-            self.composer.lattice().patches.append(PatchInitializer.singleSquarePatch(
-                magic_state_pos,
-                patches.PatchType.DistillationQubit,
-                patches.InitializeableState.Magic))
-            self.magic_state_queue.append(magic_state_pos)
-        self.composer.lattice().min_cols += num_magic_states
-
-
-
-class PatchInitializer:
-
+    @staticmethod
     def singleSquarePatch(cell:Tuple[int,int],
                           patch_type:patches.PatchType = patches.PatchType.Qubit,
-                          patch_state:patches.SymbolicState = patches.InitializeableState.Zero ):
+                          patch_state:patches.QubitState = patches.InitializeableState.Zero ):
         return patches.Patch(patch_type, patch_state, [cell],[
             patches.Edge(patches.EdgeType.Dashed,  cell, patches.Orientation.Top),
             patches.Edge(patches.EdgeType.Dashed,  cell, patches.Orientation.Bottom),
@@ -95,15 +35,16 @@ class PatchInitializer:
             patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Right)
         ])
 
+    @staticmethod
     def simpleRightFacingDistillery(top_left_corner: Tuple[int,int]) -> List[patches.Patch]:
         # Requires
         x,y = top_left_corner
         return [
-            PatchInitializer.singleSquarePatch((x + 2, y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
-            PatchInitializer.singleSquarePatch((x + 3, y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
-            PatchInitializer.singleSquarePatch((x + 4, y + 1), patches.PatchType.DistillationQubit, patches.InitializeableState.Plus),
-            PatchInitializer.singleSquarePatch((x + 3, y + 2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
-            PatchInitializer.singleSquarePatch((x + 2, y + 2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            LayoutInitializer.singleSquarePatch((x + 2, y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            LayoutInitializer.singleSquarePatch((x + 3, y), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            LayoutInitializer.singleSquarePatch((x + 4, y + 1), patches.PatchType.DistillationQubit, patches.InitializeableState.Plus),
+            LayoutInitializer.singleSquarePatch((x + 3, y + 2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
+            LayoutInitializer.singleSquarePatch((x + 2, y + 2), patches.PatchType.DistillationQubit, patches.InitializeableState.Magic),
             patches.Patch(patches.PatchType.DistillationQubit, patches.InitializeableState.Zero, [(x, y), (x, y+1)],
                           [
                               patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Top),
@@ -126,28 +67,117 @@ class PatchInitializer:
 
 
 
-    @staticmethod
-    def simpleLayout(num_logical_qubits: int) -> patches.Lattice:
+
+class SimplePreDistilledStatesLayoutInitializer(LayoutInitializer):
+    """a linear array of one spaced square patches with a linear array of magic states"""
+
+    def __init__(self, num_logical_qubits: int):
         """a linear array of one spaced square patches with a distillery on one side"""
         # TODO distillery
-        return patches.Lattice([
-            PatchInitializer.singleSquarePatch(PatchInitializer.simpleMapQubitToCell(j)) for j in range(num_logical_qubits)
+        self.lattice = patches.Lattice([
+            LayoutInitializer.singleSquarePatch(self.map_qubit_to_cell(j)) for j in range(num_logical_qubits)
         ], 2, 0)
 
-
-    @staticmethod
-    def addRightDistillery(lattice: patches.Lattice):
-        lattice.patches.append(
-            PatchInitializer.simpleRightFacingDistillery((lattice.getCols(), 0)))
-
-    @staticmethod
-    def simpleLayoutWithPreparedMagicStates(num_logical_qubits: int, num_magic_states):
-        """a linear array of one spaced square patches with a linear array of magic states"""
-        pass
-
-
-    def simpleMapQubitToCell(qubit_n: int):
+    def map_qubit_to_cell(self, qubit_n: int):
         return (qubit_n * 2, 0)
+
+    def get_layout(self) ->patches.Lattice:
+        return self.lattice
+
+    def addRightDistillery(self):
+        self.lattice.patches.append(
+            LayoutInitializer.simpleRightFacingDistillery((self.lattice.getCols(), 0)))
+
+
+
+
+class LatticeSurgeryComputation:
+
+    def __init__(self, logical_computation: LogicalLatticeComputation, layout_type: LayoutType):
+        """
+        Layout arguments:
+            - Simple: n_logical_qubits: int
+        """
+        self.logical_computation = logical_computation
+
+        if layout_type!= LayoutType.SimplePreDistilledStates:
+            raise NotImplemented("Layout Type not supported: "+layout_type.value)
+
+        self.num_qubits = logical_computation.num_logical_qubits()
+
+        self._initialize_layout(SimplePreDistilledStatesLayoutInitializer(self.num_qubits))
+
+        self.ancilla_locations = [(j,2) for j in range(self.num_qubits)]
+        self._init_simple_magic_state_array(self.logical_computation.count_magic_states())
+
+        self.composer.lattice().min_cols = 2*self.num_qubits
+        self.composer.lattice().min_rows = 3
+
+        self._import_logical_computation()
+
+
+    def _initialize_layout(self, initializer : LayoutInitializer):
+        self.composer = LatticeSurgeryComputationComposer(self, initializer.get_layout())
+
+        self.logical_qubits: List[Tuple[int, int]] = []
+        for j, quuid in self.logical_computation.logical_qubit_uuid_map.items():
+            cell = initializer.map_qubit_to_cell(j)
+            self.logical_qubits.append(cell)
+            self.composer.lattice().getPatchOfCell(cell).set_uuid(quuid)
+
+    def _import_logical_computation(self):
+
+        # Give a blank slice to show the layout
+        with self.timestep() as blank_slice: pass
+
+        for logical_op in self.logical_computation.ops:
+            with self.timestep() as slice:
+                slice.addLogicalOperation(logical_op)
+        return self
+
+    def _init_simple_magic_state_array(self, num_magic_states: int): # TODO move this to layout initializer
+        start_magic_state_array = self.composer.lattice().getCols()
+        self.magic_state_queue:List[Tuple[int,int]] = []
+        for j in range(start_magic_state_array, start_magic_state_array + num_magic_states):
+            magic_state_pos = (j, 0)
+            self.composer.lattice().patches.append(LayoutInitializer.singleSquarePatch(
+                magic_state_pos,
+                patches.PatchType.DistillationQubit,
+                patches.InitializeableState.Magic))
+            self.magic_state_queue.append(magic_state_pos)
+
+        self.composer.lattice().min_cols += num_magic_states
+
+    def timestep(self):
+        class LatticeSurgeryComputationSliceContextManager:
+            def __init__(self, root_composer: LatticeSurgeryComputationComposer):
+                self.root_composer = root_composer
+
+            def __enter__(self):
+                return self.root_composer
+
+            def __exit__(self, exception_type, val, traceback):
+                self.root_composer.newTimeSlice()
+                self.root_composer.clearAncilla()
+                self.root_composer.clearActiveStates()
+
+                return False  # re reaises the exception
+
+        return LatticeSurgeryComputationSliceContextManager(self.composer)
+
+    def find_cell_by_qubit_uuid(self, qubit_uuid: uuid.UUID) -> Tuple[int,int]:
+        return self.composer.lattice().getPatchByUuid(qubit_uuid).getRepresentative()
+
+    def bind_magic_state(self, patch_uuid : uuid.UUID)->Optional[patches.Patch]:
+        if len(self.magic_state_queue)==0:
+            return None
+        cell = self.magic_state_queue[0]
+        del self.magic_state_queue[0]
+
+        patch = self.composer.lattice().getPatchOfCell(cell)
+        if patch is None: raise RuntimeError("Invalid cell in magic state queue "+str(cell))
+        patch.set_uuid(patch_uuid)
+        return patch
 
 
 
@@ -164,12 +194,12 @@ class LatticeSurgeryComputationComposer:
     def addPatch(self, patch: patches.Patch):
         self.lattice().patches.append(patch)
 
-    def addSquareAncilla(self, patch_state: patches.SymbolicState, patch_uuid: Optional[uuid.UUID] = None) \
+    def addSquareAncilla(self, patch_state: patches.QubitState, patch_uuid: Optional[uuid.UUID] = None) \
             -> Optional[Tuple[int,int]]:
         cell = self.getAncillaLocation()
         if cell is None: return None
-        new_patch = PatchInitializer.singleSquarePatch(cell, patches.PatchType.Qubit, patch_state)
-        new_patch.patch_uuid = patch_uuid
+        new_patch = LayoutInitializer.singleSquarePatch(cell, patches.PatchType.Qubit, patch_state)
+        new_patch.set_uuid(patch_uuid)
         self.addPatch(new_patch)
         return cell
 
@@ -179,11 +209,6 @@ class LatticeSurgeryComputationComposer:
                 return ancilla
         return None
 
-    def findMagicState(self) -> Optional[Tuple[int,int]]:
-        for magic_cell in self.computation.magic_state_queue:
-            if self.lattice().getPatchOfCell(magic_cell) is not None:
-                return magic_cell
-        return None
 
     def measurePatch(self, cell_of_patch: Tuple[int, int], basis_matrix: patches.PauliOperator):
         if basis_matrix not in [patches.PauliOperator.X, patches.PauliOperator.Z]:
@@ -196,15 +221,15 @@ class LatticeSurgeryComputationComposer:
         self.qubit_patch_slices.append(copy.deepcopy(self.lattice()))
         self.qubit_patch_slices[-1].logical_ops = []
 
-    def multiBodyMeasurePatches(self, patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
+    def multiBodyMeasurePatches(self, cell_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
         """
         Corresponds to a lattice surgery merge followed by a split.
         """
-        for v in patch_pauli_operator_map.values():
+        for v in cell_pauli_operator_map.values():
             if v not in {patches.PauliOperator.X,patches.PauliOperator.Z}:
                 raise Exception("Only X and Y operators are supported in multibody mesurement, got "+repr(v))
 
-        ancilla_patch_routing.compute_ancilla_cells(self.qubit_patch_slices[-1], patch_pauli_operator_map)
+        ancilla_patch_routing.compute_ancilla_cells(self.qubit_patch_slices[-1], cell_pauli_operator_map)
 
 
     def applyPauliProductOperator(self,
@@ -258,29 +283,37 @@ class LatticeSurgeryComputationComposer:
     def getSlices(self) -> List[patches.Lattice]:
         return self.qubit_patch_slices
 
+    def get_patch_representative(self, quuid:uuid.UUID) -> Tuple[int,int]:
+        return self.get_patch(quuid).getRepresentative()
 
+    def get_patch(self, quuid: uuid.UUID) -> patches.Patch:
+        return  self.lattice().getPatchByUuid(quuid)
 
     def addLogicalOperation(self, current_op: LogicalLatticeOperation):
         self.lattice().logical_ops.append(current_op)
 
         if isinstance(current_op, SinglePatchMeasurement):
-            self.measurePatch(self.lattice().get_measurement_cell(current_op), current_op.op)
+            self.measurePatch(self.get_patch_representative(current_op.qubit_uuid), current_op.op)
 
         elif isinstance(current_op, AncillaQubitPatchInitialization):
-            maybe_cell_location = self.addSquareAncilla(current_op.patch_state, current_op.patch_uuid)
+            maybe_cell_location = self.addSquareAncilla(current_op.qubit_state, current_op.qubit_uuid)
             if maybe_cell_location is None: raise Exception("Could not allocate ancilla")
 
-        elif isinstance(current_op, IndividualPauliOperators):
-            for cell, op, in current_op.patch_pauli_operator_map.items():
-                self.applyPauliProductOperator(cell, op)
+        elif isinstance(current_op, LogicalPauli):
+                self.applyPauliProductOperator(self.get_patch_representative(current_op.qubit_uuid), current_op.op)
 
         elif isinstance(current_op, MultiBodyMeasurement):
-            patch_pauli_operator_map = current_op.patch_pauli_operator_map  # .copy()
-            if current_op.ancilla_pauli_op is not None:
-                cell = self.lattice().getPatchByUuid(current_op.ancilla_uuid).getRepresentative()
-                patch_pauli_operator_map[cell] = current_op.ancilla_pauli_op
+            patch_pauli_operator_map = dict(
+                [(self.get_patch_representative(uuid),op) for uuid,op in current_op.patch_pauli_operator_map.items()])
             self.multiBodyMeasurePatches(patch_pauli_operator_map)
+
+        elif isinstance(current_op, MagicStateRequest):
+            cell = self.computation.bind_magic_state(current_op.qubit_uuid)
+            if cell is None:
+                raise Exception("No magic state available")
 
         else:
             raise Exception("Unsupported operation %s" % repr(current_op))
+
+
 

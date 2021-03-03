@@ -20,7 +20,8 @@ if __name__ == "__main__":
 
 
     c.add_pauli_block(ls.Rotation.from_list([ls_I, ls_X], Fraction(1, 2)))
-    c.add_pauli_block(ls.Rotation.from_list([ls_X, ls_I], Fraction(1, 2)))
+    c.add_pauli_block(ls.Rotation.from_list([ls_I, ls_X], Fraction(1, 2)))
+    c.add_pauli_block(ls.Rotation.from_list([ls_Z, ls_Z], Fraction(1, 4)))
     print(c.render_ascii())
 
     comp = ls.pauli_rotation_to_lattice_surgery_computation(c)

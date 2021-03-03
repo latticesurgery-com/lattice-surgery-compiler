@@ -1,4 +1,4 @@
-from pauli_rotations_to_lattice_surgery import *
+from lattice_surgery_computation_composer import *
 from webgui import lattice_view
 
 if __name__ == "__main__":
@@ -15,6 +15,6 @@ if __name__ == "__main__":
 
     print(c.render_ascii())
 
-
-    lsc = pauli_rotation_to_lattice_surgery_computation(c)
-    lattice_view.render_to_file(lsc.composer.getSlices(), "rotations.html")
+    logical_comp = LogicalLatticeComputation(c)
+    lsc = LatticeSurgeryComputation(logical_comp, LayoutType.SimplePreDistilledStates)
+    lattice_view.render_to_file(lsc.composer.getSlices(), "index.html", template="/home/george/courses/CMPT415_498/code/lattice-surgery-compiler/webgui/templates/lattice_view.mak")

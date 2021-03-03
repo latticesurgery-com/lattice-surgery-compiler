@@ -1,7 +1,7 @@
 
 import patches
 from webgui import lattice_view
-from lattice_surgery_computation_composer import LatticeSurgeryComputation,PatchInitializer,LayoutTypes
+from lattice_surgery_computation_composer import LatticeSurgeryComputation,LayoutInitializer,LayoutTypes
 
 # Example
 # Construct the device layout
@@ -10,12 +10,12 @@ lsc = LatticeSurgeryComputation(LayoutTypes.Simple,5);
 
 
 with lsc.timestep() as slice:
-    slice.addPatch(PatchInitializer.singleSquarePatch((4,2),patches.PatchType.Qubit, patches.InitializeableState.Plus))
+    slice.addPatch(LayoutInitializer.singleSquarePatch((4, 2), patches.PatchType.Qubit, patches.InitializeableState.Plus))
 
 
 with lsc.timestep() as slice:
 
-    slice.addPatch(PatchInitializer.singleSquarePatch((3,2),patches.PatchType.Qubit, patches.InitializeableState.Plus))
+    slice.addPatch(LayoutInitializer.singleSquarePatch((3, 2), patches.PatchType.Qubit, patches.InitializeableState.Plus))
 
 with lsc.timestep() as slice:
 
