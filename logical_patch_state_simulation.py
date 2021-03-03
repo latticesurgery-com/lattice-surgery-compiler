@@ -57,16 +57,16 @@ class PatchToQubitMapper:
         for slice in slices:
             self.__add_patches_from_slice(slice)
 
-    def get_idx(self, patch: Union[Tuple[int, int], uuid.UUID]) -> int:
+    def get_idx(self, patch: uuid.UUID) -> int:
         return self.patch_location_to_logical_idx[patch]
 
-    def qubit_num(self):
+    def max_num_patches(self) ->int:
         return len(self.patch_location_to_logical_idx)
 
     def __add_patches_from_slice(self, lattice: Lattice):
         for p in PatchToQubitMapper.__get_operating_patches(lattice.logical_ops):
             if self.patch_location_to_logical_idx.get(p) is None:
-                self.patch_location_to_logical_idx[p] = self.qubit_num()
+                self.patch_location_to_logical_idx[p] = self.max_num_patches()
 
     @staticmethod
     def __get_operating_patches(logical_ops: List[LogicalLatticeOperation]) -> List[Union[Tuple[int, int], uuid.UUID]]:
@@ -76,32 +76,45 @@ class PatchToQubitMapper:
         return list(patch_set)
 
 
-def simulate_slices(slices: List[Lattice]) -> List[List[qk.DictStateFn]]:
-    """Returns a list of computation states"""
-    mapper = PatchToQubitMapper(slices)
-    logical_state = qk.Zero ^ mapper.qubit_num()
-    per_slice_intermediate_logical_states: List[List[qk.OperatorBase]] = [[logical_state]]
 
-    for slice_num, slice in enumerate(slices):
-        per_slice_intermediate_logical_states.append([])
 
-        for current_op in slice.logical_ops:
-            if isinstance(current_op, SinglePatchMeasurement):
-                measure_idx = mapper.get_idx(current_op.qubit_uuid)
-                local_observable = lattice_surgery_op_to_quiskit_op(current_op.op)
-                global_observable = (qk.I ^ measure_idx) ^ local_observable ^ (
-                            qk.I ^ (mapper.qubit_num() - measure_idx - 1))
-                logical_state = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable, logical_state)
-            # elif isinstance(current_op, AncillaQubitPatchInitialization):
-            # TODO init ahead of time
+class PatchSimulator:
+    def __init__(self, slices: List[Lattice]):
+        self.slices = slices
 
-            elif isinstance(current_op, IndividualPauliOperators):
-                for patch, op in current_op.patch_pauli_operator_map.items():
-                    logical_state = circuit_add_op_to_qubit(logical_state, lattice_surgery_op_to_quiskit_op(op),
-                                                            mapper.get_idx(patch))
-                    logical_state = logical_state.eval()  # Convert to DictStateFn
-            # elif isinstance(current_op, MultiBodyMeasurement):
+    def run(self):
+        self.simulate_slices(self.slices)
 
-            per_slice_intermediate_logical_states[-1].append(logical_state)
+    def simulate_slices(self, slices: List[Lattice]) -> List[List[qk.DictStateFn]]:
+        """Returns a list of computation states"""
+        mapper = PatchToQubitMapper(slices)
+        logical_state = qk.Zero ^ mapper.max_num_patches()
+        per_slice_intermediate_logical_states: List[List[qk.OperatorBase]] = [[logical_state]]
 
-    return per_slice_intermediate_logical_states
+
+        for slice_num, slice in enumerate(slices):
+            per_slice_intermediate_logical_states.append([])
+
+            for current_op in slice.logical_ops:
+
+                if isinstance(current_op, SinglePatchMeasurement):
+                    measure_idx = mapper.get_idx(current_op.qubit_uuid)
+                    local_observable = lattice_surgery_op_to_quiskit_op(current_op.op)
+                    global_observable = (qk.I ^ measure_idx) ^ local_observable ^ (
+                                qk.I ^ (mapper.max_num_patches() - measure_idx - 1))
+                    logical_state = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable, logical_state)
+                # elif isinstance(current_op, AncillaQubitPatchInitialization):
+                # TODO init ahead of time
+
+                elif isinstance(current_op, PauliOperator):
+                    for patch, op in current_op.patch_pauli_operator_map.items():
+                        logical_state = circuit_add_op_to_qubit(logical_state, lattice_surgery_op_to_quiskit_op(op),
+                                                                mapper.get_idx(patch))
+                        logical_state = logical_state.eval()  # Convert to DictStateFn
+                # elif isinstance(current_op, MultiBodyMeasurement):
+
+                per_slice_intermediate_logical_states[-1].append(logical_state)
+
+        return per_slice_intermediate_logical_states
+
+

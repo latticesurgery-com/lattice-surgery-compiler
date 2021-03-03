@@ -186,3 +186,4 @@ class RotationsComposer:
                 SinglePatchMeasurement(magic_state_uuid, PauliOperator.X),
                 second_corrective_rotation]
 
+
