@@ -56,16 +56,6 @@ class PauliOperator(Enum):
             return PauliOperator.X
 
 
-def lattice_surgery_op_to_quiskit_op( op :PauliOperator) -> Optional[qiskit.aqua.operators.PrimitiveOp]:
-    known_map : Dict[PauliOperator, qiskit.aqua.operators.PrimitiveOp] = {
-        PauliOperator.I : qiskit.aqua.operators.I,
-        PauliOperator.X : qiskit.aqua.operators.X,
-        PauliOperator.Y : qiskit.aqua.operators.Y,
-        PauliOperator.Z : qiskit.aqua.operators.Z
-    }
-    return known_map[op]
-
-
 class PauliProductOperation(object):
 
     qubit_num:  int = None

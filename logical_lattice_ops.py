@@ -143,7 +143,7 @@ class RotationsComposer:
         """See Figure 11 of Litinski's GoSC
         """
         ancilla_uuid = uuid.uuid4()
-        ancilla_initialization = AncillaQubitPatchInitialization(SymbolicState("|Y>"), ancilla_uuid)
+        ancilla_initialization = AncillaQubitPatchInitialization(InitializeableState.YEigenState, ancilla_uuid)
 
         multi_body_measurement = MultiBodyMeasurement({})
         multi_body_measurement.patch_pauli_operator_map[ancilla_uuid] = PauliOperator.Z

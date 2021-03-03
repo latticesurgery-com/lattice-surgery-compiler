@@ -60,6 +60,7 @@ class InitializeableState(SymbolicState):
 
     Zero = SymbolicState('|0>')
     Plus = SymbolicState('|+>')
+    YEigenState = SymbolicState('|Y>')
     UnknownState = SymbolicState('|?>')
     Magic = SymbolicState('|m>') # magic state (|0>+e^(pi*i/4)|1>)/sqrt(2)
 
