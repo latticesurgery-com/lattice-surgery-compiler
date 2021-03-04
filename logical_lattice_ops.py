@@ -11,7 +11,7 @@ from circuit import *
 """Patches are now identified by uuids"""
 
 
-class LogicalLatticeOperation(EvaluationCondition):
+class LogicalLatticeOperation(EvaluationConditionManager):
 
     def get_operating_patches(self) -> List[uuid.UUID]:
         raise NotImplemented()
@@ -121,32 +121,38 @@ class RotationsComposer:
 
     def expand_rotation(self, r: Rotation) -> List[LogicalLatticeOperation]:
         if r.rotation_amount == Fraction(1, 2):
-            return self.pi_over_two(r.get_ops_map())
+            return self.pi_over_two(r.get_ops_map(), r.get_condition())
         elif r.rotation_amount == Fraction(1, 4):
-            return self.add_pi_over_four(r.get_ops_map(), False)
+            return self.add_pi_over_four(r.get_ops_map(), False, r.get_condition())
         elif r.rotation_amount == Fraction(-1, 4):
-            return self.add_pi_over_four(r.get_ops_map(), True)
+            return self.add_pi_over_four(r.get_ops_map(), True, r.get_condition())
         elif r.rotation_amount == Fraction(1, 8):
-            return self.add_pi_over_eight(r.get_ops_map(), False)
+            return self.add_pi_over_eight(r.get_ops_map(), False, r.get_condition())
         elif r.rotation_amount == Fraction(-1, 8):
-            return self.add_pi_over_eight(r.get_ops_map(), True)
+            return self.add_pi_over_eight(r.get_ops_map(), True, r.get_condition())
         else:
             raise Exception("Unsupported pauli rotation angle pi*%d/%d"
                             % (r.rotation_amount.numerator, r.rotation_amount.denominator))
 
-    def pi_over_two(self, ops_map :  Dict[int, PauliOperator]) -> List[LogicalLatticeOperation]:
+    def pi_over_two(self, ops_map :  Dict[int, PauliOperator], condition:Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
+
         paulis = []
         for qubit_id, op in ops_map.items():
-            paulis.append(LogicalPauli(self.computation.logical_qubit_uuid_map[qubit_id],op))
+            logical_pauli = LogicalPauli(self.computation.logical_qubit_uuid_map[qubit_id],op)
+            logical_pauli.set_condition(condition)
+            paulis.append(logical_pauli)
         return paulis
 
-    def add_pi_over_four(self, ops_map: Dict[int, PauliOperator], invert_correction:bool) -> List[LogicalLatticeOperation]:
+    def add_pi_over_four(self, ops_map: Dict[int, PauliOperator],
+                         invert_correction:bool,
+                         condition:Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
         """See Figure 11 of Litinski's GoSC
         """
         ancilla_uuid = uuid.uuid4()
         ancilla_initialization = AncillaQubitPatchInitialization(InitializeableState.YEigenState, ancilla_uuid)
 
         multi_body_measurement = MultiBodyMeasurement({})
+        multi_body_measurement.set_condition(condition)
         multi_body_measurement.patch_pauli_operator_map[ancilla_uuid] = PauliOperator.Z
 
         ancilla_measurement = SinglePatchMeasurement(ancilla_uuid, PauliOperator.X)
@@ -165,11 +171,14 @@ class RotationsComposer:
     def logical_qubit_num(self):
         return len(self.computation.logical_qubit_uuid_map)
 
-    def add_pi_over_eight(self, ops_map :  Dict[int, PauliOperator], invert_correction:bool) -> List[LogicalLatticeOperation]:
+    def add_pi_over_eight(self, ops_map :  Dict[int, PauliOperator],
+                          invert_correction:bool,
+                          condition:Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
         """Returns the correction terms. See Figure 11 of Litinski's GoSC"""
         magic_state_uuid = uuid.uuid4()
 
         multi_body_measurement = MultiBodyMeasurement({})
+        multi_body_measurement.set_condition(condition)
         multi_body_measurement.patch_pauli_operator_map[magic_state_uuid] = PauliOperator.Z
 
         first_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1,4))
