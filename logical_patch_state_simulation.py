@@ -47,8 +47,9 @@ def circuit_add_op_to_qubit(circ : qk.CircuitOp, op: qk.PrimitiveOp, idx: int) -
 
 class ProjectiveMeasurement:
 
-        class Outcome:
-            def __init__(self, resulting_state: qk.DictStateFn, corresponding_eigenvalue: complex):
+        class BinaryMeasurementOutcome:
+            def __init__(self, resulting_state: qk.DictStateFn, corresponding_eigenvalue: int):
+                assert corresponding_eigenvalue in {-1,1}
                 self.resulting_state = resulting_state
                 self.corresponding_eigenvalue = corresponding_eigenvalue
 
@@ -76,7 +77,7 @@ class ProjectiveMeasurement:
 
         @staticmethod
         def pauli_product_measurement_distribution(pauli_observable: qk.OperatorBase, state: qk.OperatorBase) \
-                -> Iterable[Tuple[Outcome, float]] :
+                -> Iterable[Tuple[BinaryMeasurementOutcome, float]] :
             p_plus, p_minus = ProjectiveMeasurement.get_projectors_from_pauli_observable(pauli_observable)
 
             out = []
@@ -85,7 +86,7 @@ class ProjectiveMeasurement:
                 numerical_out_state = out_state.eval()
                 if not isinstance(numerical_out_state,qk.DictStateFn):
                     raise Exception("Composed ops do not eval to single state, but to "+str(numerical_out_state))
-                out.append((ProjectiveMeasurement.Outcome(numerical_out_state, eigenv), prob))
+                out.append((ProjectiveMeasurement.BinaryMeasurementOutcome(numerical_out_state, eigenv), prob))
             return out
 
 
@@ -180,6 +181,9 @@ class PatchSimulator:
 
             for current_op in slice.logical_ops:
 
+                if not current_op.does_evaluate():
+                    continue # Skip conditinal operations that do not execute
+
                 if isinstance(current_op, SinglePatchMeasurement):
                     measure_idx = mapper.get_idx(current_op.qubit_uuid)
                     local_observable = ConvertersToQiskit.pauli_op(current_op.op)
@@ -189,6 +193,7 @@ class PatchSimulator:
                                                                                                     logical_state)
                     outcome = proportional_choice(distribution)
                     logical_state = outcome.resulting_state
+                    current_op.set_outcome(outcome.corresponding_eigenvalue)
 
                 elif isinstance(current_op, PauliOperator):
                     for patch, op in current_op.patch_pauli_operator_map.items():
@@ -206,6 +211,8 @@ class PatchSimulator:
                                                                                                  logical_state))
                     outcome = proportional_choice(distribution)
                     logical_state = outcome.resulting_state
+                    current_op.set_outcome(outcome.corresponding_eigenvalue)
+
 
 
                 per_slice_intermediate_logical_states[-1].append(logical_state)

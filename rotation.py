@@ -1,4 +1,4 @@
-import numpy as np
+from conditional_operation_control import *
 from typing import *
 from enum import Enum
 from fractions import Fraction
@@ -56,7 +56,7 @@ class PauliOperator(Enum):
             return PauliOperator.X
 
 
-class PauliProductOperation(object):
+class PauliProductOperation(EvaluationCondition):
 
     qubit_num:  int = None
     ops_list:   List[PauliOperator] = None

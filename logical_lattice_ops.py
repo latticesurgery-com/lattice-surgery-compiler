@@ -10,14 +10,15 @@ from circuit import *
 
 """Patches are now identified by uuids"""
 
-class LogicalLatticeOperation:
+
+class LogicalLatticeOperation(EvaluationCondition):
+
     def get_operating_patches(self) -> List[uuid.UUID]:
         raise NotImplemented()
 
 
 
-
-class SinglePatchMeasurement(LogicalLatticeOperation):
+class SinglePatchMeasurement(LogicalLatticeOperation,HasPauliEigenvalueOutcome):
     def __init__(self, qubit_uuid: uuid.UUID, op: PauliOperator):
         self.qubit_uuid = qubit_uuid
         self.op = op
@@ -26,7 +27,7 @@ class SinglePatchMeasurement(LogicalLatticeOperation):
         return [self.qubit_uuid]
 
 
-class MultiBodyMeasurement(LogicalLatticeOperation):
+class MultiBodyMeasurement(LogicalLatticeOperation,HasPauliEigenvalueOutcome):
     def __init__(self, patch_pauli_operator_map: Dict[uuid.UUID, PauliOperator]):
         self.patch_pauli_operator_map = patch_pauli_operator_map
 
