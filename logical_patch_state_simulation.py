@@ -84,7 +84,7 @@ T = TypeVar('T')
 def proportional_choice(assoc_data_prob : List[Tuple[T, float]]) -> T:
     return random.choices([val for val, prob in assoc_data_prob],
                           weights=[prob for val, prob in assoc_data_prob],
-                          k=1)
+                          k=1)[0]
 
 class PatchToQubitMapper:
     def __init__(self, slices: List[Lattice]):
@@ -177,8 +177,8 @@ class PatchSimulator:
                     global_observable = (qk.I ^ measure_idx) ^ local_observable ^ (
                                 qk.I ^ (mapper.max_num_patches() - measure_idx - 1))
                     distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
-                                                                                                 logical_state)
-                    logical_state = proportional_choice(distribution)
+                                                                                                    logical_state)
+                    logical_state = proportional_choice(distribution).eval()
 
                 elif isinstance(current_op, PauliOperator):
                     for patch, op in current_op.patch_pauli_operator_map.items():
@@ -194,7 +194,7 @@ class PatchSimulator:
                     global_observable = tensor_list(list(map(ConvertersToQiskit.pauli_op,pauli_op_list)))
                     distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
                                                                                                  logical_state)
-                    logical_state = proportional_choice(distribution)
+                    logical_state = proportional_choice(distribution).eval()
 
 
                 per_slice_intermediate_logical_states[-1].append(logical_state)
