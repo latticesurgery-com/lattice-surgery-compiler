@@ -56,7 +56,7 @@ class PauliOperator(Enum):
             return PauliOperator.X
 
 
-class PauliProductOperation(EvaluationCondition):
+class PauliProductOperation(EvaluationConditionManager):
 
     qubit_num:  int = None
     ops_list:   List[PauliOperator] = None

@@ -14,21 +14,37 @@ class HasPauliEigenvalueOutcome():
 
 
 
+
 class EvaluationCondition:
-    def set_condition(self, outcome_op: HasPauliEigenvalueOutcome, outcome_for_evaluation: int):
-        self.outcome_op = outcome_op
-        self.outcome_for_evaluation = outcome_for_evaluation
+    def __init__(self, required_outcomes : List[Tuple[HasPauliEigenvalueOutcome,int]]):
+        self.required_outcomes = required_outcomes
+
+    def does_evaluate(self):
+
+        for op_with_outcome, required_outcome in self.required_outcomes:
+            reference_outcome = op_with_outcome.get_outcome()
+            if reference_outcome is None or reference_outcome != required_outcome:
+                return False
+        return True
+
+
+
+class EvaluationConditionManager:
+
+    def set_condition(self, condition: EvaluationCondition):
+        self.condition = condition
+
+    def get_condition(self) -> EvaluationCondition:
+        if self.is_conditional():
+            return self.condition
 
     def does_evaluate(self) -> bool:
         """Note: Operations conditioned on outcomes that diddn't execute also won't execute"""
         if not self.is_conditional():
             return True
 
-        reference_outcome = self.outcome_op.get_outcome()
-        if reference_outcome is not None:
-            return reference_outcome == self.outcome_for_evaluation
-        return False
+        return self.condition.does_evaluate()
 
     def is_conditional(self):
-        return hasattr(self,'outcome_op')
+        return hasattr(self,'condition') and self.condition is not None
 
