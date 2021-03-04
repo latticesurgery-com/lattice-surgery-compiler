@@ -47,6 +47,11 @@ def circuit_add_op_to_qubit(circ : qk.CircuitOp, op: qk.PrimitiveOp, idx: int) -
 
 class ProjectiveMeasurement:
 
+        class Outcome:
+            def __init__(self, resulting_state: qk.DictStateFn, corresponding_eigenvalue: complex):
+                self.resulting_state = resulting_state
+                self.corresponding_eigenvalue = corresponding_eigenvalue
+
         @staticmethod
         def borns_rule(projector: qk.PrimitiveOp, state: qk.OperatorBase) -> float:
             # https://qiskit.org/documentation/tutorials/operators/01_operator_flow.html#listop
@@ -55,7 +60,7 @@ class ProjectiveMeasurement:
             return qk.StateFn(projector).adjoint().eval(compute_states(state))
 
         @staticmethod
-        def compute_outcome(projector: qk.PrimitiveOp, state: qk.OperatorBase) -> Tuple[qk.OperatorBase, float]:
+        def compute_outcome_state(projector: qk.PrimitiveOp, state: qk.OperatorBase) -> Tuple[qk.OperatorBase, float]:
             prob = ProjectiveMeasurement.borns_rule(projector, state)
             assert prob.imag < 10 ** (-8)
             prob = prob.real
@@ -68,16 +73,20 @@ class ProjectiveMeasurement:
             eye = qk.I ^ pauli_observable.num_qubits
             return (eye + pauli_observable) / 2, (eye - pauli_observable) / 2
 
-        @staticmethod
-        def apply_projectors(projs: List[qk.PrimitiveOp], state: qk.OperatorBase) \
-                -> List[Tuple[qk.OperatorBase, float]]:
-            return [ProjectiveMeasurement.compute_outcome(proj, state) for proj in projs]
 
         @staticmethod
         def pauli_product_measurement_distribution(pauli_observable: qk.OperatorBase, state: qk.OperatorBase) \
-                -> List[Tuple[qk.OperatorBase, float]] :
-            p1, p2 = ProjectiveMeasurement.get_projectors_from_pauli_observable(pauli_observable)
-            return ProjectiveMeasurement.apply_projectors([p1, p2], state)
+                -> Iterable[Tuple[Outcome, float]] :
+            p_plus, p_minus = ProjectiveMeasurement.get_projectors_from_pauli_observable(pauli_observable)
+
+            out = []
+            for proj, eigenv in [[p_plus, +1], [p_minus, -1]]:
+                out_state, prob = ProjectiveMeasurement.compute_outcome_state(proj, state)
+                numerical_out_state = out_state.eval()
+                if not isinstance(numerical_out_state,qk.DictStateFn):
+                    raise Exception("Composed ops do not eval to single state, but to "+str(numerical_out_state))
+                out.append((ProjectiveMeasurement.Outcome(numerical_out_state, eigenv), prob))
+            return out
 
 
 T = TypeVar('T')
@@ -178,7 +187,8 @@ class PatchSimulator:
                                 qk.I ^ (mapper.max_num_patches() - measure_idx - 1))
                     distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
                                                                                                     logical_state)
-                    logical_state = proportional_choice(distribution).eval()
+                    outcome = proportional_choice(distribution)
+                    logical_state = outcome.resulting_state
 
                 elif isinstance(current_op, PauliOperator):
                     for patch, op in current_op.patch_pauli_operator_map.items():
@@ -192,9 +202,10 @@ class PatchSimulator:
                     for j,quuid in self.mapper.enumerate_patches_by_index():
                         pauli_op_list.append(current_op.patch_pauli_operator_map.get(quuid, PauliOperator.I))
                     global_observable = tensor_list(list(map(ConvertersToQiskit.pauli_op,pauli_op_list)))
-                    distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
-                                                                                                 logical_state)
-                    logical_state = proportional_choice(distribution).eval()
+                    distribution = list(ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
+                                                                                                 logical_state))
+                    outcome = proportional_choice(distribution)
+                    logical_state = outcome.resulting_state
 
 
                 per_slice_intermediate_logical_states[-1].append(logical_state)
