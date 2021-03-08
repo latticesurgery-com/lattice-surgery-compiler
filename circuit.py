@@ -50,7 +50,9 @@ class Circuit(object):
             rotation (Rotation): Targeted rotation
             index (int, optional): Index location. Default: End of the circuit
         """
-        assert new_block.qubit_num == self.qubit_num
+
+        if new_block.qubit_num != self.qubit_num:
+            raise Exception("Amount of qubits do not match.")
 
         if index is None:
             index = len(self)
@@ -58,9 +60,6 @@ class Circuit(object):
         # print(rotation)
         self.ops.insert(index, new_block)
 
-
-    def get_operations(self) -> List[PauliProductOperation]:
-        return self.ops
 
     def add_single_operator(self, qubit: int, operator_type: PauliOperator, rotation_amount: Fraction, index: int = None) -> None:
         """
@@ -115,10 +114,10 @@ class Circuit(object):
         """
         next_block = index + 1
 
-        if index+1 >= len(self.ops):
+        if next_block >= len(self.ops):
             raise Exception("No operation to commute past")
 
-        if not isinstance(self.ops[index], Rotation) or not isinstance(self.ops[index+1],Rotation):
+        if not isinstance(self.ops[index], Rotation) or not isinstance(self.ops[index+1], Rotation):
             raise Exception("Can only commute rotations")
 
         if not cast(Rotation,self.ops[index]).rotation_amount in {Fraction(1,4),Fraction(-1,4)}:
@@ -179,10 +178,12 @@ class Circuit(object):
         return (ret_val > 0) 
     
 
-    def merge_measurement(self, index: int) -> None:
+    def absorb_pi_over_four_rotation(self, index: int) -> None:
         """
-        Merge a rotation block with it's neighbor measurement block. 
+        Merge a pi/4 rotation block with it's neighbor measurement block. 
         """
+
+        # TODO: Implement this 
         pass
 
 

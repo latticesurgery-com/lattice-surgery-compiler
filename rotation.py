@@ -80,6 +80,10 @@ class PauliProductOperation(object):
             qubit (int): Targeted qubit
             new_op (PauliOperator): New operator type (I, X, Z, Y)
         """
+
+        if not isinstance(new_op, PauliOperator):
+            raise TypeError("Cannot add type", type(new_op), "to circuit")
+
         self.ops_list[qubit] = new_op
 
     
