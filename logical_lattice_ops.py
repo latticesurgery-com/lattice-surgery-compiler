@@ -80,7 +80,7 @@ class LogicalLatticeComputation:
             raise Exception("Unsupported PauliProductOperation " + repr(op))
 
         operations_queue: Deque[Union[Rotation, LogicalLatticeOperation]] \
-            = deque(map(to_lattice_operation, self.circuit.get_operations()))
+            = deque(map(to_lattice_operation, self.circuit.ops))
 
         while len(operations_queue) > 0:
             current_op = operations_queue.popleft()
