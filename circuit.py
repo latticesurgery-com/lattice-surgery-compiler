@@ -101,8 +101,8 @@ class Circuit(object):
             index = quarter_rotation.pop()
             while index < len(self) - 1:
 
-                if isinstance(self.ops[index + 1], Measurement):
-                    break
+                # if isinstance(self.ops[index + 1], Measurement):
+                #     break
                 
                 self.commute_rotation(index)
                 index += 1
