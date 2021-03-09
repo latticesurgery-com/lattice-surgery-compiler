@@ -158,6 +158,7 @@ class RotationsComposer:
         ancilla_measurement = SinglePatchMeasurement(ancilla_uuid, PauliOperator.X)
 
         corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1, 2))
+        corrective_rotation.set_condition(PiOverFourCorrectionCondition(multi_body_measurement,ancilla_measurement))
         for qubit_idx, op in ops_map.items():
             patch = self.computation.logical_qubit_uuid_map[qubit_idx]
             multi_body_measurement.patch_pauli_operator_map[patch] = op
@@ -182,7 +183,12 @@ class RotationsComposer:
         multi_body_measurement.patch_pauli_operator_map[magic_state_uuid] = PauliOperator.Z
 
         first_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1,4))
+        first_corrective_rotation.set_condition(PiOverEightCorrectionConditionPiOverFour(multi_body_measurement))
+
+        ancilla_measurement = SinglePatchMeasurement(magic_state_uuid, PauliOperator.X)
+
         second_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1,2))
+        second_corrective_rotation.set_condition(PiOverEightCorrectionConditionPiOverTwo(ancilla_measurement))
 
         for qubit_idx, op in ops_map.items():
             cell = self.computation.logical_qubit_uuid_map[qubit_idx]
@@ -193,7 +199,29 @@ class RotationsComposer:
         return [MagicStateRequest(magic_state_uuid),
                 multi_body_measurement,
                 first_corrective_rotation,
-                SinglePatchMeasurement(magic_state_uuid, PauliOperator.X),
+                ancilla_measurement,
                 second_corrective_rotation]
 
 
+class PiOverFourCorrectionCondition(EvaluationCondition):
+    def __init__(self,multi_body_measurement : MultiBodyMeasurement,ancilla_measurement:SinglePatchMeasurement):
+        self.multi_body_measurement = multi_body_measurement
+        self.ancilla_measurement = ancilla_measurement
+
+    def does_evaluate(self):
+        return self.multi_body_measurement.get_outcome()*self.ancilla_measurement.get_outcome() == -1
+
+
+class PiOverEightCorrectionConditionPiOverFour(EvaluationCondition):
+    def __init__(self,multi_body_measurement : MultiBodyMeasurement):
+        self.multi_body_measurement = multi_body_measurement
+
+    def does_evaluate(self):
+        return self.multi_body_measurement.get_outcome() == -1
+
+class PiOverEightCorrectionConditionPiOverTwo(EvaluationCondition):
+    def __init__(self, ancilla_measurement: SinglePatchMeasurement):
+        self.ancilla_measurement = ancilla_measurement
+
+    def does_evaluate(self):
+        return self.ancilla_measurement.get_outcome() == -1

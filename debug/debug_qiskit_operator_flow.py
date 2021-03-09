@@ -1,5 +1,5 @@
-import pauli_rotations_to_lattice_surgery as ls
-from logical_patch_state_simulation import *
+import lattice_surgery_computation_composer as ls
+import logical_patch_state_simulation as lssim
 
 
 import webgui.lattice_view
@@ -24,11 +24,12 @@ if __name__ == "__main__":
     c.add_pauli_block(ls.Rotation.from_list([ls_Z, ls_Z], Fraction(1, 4)))
     print(c.render_ascii())
 
-    comp = ls.pauli_rotation_to_lattice_surgery_computation(c)
+    logical_circuit = ls.LogicalLatticeComputation(c)
+    comp = ls.LatticeSurgeryComputation(logical_circuit,ls.LayoutType.SimplePreDistilledStates)
     webgui.lattice_view.render_to_file(comp.composer.getSlices(), "../index.html")
 
     print(" ===== Slice states: =====")
 
-    sim_states = simulate_slices(comp.composer.getSlices())
-    for sim_state in sim_states:
+    sim = lssim.PatchSimulator(comp.composer.getSlices())
+    for sim_state in sim.intermediate_states:
         print(sim_state)

@@ -16,16 +16,8 @@ class HasPauliEigenvalueOutcome():
 
 
 class EvaluationCondition:
-    def __init__(self, required_outcomes : List[Tuple[HasPauliEigenvalueOutcome,int]]):
-        self.required_outcomes = required_outcomes
-
     def does_evaluate(self):
-
-        for op_with_outcome, required_outcome in self.required_outcomes:
-            reference_outcome = op_with_outcome.get_outcome()
-            if reference_outcome is None or reference_outcome != required_outcome:
-                return False
-        return True
+        raise NotImplemented()
 
 
 
