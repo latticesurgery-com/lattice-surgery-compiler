@@ -25,11 +25,10 @@ if __name__ == "__main__":
     print(c.render_ascii())
 
     logical_circuit = ls.LogicalLatticeComputation(c)
-    comp = ls.LatticeSurgeryComputation(logical_circuit,ls.LayoutType.SimplePreDistilledStates)
+    comp = ls.LatticeSurgeryComputation.make_computation_with_simulation(logical_circuit,ls.LayoutType.SimplePreDistilledStates)
     webgui.lattice_view.render_to_file(comp.composer.getSlices(), "../index.html")
 
     print(" ===== Slice states: =====")
 
-    sim = lssim.PatchSimulator(comp.composer.getSlices())
-    for sim_state in sim.intermediate_states:
-        print(sim_state)
+    for slice in comp.composer.getSlices():
+        print(slice.logical_state)

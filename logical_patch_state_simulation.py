@@ -97,10 +97,11 @@ def proportional_choice(assoc_data_prob : List[Tuple[T, float]]) -> T:
                           k=1)[0]
 
 class PatchToQubitMapper:
-    def __init__(self, slices: List[Lattice]):
+    def __init__(self, logical_computation: LogicalLatticeComputation):
         self.patch_location_to_logical_idx: Dict[uuid.UUID, int] = dict()
-        for slice in slices:
-            self._add_patches_from_slice(slice)
+        for p in PatchToQubitMapper._get_all_operating_patches(logical_computation.ops):
+            if self.patch_location_to_logical_idx.get(p) is None:
+                self.patch_location_to_logical_idx[p] = self.max_num_patches()
 
     def get_idx(self, patch: uuid.UUID) -> int:
         return self.patch_location_to_logical_idx[patch]
@@ -117,10 +118,7 @@ class PatchToQubitMapper:
         for idx in range(self.max_num_patches()):
             yield (idx, self.get_uuid(idx))
 
-    def _add_patches_from_slice(self, lattice: Lattice):
-        for p in PatchToQubitMapper._get_all_operating_patches(lattice.logical_ops):
-            if self.patch_location_to_logical_idx.get(p) is None:
-                self.patch_location_to_logical_idx[p] = self.max_num_patches()
+
 
     @staticmethod
     def _get_all_operating_patches(logical_ops: List[LogicalLatticeOperation]) -> List[uuid.UUID]:
@@ -139,13 +137,13 @@ def tensor_list(l):
 
 
 class PatchSimulator:
-    def __init__(self, slices: List[Lattice]):
-        self.slices = slices
-        self.mapper = PatchToQubitMapper(self.slices)
-        self.intermediate_states: List[List[qk.StateFn]] = self._simulate_patch_operations(self.slices)
+    def __init__(self, logical_computation : LogicalLatticeComputation):
+        self.logical_computation = logical_computation
+        self.mapper = PatchToQubitMapper(logical_computation)
+        self.logical_state : qk.DictStateFn = self._make_initial_logical_state()
 
 
-    def _make_initial_logical_state(self):
+    def _make_initial_logical_state(self) -> qk.DictStateFn:
         """Every patch, when initialized, is considered a new logical qubit.
         So all patch initializations and magic state requests are handled ahead of time"""
         initial_ancilla_states:Dict[uuid.UUID,SymbolicState] = dict()
@@ -158,65 +156,50 @@ class PatchSimulator:
         def get_init_state(quuid:uuid.UUID) -> qk.StateFn:
             return ConvertersToQiskit.symbolic_state(initial_ancilla_states.get(quuid, InitializeableState.Zero))
 
-        for slice in self.slices:
-            for op in slice.logical_ops:
+        for op in self.logical_computation.ops:
                 if isinstance(op, AncillaQubitPatchInitialization):
                     add_initial_ancilla_state(op.qubit_uuid,op.qubit_state)
                 elif isinstance(op, MagicStateRequest):
                     add_initial_ancilla_state(op.qubit_uuid,InitializeableState.Magic)
 
-        d = list(self.mapper.enumerate_patches_by_index())
         all_init_states = [get_init_state(quuid) for idx, quuid in self.mapper.enumerate_patches_by_index()]
         return tensor_list(all_init_states)
 
-    def _simulate_patch_operations(self, slices: List[Lattice]) -> List[List[qk.DictStateFn]]:
-        """Returns a list of computation states"""
-        mapper = PatchToQubitMapper(slices)
-        logical_state = self._make_initial_logical_state()
-        per_slice_intermediate_logical_states: List[List[qk.DictStateFn]] = [[logical_state]]
+    def apply_logical_operation(self, logical_op : LogicalLatticeOperation):
+        """Update the logical state"""
+
+        if not logical_op.does_evaluate():
+            raise Exception("apply_logical_operation called with non evaluating operation :"+repr(logical_op))
+
+        if isinstance(logical_op, SinglePatchMeasurement):
+            measure_idx = self.mapper.get_idx(logical_op.qubit_uuid)
+            local_observable = ConvertersToQiskit.pauli_op(logical_op.op)
+            global_observable = (qk.I ^ measure_idx) ^ local_observable ^ (
+                        qk.I ^ (self.mapper.max_num_patches() - measure_idx - 1))
+            distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
+                                                                                            self.logical_state)
+            outcome = proportional_choice(distribution)
+            self.logical_state = outcome.resulting_state
+            logical_op.set_outcome(outcome.corresponding_eigenvalue)
+
+        elif isinstance(logical_op, PauliOperator):
+            for patch, op in logical_op.patch_pauli_operator_map.items():
+                symbolic_state = circuit_add_op_to_qubit(self.logical_state, ConvertersToQiskit.pauli_op(op),
+                                                        self.mapper.get_idx(patch))
+                self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
+
+        elif isinstance(logical_op, MultiBodyMeasurement):
+            pauli_op_list : List[qk.PrimitiveOp] = []
+
+            for j,quuid in self.mapper.enumerate_patches_by_index():
+                pauli_op_list.append(logical_op.patch_pauli_operator_map.get(quuid, PauliOperator.I))
+            global_observable = tensor_list(list(map(ConvertersToQiskit.pauli_op,pauli_op_list)))
+            distribution = list(ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
+                                                                                         self.logical_state))
+            outcome = proportional_choice(distribution)
+            self.logical_state = outcome.resulting_state
+            logical_op.set_outcome(outcome.corresponding_eigenvalue)
 
 
-        for slice_num, slice in enumerate(slices):
-            per_slice_intermediate_logical_states.append([])
-
-            for current_op in slice.logical_ops:
-
-                if not current_op.does_evaluate():
-                    continue # Skip conditinal operations that do not execute
-
-                if isinstance(current_op, SinglePatchMeasurement):
-                    measure_idx = mapper.get_idx(current_op.qubit_uuid)
-                    local_observable = ConvertersToQiskit.pauli_op(current_op.op)
-                    global_observable = (qk.I ^ measure_idx) ^ local_observable ^ (
-                                qk.I ^ (mapper.max_num_patches() - measure_idx - 1))
-                    distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
-                                                                                                    logical_state)
-                    outcome = proportional_choice(distribution)
-                    logical_state = outcome.resulting_state
-                    current_op.set_outcome(outcome.corresponding_eigenvalue)
-
-                elif isinstance(current_op, PauliOperator):
-                    for patch, op in current_op.patch_pauli_operator_map.items():
-                        logical_state = circuit_add_op_to_qubit(logical_state, ConvertersToQiskit.pauli_op(op),
-                                                                mapper.get_idx(patch))
-                        logical_state = logical_state.eval()  # Convert to DictStateFn
-
-                elif isinstance(current_op, MultiBodyMeasurement):
-                    pauli_op_list : List[qk.PrimitiveOp] = []
-
-                    for j,quuid in self.mapper.enumerate_patches_by_index():
-                        pauli_op_list.append(current_op.patch_pauli_operator_map.get(quuid, PauliOperator.I))
-                    global_observable = tensor_list(list(map(ConvertersToQiskit.pauli_op,pauli_op_list)))
-                    distribution = list(ProjectiveMeasurement.pauli_product_measurement_distribution(global_observable,
-                                                                                                 logical_state))
-                    outcome = proportional_choice(distribution)
-                    logical_state = outcome.resulting_state
-                    current_op.set_outcome(outcome.corresponding_eigenvalue)
-
-
-
-                per_slice_intermediate_logical_states[-1].append(logical_state)
-
-        return per_slice_intermediate_logical_states
 
 

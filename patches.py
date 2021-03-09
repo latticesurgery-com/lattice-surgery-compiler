@@ -4,6 +4,7 @@ from rotation import *
 import itertools
 from qubit_state import *
 from logical_lattice_ops import *
+import qiskit.aqua.operators as qk
 
 import uuid
 
@@ -120,6 +121,7 @@ class Lattice:
         self.min_rows = min_rows
         self.min_cols = min_cols
         self.logical_ops : List[LogicalLatticeOperation] = []
+        self.logical_state : Optional[qk.DictStateFn] = None
 
     def getMaxCoord(self, coord_type: CoordType)->int:
         all_coords = itertools.chain.from_iterable(map(lambda patch: patch.getCoordList(coord_type), self.patches))
