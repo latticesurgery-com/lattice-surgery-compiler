@@ -10,6 +10,8 @@ class PauliOperator(Enum):
     Representation of a Pauli operator inside of a rotation block 
 
     """
+    _ignore_ = ['_anticommute_tbl']
+    _anticommute_tbl = {}
 
     I = "I"
     X = "X"
@@ -24,29 +26,53 @@ class PauliOperator(Enum):
 
 
     @staticmethod
-    def are_commuting(a: 'PauliOperator', b: 'PauliOperator') -> Tuple[bool, 'PauliOperator']:
+    def are_commuting(a: 'PauliOperator', b: 'PauliOperator') -> bool:
         """
-        Check if 2 PauliOperators A and Bcommute or anti-commute. 
-        Returns True and AB if commute or False and iAB if anti-commute.
-
+        Returns True if a and b are commute and False if anti-commute.
+    
         """
-        if a == b:
-            return True, PauliOperator.I
-        
-        if a == PauliOperator.I: 
-            return True, b
-        
-        if b == PauliOperator.I:
-            return True, a
+        if not isinstance(a, PauliOperator) or not isinstance(b, PauliOperator):
+            raise Exception("Only supports PauliOperator")
 
-        if {a,b} == {PauliOperator.X, PauliOperator.Z}:
-            return False, PauliOperator.Y
-
-        if {a,b} == {PauliOperator.X, PauliOperator.Y}:
-            return False, PauliOperator.Z
+        if (a,b) in PauliOperator._anticommute_tbl:
+            return False
         
-        if {a,b} == {PauliOperator.Z, PauliOperator.Y}:
-            return False, PauliOperator.X
+        else:
+            return True
+
+    
+    @staticmethod
+    def multiply_operators(a: 'PauliOperator', b: 'PauliOperator'):
+        """
+        Given 2 Pauli operators A and B, return the nearest Pauli operator as the product of A and B and
+        the coefficient required for such product. 
+
+        Returns:
+            tuple: (coefficient, resultant Pauli operator). Coefficient is either 1, -i or i. 
+        """
+
+        if not isinstance(a, PauliOperator) or not isinstance(b, PauliOperator):
+            raise Exception("Only supports PauliOperator")
+
+        if (a,b) in PauliOperator._anticommute_tbl:
+            return PauliOperator._anticommute_tbl[(a,b)]
+
+        if a == b: 
+            return (1, PauliOperator.I)
+
+        if a == PauliOperator.I or b == PauliOperator.I:
+            return (1, b if a == PauliOperator.I else a)
+
+
+
+PauliOperator._anticommute_tbl = {
+    (PauliOperator.Z, PauliOperator.X):     (1j, PauliOperator.Y),
+    (PauliOperator.X, PauliOperator.Z):     (-1j, PauliOperator.Y),
+    (PauliOperator.Z, PauliOperator.Y):     (1j, PauliOperator.X),
+    (PauliOperator.Y, PauliOperator.Z):     (-1j, PauliOperator.X),
+    (PauliOperator.Y, PauliOperator.X):     (1j, PauliOperator.Z),
+    (PauliOperator.X, PauliOperator.Y):     (-1j, PauliOperator.Z)
+}
 
 
 def lattice_surgery_op_to_quiskit_op( op :PauliOperator) -> Optional[qiskit.aqua.operators.PrimitiveOp]:

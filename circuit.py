@@ -104,46 +104,43 @@ class Circuit(object):
                 if isinstance(self.ops[index + 1], Measurement):
                     break
                 
-                self.commute_pi_over_four_rotation(index)
+                self.commute_rotation(index)
                 index += 1
 
 
-    def commute_pi_over_four_rotation(self, index: int) -> None:
+    def commute_rotation(self, index: int) -> None:
         """
-        Commute a pi/4 rotation block pass its' next block.
+        Commute a rotation block pass its neighbor block.
+
+        Args:
+            index (int): Index of the targeted block in the current circuit. 
+
         """
         next_block = index + 1
 
         if next_block >= len(self.ops):
             raise Exception("No operation to commute past")
 
-        if not isinstance(self.ops[index], Rotation) or not isinstance(self.ops[index+1], Rotation):
-            raise Exception("Can only commute rotations")
-
-        if not cast(Rotation,self.ops[index]).rotation_amount in {Fraction(1,4),Fraction(-1,4)}:
-            raise Exception("First operand must be +-pi/4 Pauli rotation")
-
+        # Need to calculate iPP' when PP' = -P'P (anti-commute)
         if not self.are_commuting(index, next_block):
-
-            if cast(Rotation,self.ops[index]).rotation_amount != Fraction(1,4):
-                raise NotImplemented("Can only commute pi/4 rotations when rotation exponents anticommute")
-
-            # for tracking # of i (see issue #28)
-            # i is required for an anti-commute operators pair
-            i_count = 0     
+            product_of_coefficients = 1
             
             for i in range(self.qubit_num):
-                new_op = PauliOperator.are_commuting(self.ops[index].get_op(i), self.ops[next_block].get_op(i))
+                new_op = PauliOperator.multiply_operators(self.ops[index].get_op(i), self.ops[next_block].get_op(i))
                 
                 self.ops[next_block].change_single_op(i, new_op[1])
-                if not new_op[0]: i_count += 1
+                product_of_coefficients *= new_op[0]
 
+            # Flip the phase if product of coefficients is negative
+            # Product of coefficients will always be either i or -i (see issues #28 for proof)
+            product_of_coefficients /= 1j
+            if isinstance(self.ops[next_block], Measurement):
+                if product_of_coefficients.real < 0:
+                    self.ops[next_block].isNegative = not self.ops[next_block].isNegative
 
-            # Adjust the rotation based on i_count (see issue 28).
-            # It flips the phase when there is an odd number of i pairs, excluding the first i.
-            if ((i_count - 1) / 2) % 2 != 0: 
-                self.ops[next_block].rotation_amount *= -1
-    
+            else:
+                self.ops[next_block].rotation_amount *= -1 if product_of_coefficients.real < 0 else 1 
+
         temp = self.ops[index]
         self.ops[index] = self.ops[next_block]
         self.ops[next_block] = temp
@@ -173,7 +170,7 @@ class Circuit(object):
         # The loop below computes (c_1*...*c_n) in ret_val
         
         for i in range(self.qubit_num):
-            ret_val *= 1 if PauliOperator.are_commuting(self.ops[block1].get_op(i), self.ops[block2].get_op(i))[0] else -1
+            ret_val *= 1 if PauliOperator.are_commuting(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
 
         return (ret_val > 0) 
     
