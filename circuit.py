@@ -106,7 +106,48 @@ class Circuit(object):
                 
                 self.commute_pi_over_four_rotation(index)
                 index += 1
+        
+        self.remove_y_operators_from_measurement()
 
+
+    def remove_y_operators_from_measurement(self) -> None:
+        """
+        Removes Y operators from Measurement blocks. To be called after Litinski transformation is applied.
+
+        """
+        Z = PauliOperator.Z
+        I = PauliOperator.I
+        i = 0 
+
+        while i < len(self.ops):
+            pauli_block = self.ops[i]
+
+            if isinstance(pauli_block, Measurement):
+                y_op_indicies = set()
+                
+                for j in range(self.qubit_num):
+                    if pauli_block.ops_list[j] == PauliOperator.Y:
+                       y_op_indicies.add(j)
+                       pauli_block.ops_list[j] = PauliOperator.X
+
+                if y_op_indicies:
+                    new_block = [Z if i in y_op_indicies else I for i in range(self.qubit_num)]
+                    left_block = Rotation.from_list(new_block, Fraction(1,4))
+                    right_block = Rotation.from_list(new_block, Fraction(-1,4))
+                    
+                    right_block_index = i+1
+                    self.add_pauli_block(right_block, right_block_index)
+                    self.add_pauli_block(left_block, i)
+                    right_block_index += 1
+
+                    # Commute the right (new) pi/4 rotations towards the end of the circuit
+                    while right_block_index + 1 < len(self.ops) and isinstance(self.ops[right_block_index+1], Measurement):
+                        self.commute_pi_over_four_rotation(right_block_index)
+                        right_block_index += 1
+
+                    i += 1
+            i += 1
+                
 
     def commute_pi_over_four_rotation(self, index: int) -> None:
         """
