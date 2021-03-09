@@ -104,11 +104,11 @@ class Circuit(object):
                 # if isinstance(self.ops[index + 1], Measurement):
                 #     break
                 
-                self.commute_rotation(index)
+                self.commute_pi_over_four_rotation(index)
                 index += 1
 
 
-    def commute_rotation(self, index: int) -> None:
+    def commute_pi_over_four_rotation(self, index: int) -> None:
         """
         Commute a rotation block pass its neighbor block.
 
@@ -120,6 +120,9 @@ class Circuit(object):
 
         if next_block >= len(self.ops):
             raise Exception("No operation to commute past")
+
+        if not cast(Rotation,self.ops[index]).rotation_amount in {Fraction(1,4),Fraction(-1,4)}:
+            raise Exception("First operand must be +-pi/4 Pauli rotation")
 
         # Need to calculate iPP' when PP' = -P'P (anti-commute)
         if not self.are_commuting(index, next_block):
@@ -174,15 +177,6 @@ class Circuit(object):
 
         return (ret_val > 0) 
     
-
-    def absorb_pi_over_four_rotation(self, index: int) -> None:
-        """
-        Merge a pi/4 rotation block with it's neighbor measurement block. 
-        """
-
-        # TODO: Implement this 
-        pass
-
 
     @staticmethod
     def load_from_pyzx(circuit) -> 'Circuit':
