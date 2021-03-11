@@ -6,8 +6,9 @@ from typing import *
 import patches, circuit
 from pauli_rotations_to_lattice_surgery import pauli_rotation_to_lattice_surgery_computation
 
-from . sparse_lattice_to_array import sparse_lattice_to_array
+from .sparse_lattice_to_array import sparse_lattice_to_array
 from qubit_state import *
+from . import styles_map
 # Create your views here.
 
 
@@ -16,6 +17,7 @@ def upload_circuit(request):
     return render(request,"lattice_main/upload_circuit.html",context)
 
 def view_compiled(request):
+    """ url shortcut name: lattice_main-latticeview """
     # Save the file to a tmp dir so that pyzx can read it
     print("post-request",request.FILES['circuit'].name)
 
@@ -32,8 +34,11 @@ def view_compiled(request):
 
     # TODO refactor the process of getting slices into circuit
     lsc = pauli_rotation_to_lattice_surgery_computation(input_circuit)
+    slices = lsc.composer.getSlices()
+    mapped_slices = list(map(sparse_lattice_to_array, slices))
+    enumerate_mapped_slices = enumerate(mapped_slices)
     context = {
-        'slices': list(map(sparse_lattice_to_array, lsc.composer.getSlices())),
+        'enum_slices': enumerate_mapped_slices,
         'styles_map': styles_map,
         'patches': patches
     }
@@ -57,10 +62,10 @@ def render_to_file(request,slices, output_file_name): # (slices : List[patches.L
             patches=patches
         ))
 
-def render_html(slices): # (slices : List[patches.Lattice]) -> str
-    template = Template(filename='templates/lattice_view.mak')
-    return template.render(
-        slices=list(map(sparse_lattice_to_array, slices)),
-        styles_map=styles_map,
-        patches=patches
-    )
+# def render_html(slices : List[patches.Lattice]) -> str:
+#     template = Template(filename='templates/lattice_view.mak')
+#     return template.render(
+#         slices=list(map(sparse_lattice_to_array, slices)),
+#         styles_map=styles_map,
+#         patches=patches
+#     )

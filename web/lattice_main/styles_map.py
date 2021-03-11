@@ -1,3 +1,6 @@
+import patches
+from qubit_state import ActivityType
+
 styles_map = {patches.PatchType.Qubit : "darkkhaki",
               patches.PatchType.DistillationQubit : "orchid",
               patches.PatchType.Ancilla : "aquamarine",

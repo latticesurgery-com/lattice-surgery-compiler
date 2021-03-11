@@ -1,6 +1,5 @@
-import sys
-from . import VisualArrayCell
-
+from .VisualArrayCell import VisualArrayCell
+from qubit_state import ActiveState
 import patches
 
 def sparse_lattice_to_array(lattice: patches.Lattice): # -> List[List[Optional[VisualArrayCell]]]:

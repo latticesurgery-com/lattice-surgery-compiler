@@ -1,6 +1,3 @@
-import sys
-import patches
-
 class VisualArrayCell:
     def __init__(self, patch_type, edges): # patch_type: patches.PatchType, edges : dict[patches.Orientation, patches.EdgeType]
         self.edges = edges
