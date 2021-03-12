@@ -85,10 +85,6 @@ class Circuit(object):
         Apply Litinski's Transformation
 
         """
-
-        # Moving pi/4 to the end of the circuit done. 
-        # TODO: Implement merging pi/4 to measurements. 
-
         quarter_rotation = list()
 
         # Build a stack of pi/4 rotations
@@ -97,18 +93,71 @@ class Circuit(object):
             if isinstance(self.ops[i], Rotation) and self.ops[i].rotation_amount in {Fraction(1,4), Fraction(-1,4)}:
                 quarter_rotation.append(i)
         
+        # Moving all pi/4 rotations towards the end of the circuit and removing them afterwards
         while quarter_rotation:
             index = quarter_rotation.pop()
-            while index < len(self) - 1:
-
-                # if isinstance(self.ops[index + 1], Measurement):
-                #     break
-                
-                self.commute_rotation(index)
+            while index + 1 < len(self):
+                self.commute_pi_over_four_rotation(index)
                 index += 1
+            self.ops.pop()
+        
+        # Remove all pi/4 rotations from the circuit
+        self.remove_y_operators_from_circuit()
 
 
-    def commute_rotation(self, index: int) -> None:
+    def remove_y_operators_from_circuit(self) -> None:
+        """
+        Removes Y operators from pi/8 and measurement blocks. To be called after pi/4 rotations 
+        have been commuted to the end of the circuit.
+
+        """
+        i = 0 
+
+        while i < len(self.ops):
+            pauli_block = self.ops[i]
+
+            if isinstance(pauli_block, Measurement) or (pauli_block.rotation_amount in {Fraction(1,8), Fraction(-1,8)}):
+                y_op_indices = list()
+                
+                # Find Y operators and modify them into X operators 
+                for j in range(self.qubit_num):
+                    if pauli_block.ops_list[j] == PauliOperator.Y:
+                       y_op_indices.append(j)
+                       pauli_block.ops_list[j] = PauliOperator.X
+
+                if y_op_indices:
+                    right_block_indices = list()
+
+                    # For even numbers of Y operators, add 2 additional pi/4 rotations (one on each side)
+                    if len(y_op_indices) % 2 == 0:
+                        first_operator = y_op_indices.pop(0)
+                        self.add_single_operator(first_operator, PauliOperator.Z, Fraction(1,4), i)
+                        self.add_single_operator(first_operator, PauliOperator.Z, Fraction(-1,4), i+2)
+                        right_block_indices.append(i+4)
+                        i += 1
+
+                    # Add 2 pi/4 rotations on each side of the Pauli block
+                    new_block = [PauliOperator.Z if i in y_op_indices else PauliOperator.I for i in range(self.qubit_num)]                    
+                    self.add_pauli_block(Rotation.from_list(new_block, Fraction(1,4)), i)
+                    self.add_pauli_block(Rotation.from_list(new_block, Fraction(-1,4)), i+2)
+                    right_block_indices.append(i+2)
+                    i += 1
+
+                    # Commute the right (new) pi/4 rotations towards the end of the circuit
+                    for right_block_index in right_block_indices:
+                        while right_block_index + 1 < len(self.ops):
+                            self.commute_pi_over_four_rotation(right_block_index)
+                            right_block_index += 1
+                        self.ops.pop()
+            else:
+                # This is assuming pi/4 rotations (not including ones from this operation) 
+                # have been commuted to the end of the circuit.
+                continue
+           
+            i += 1
+                
+
+    def commute_pi_over_four_rotation(self, index: int) -> None:
         """
         Commute a rotation block pass its neighbor block.
 
@@ -120,6 +169,9 @@ class Circuit(object):
 
         if next_block >= len(self.ops):
             raise Exception("No operation to commute past")
+
+        if not cast(Rotation,self.ops[index]).rotation_amount in {Fraction(1,4),Fraction(-1,4)}:
+            raise Exception("First operand must be +-pi/4 Pauli rotation")
 
         # Need to calculate iPP' when PP' = -P'P (anti-commute)
         if not self.are_commuting(index, next_block):
@@ -174,15 +226,6 @@ class Circuit(object):
 
         return (ret_val > 0) 
     
-
-    def absorb_pi_over_four_rotation(self, index: int) -> None:
-        """
-        Merge a pi/4 rotation block with it's neighbor measurement block. 
-        """
-
-        # TODO: Implement this 
-        pass
-
 
     @staticmethod
     def load_from_pyzx(circuit) -> 'Circuit':
