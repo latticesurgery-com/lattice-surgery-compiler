@@ -1,0 +1,64 @@
+{% extends 'lattice_main/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<head>
+<title>Lattice Surgery Compiler</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="{% static 'lattice_main/main.css' %}" rel="stylesheet" />
+
+<style>
+</style>
+
+</head>
+<body>
+
+<header>
+  <h2>Quantum Error Correction Compiler with Lattice Surgery</h2>
+</header>
+
+<section>
+  <nav>
+    <ul>
+      <li><a href="#">Compile Quantum Circuit</a></li>
+    </ul>
+  </nav>
+
+  <article>
+    <h2>Get Started</h2>
+      <p>Upload a quantum circuit. <a>What is supported</a>.
+        <form action="{% url 'lattice_main-latticeview' %}" method="post" accept-charset="utf-8"
+          enctype="multipart/form-data">
+            {% csrf_token %}
+            <input id="circuit" name="circuit" type="file"/>
+            <input type="submit" value="Go!" />
+        </form>
+
+      </p>
+    <h1>About</h1>
+    <p>
+        A proposed solution to mitigate the occurrence of errors in quantum computers are the so-called quantum error correcting codes (QECC). Specifically we focus on the protocol of <strong>lattice surgery</strong>, which is based on the prominent methodology of <strong>surface codes</strong>. A natural question relates to how these techniques can be employed to systematically obtain fault tolerant logical qubits from less reliable ones. Recent work has focused on building compilers that translate a logical quantum circuit to a much larger error corrected one, with the output circuit performing the computation specified by the logical circuit with QECCs [1][2].
+    </p>
+    <p>
+        <img src="{% static 'lattice_main/lattice_view_example.png' %}" style="width: 100%">
+    </p>
+    <p>
+        Surface codes are a family of QECCs that aims at improving computation fidelity by entangling many quantum mechanical entities in a two dimensional lattice. Our technique of choice for operating on this lattice is a protocol known as lattice surgery, which stores logical qubits in portions of the surface code's lattice patches and performs logical operations by merging and splitting patches [3].
+    </p>
+    <p>
+        This program handles a portion of the logical to physical compilation. It takes a quantum circuit and translates it to a representation of lattice surgery operations, which are in direct correspondence with the physical error corrected circuit, up to code distance. The project comes with a visualizer tool (figure), that shows the state of the surface code lattice state in between surgery operations.
+    </p>
+
+  </article>
+</section>
+
+<footer>
+  <p>Contact &nbsp; | &nbsp; Github &nbsp; | &nbsp; Paper</p>
+</footer>
+
+</body>
+
+{% endblock content %}

@@ -1,8 +1,6 @@
 .idea
 __pycache__
-index.html
 .ipynb_*
-*.html
 webgui/deploy.log
 webgui/env
 webgui/server_pid
