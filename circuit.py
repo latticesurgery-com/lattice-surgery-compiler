@@ -152,7 +152,7 @@ class Circuit(object):
             else:
                 # This is assuming pi/4 rotations (not including ones from this operation) 
                 # have been commuted to the end of the circuit.
-                break
+                continue
            
             i += 1
                 
