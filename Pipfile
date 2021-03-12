@@ -5,8 +5,6 @@ name = "pypi"
 
 [packages]
 pyzx = "*"
-mako = "*"
-pyramid = "*"
 python-igraph = "*"
 numpy = "*"
 django = "*"
