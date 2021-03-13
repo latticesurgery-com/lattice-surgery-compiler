@@ -114,8 +114,6 @@ class LatticeSurgeryComputation:
         self.composer.lattice().min_cols = 2*self.num_qubits
         self.composer.lattice().min_rows = 3
 
-        # self._import_logical_computation()
-
     @staticmethod
     def make_computation_with_simulation(logical_computation: LogicalLatticeComputation, layout_type: LayoutType):
         comp = LatticeSurgeryComputation(logical_computation,layout_type)
@@ -141,15 +139,6 @@ class LatticeSurgeryComputation:
             self.logical_qubits.append(cell)
             self.composer.lattice().getPatchOfCell(cell).set_uuid(quuid)
 
-    def _import_logical_computation(self):
-
-        # Give a blank slice to show the layout
-        with self.timestep() as blank_slice: pass
-
-        for logical_op in self.logical_computation.ops:
-            with self.timestep() as slice:
-                slice.addLogicalOperation(logical_op)
-        return self
 
     def _init_simple_magic_state_array(self, num_magic_states: int): # TODO move this to layout initializer
         start_magic_state_array = self.composer.lattice().getCols()
