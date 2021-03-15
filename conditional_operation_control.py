@@ -2,6 +2,7 @@ from typing import *
 
 
 class HasPauliEigenvalueOutcome():
+    """Mixin class to be implmented by things that have a +1 or -1 outcome, like measurements of pauli products"""
     def get_outcome(self) -> Optional[int]:
         if hasattr(self,'outcome'):
             return self.outcome
@@ -12,17 +13,19 @@ class HasPauliEigenvalueOutcome():
         self.outcome = v
 
 
-
-
-
 class EvaluationCondition:
+    """Instances of this are used as functor to tell if something needs to be evaluated,
+    mostly together with EvaluationConditionManager"""
+    
     def does_evaluate(self):
         raise NotImplemented()
 
 
 
 class EvaluationConditionManager:
-
+    """ Mixin for objects representing operations conditional on outcomes. Uses instances EvaluationCondition
+    as functors to be called when checking if a condtional operation needs to execute or not"""
+    
     def set_condition(self, condition: EvaluationCondition):
         self.condition = condition
 
