@@ -25,13 +25,13 @@ class ConvertersToQiskit:
 
     @staticmethod
     def symbolic_state(s:SymbolicState)->qk.StateFn:
-        if s == InitializeableState.Zero:
+        if s == DefalutSymbolicStates.Zero:
             return qk.Zero
-        elif s == InitializeableState.Plus:
+        elif s == DefalutSymbolicStates.Plus:
             return qk.One
-        elif s == InitializeableState.YEigenState:
+        elif s == DefalutSymbolicStates.YPosEigenState:
             return (qk.Zero - 1j*qk.One)/math.sqrt(2)
-        elif s == InitializeableState.Magic:
+        elif s == DefalutSymbolicStates.Magic:
             return (qk.Zero + cmath.exp(1j*math.pi/4)*qk.One)/math.sqrt(2)
         else:
             raise Exception("State cannot be converted to qiskit: "+repr(s))
@@ -155,13 +155,13 @@ class PatchSimulator:
             initial_ancilla_states[quuid] = symbolic_state
 
         def get_init_state(quuid:uuid.UUID) -> qk.StateFn:
-            return ConvertersToQiskit.symbolic_state(initial_ancilla_states.get(quuid, InitializeableState.Zero))
+            return ConvertersToQiskit.symbolic_state(initial_ancilla_states.get(quuid, DefalutSymbolicStates.Zero))
 
         for op in self.logical_computation.ops:
                 if isinstance(op, AncillaQubitPatchInitialization):
                     add_initial_ancilla_state(op.qubit_uuid,op.qubit_state)
                 elif isinstance(op, MagicStateRequest):
-                    add_initial_ancilla_state(op.qubit_uuid,InitializeableState.Magic)
+                    add_initial_ancilla_state(op.qubit_uuid, DefalutSymbolicStates.Magic)
 
         all_init_states = [get_init_state(quuid) for idx, quuid in self.mapper.enumerate_patches_by_index()]
         return tensor_list(all_init_states)
