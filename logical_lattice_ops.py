@@ -149,7 +149,7 @@ class RotationsComposer:
         """See Figure 11 of Litinski's GoSC
         """
         ancilla_uuid = uuid.uuid4()
-        ancilla_initialization = AncillaQubitPatchInitialization(InitializeableState.YEigenState, ancilla_uuid)
+        ancilla_initialization = AncillaQubitPatchInitialization(DefalutSymbolicStates.YPosEigenState, ancilla_uuid)
 
         multi_body_measurement = MultiBodyMeasurement({})
         multi_body_measurement.set_condition(condition)
