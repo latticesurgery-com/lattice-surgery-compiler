@@ -1,6 +1,7 @@
 import patches
 import ancilla_patch_routing
 from logical_lattice_ops import *
+from logical_patch_state_simulation import PatchSimulator
 
 from typing import *
 import copy
@@ -113,7 +114,20 @@ class LatticeSurgeryComputation:
         self.composer.lattice().min_cols = 2*self.num_qubits
         self.composer.lattice().min_rows = 3
 
-        self._import_logical_computation()
+    @staticmethod
+    def make_computation_with_simulation(logical_computation: LogicalLatticeComputation, layout_type: LayoutType):
+        comp = LatticeSurgeryComputation(logical_computation,layout_type)
+        sim = PatchSimulator(logical_computation)
+
+        with comp.timestep() as blank_slice: pass
+
+        for logical_op in comp.logical_computation.ops:
+            if logical_op.does_evaluate():
+                with comp.timestep() as slice:
+                    slice.addLogicalOperation(logical_op)
+                    sim.apply_logical_operation(logical_op)
+                    slice.lattice().logical_state = copy.deepcopy(sim.logical_state)
+        return comp
 
 
     def _initialize_layout(self, initializer : LayoutInitializer):
@@ -125,15 +139,6 @@ class LatticeSurgeryComputation:
             self.logical_qubits.append(cell)
             self.composer.lattice().getPatchOfCell(cell).set_uuid(quuid)
 
-    def _import_logical_computation(self):
-
-        # Give a blank slice to show the layout
-        with self.timestep() as blank_slice: pass
-
-        for logical_op in self.logical_computation.ops:
-            with self.timestep() as slice:
-                slice.addLogicalOperation(logical_op)
-        return self
 
     def _init_simple_magic_state_array(self, num_magic_states: int): # TODO move this to layout initializer
         start_magic_state_array = self.composer.lattice().getCols()
