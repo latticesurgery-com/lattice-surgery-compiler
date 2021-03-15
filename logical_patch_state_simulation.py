@@ -100,7 +100,7 @@ def proportional_choice(assoc_data_prob : List[Tuple[T, float]]) -> T:
 class PatchToQubitMapper:
     def __init__(self, logical_computation: LogicalLatticeComputation):
         self.patch_location_to_logical_idx: Dict[uuid.UUID, int] = dict()
-        for p in PatchToQubitMapper._get_all_operating_patches(logical_computation.ops):
+        for p in PatchToQubitMapper._get_all_operating_patches(logical_computation):
             if self.patch_location_to_logical_idx.get(p) is None:
                 self.patch_location_to_logical_idx[p] = self.max_num_patches()
 
@@ -122,10 +122,13 @@ class PatchToQubitMapper:
 
 
     @staticmethod
-    def _get_all_operating_patches(logical_ops: List[LogicalLatticeOperation]) -> List[uuid.UUID]:
+    def _get_all_operating_patches(logical_computation: LogicalLatticeComputation) -> List[uuid.UUID]:
         patch_set = set()
-        for op in logical_ops:
+        patch_set.update(logical_computation.logical_qubit_uuid_map.values())
+
+        for op in logical_computation.ops:
             patch_set = patch_set.union(op.get_operating_patches())
+
         return list(patch_set)
 
 
@@ -183,11 +186,11 @@ class PatchSimulator:
             self.logical_state = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
 
-        elif isinstance(logical_op, PauliOperator):
-            for patch, op in logical_op.patch_pauli_operator_map.items():
-                symbolic_state = circuit_add_op_to_qubit(self.logical_state, ConvertersToQiskit.pauli_op(op),
-                                                        self.mapper.get_idx(patch))
-                self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
+        elif isinstance(logical_op, LogicalPauli):
+            symbolic_state = circuit_add_op_to_qubit(self.logical_state,
+                                                     ConvertersToQiskit.pauli_op(logical_op.pauli_matrix),
+                                                     self.mapper.get_idx(logical_op.qubit_uuid))
+            self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
 
         elif isinstance(logical_op, MultiBodyMeasurement):
             pauli_op_list : List[qk.PrimitiveOp] = []

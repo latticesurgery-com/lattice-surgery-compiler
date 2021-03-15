@@ -45,9 +45,9 @@ class AncillaQubitPatchInitialization(LogicalLatticeOperation):
 
 
 class LogicalPauli(LogicalLatticeOperation):
-    def __init__(self,qubit_uuid: uuid.UUID, op:PauliOperator ):
+    def __init__(self,qubit_uuid: uuid.UUID, pauli_matrix: PauliOperator):
         self.qubit_uuid = qubit_uuid
-        self.op = op
+        self.pauli_matrix = pauli_matrix
 
     def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]

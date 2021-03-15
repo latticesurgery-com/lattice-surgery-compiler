@@ -239,10 +239,9 @@ class LatticeSurgeryComputationComposer:
         ancilla_patch_routing.compute_ancilla_cells(self.qubit_patch_slices[-1], cell_pauli_operator_map)
 
 
-    def applyPauliProductOperator(self,
-                                  cell_of_patch : Tuple[int,int],
-                                  operator: patches.PauliOperator,
-                                  conditional:bool = False):
+    def applyPauliOperator(self,
+                           cell_of_patch : Tuple[int,int],
+                           operator: patches.PauliOperator):
 
         for patch in self.lattice().patches:
             if patch.getRepresentative() == cell_of_patch and patch.state is not None:
@@ -307,7 +306,7 @@ class LatticeSurgeryComputationComposer:
             if maybe_cell_location is None: raise Exception("Could not allocate ancilla")
 
         elif isinstance(current_op, LogicalPauli):
-                self.applyPauliProductOperator(self.get_patch_representative(current_op.qubit_uuid), current_op.op)
+                self.applyPauliOperator(self.get_patch_representative(current_op.qubit_uuid), current_op.pauli_matrix)
 
         elif isinstance(current_op, MultiBodyMeasurement):
             patch_pauli_operator_map = dict(
