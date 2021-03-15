@@ -72,9 +72,9 @@ class DefalutSymbolicStates():
     @staticmethod
     def from_amplitudes(zero_ampl: complex, one_ampl: complex) -> SymbolicState:
         # normalize
-        mag = cmath.sqrt(zero_ampl*zero_ampl + one_ampl*one_ampl)
+        mag = cmath.sqrt(zero_ampl*zero_ampl.conjugate() + one_ampl*one_ampl.conjugate())
         zero_ampl /= mag
-        one_ampl /= mag
+        one_ampl  /= mag
 
         # TODO set global phase to 0
 
@@ -88,7 +88,6 @@ class DefalutSymbolicStates():
             if close(one_ampl, cmath.sqrt(2)*1j):         return DefalutSymbolicStates.YPosEigenState
             if close(one_ampl,-cmath.sqrt(2)*1j):         return DefalutSymbolicStates.YNegEigenState
             if close(one_ampl, cmath.exp(1j*cmath.pi/4)): return DefalutSymbolicStates.YNegEigenState
-
 
         return SymbolicState("{:.2f}|0>\n{:+.2f}|1>".format(zero_ampl,one_ampl))
 
