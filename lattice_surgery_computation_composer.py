@@ -9,6 +9,7 @@ import enum
 
 import uuid
 
+from qiskit_opflow_utils import StateSeparator
 
 
 class LayoutType(enum.Enum):
@@ -126,7 +127,8 @@ class LatticeSurgeryComputation:
                 with comp.timestep() as slice:
                     slice.addLogicalOperation(logical_op)
                     sim.apply_logical_operation(logical_op)
-                    slice.lattice().logical_state = copy.deepcopy(sim.logical_state)
+                    slice.set_separable_states(sim)
+
         return comp
 
 
@@ -321,4 +323,12 @@ class LatticeSurgeryComputationComposer:
             raise Exception("Unsupported operation %s" % repr(current_op))
 
 
+    def set_separable_states(self, sim: PatchSimulator):
+        separable_states = StateSeparator.get_separable_qubits(sim.logical_state)
+        for patch in self.lattice().patches:
+            if patch.patch_uuid is not None:
+                idx = sim.mapper.get_idx(patch.patch_uuid)
+                if separable_states.get(idx) is not None and isinstance(patch.state, SymbolicState):
+                    alpha, beta = separable_states[idx].to_matrix()
+                    patch.state = DefalutSymbolicStates.from_amplitudes(alpha, beta)
 
