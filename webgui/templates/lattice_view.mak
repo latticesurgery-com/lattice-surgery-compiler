@@ -125,7 +125,7 @@
                                </span><br>
                                <span>
                                    %if cell is not None and cell.text is not None:
-                                        <span style="font-size: 17px"><b>${cell.text}</b></span>
+                                        <span style="font-size: 8px"><b>${cell.text}</b></span>
                                    %endif
                                </span>
 

@@ -47,7 +47,7 @@ def sparse_lattice_to_array(lattice: patches.Lattice) -> List[List[Optional[Visu
             array[y][x] = VisualArrayCell(patch.patch_type, {})
             if(patch.state is not None):
                 if(cell_idx_in_patch == 0): # Only display the value in the first cell of the patch
-                    array[y][x].text = patch.state.ket_repr()
+                    array[y][x].text = patch.state.ket_repr().replace("\n","<br>")
                     if isinstance(patch.state,ActiveState):
                         array[y][x].activity = patch.state.activity
 
