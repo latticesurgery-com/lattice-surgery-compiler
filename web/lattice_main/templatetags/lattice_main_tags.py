@@ -1,6 +1,4 @@
 from django import template
-# import sys
-# sys.path.append("..")
 from ..styles_map import styles_map
 
 register = template.Library()
@@ -69,7 +67,3 @@ def styles_map_activity_color_cell_activity_activity_type(cell):
 def cell_text(cell):
     text = cell.text
     return text
-
-# @register.filter
-# @register.filter
-# @register.filter

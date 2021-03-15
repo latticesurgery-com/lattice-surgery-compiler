@@ -2,7 +2,9 @@ from .VisualArrayCell import VisualArrayCell
 from qubit_state import ActiveState
 import patches
 
-def sparse_lattice_to_array(lattice: patches.Lattice): # -> List[List[Optional[VisualArrayCell]]]:
+from typing import List,Optional
+
+def sparse_lattice_to_array(lattice: patches.Lattice) -> List[List[Optional[VisualArrayCell]]]:
     array = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
 
     for patch in lattice.patches:

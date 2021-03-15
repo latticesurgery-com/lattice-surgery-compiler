@@ -9,7 +9,6 @@ from pauli_rotations_to_lattice_surgery import pauli_rotation_to_lattice_surgery
 from .sparse_lattice_to_array import sparse_lattice_to_array
 from qubit_state import *
 
-# Create your views here.
 
 
 def upload_circuit(request):
@@ -36,14 +35,11 @@ def view_compiled(request):
     lsc = pauli_rotation_to_lattice_surgery_computation(input_circuit)
     slices = lsc.composer.getSlices()
     mapped_slices = list(map(sparse_lattice_to_array, slices))
-    #enumerate_mapped_slices = enumerate(mapped_slices)
     context = {
         'slices': mapped_slices,
-        #'styles_map': styles_map,
         'patches': patches
     }
     return render(request,"lattice_main/lattice_view.html",context)
-    #return Response(render_html(slices=lsc.composer.getSlices()))
 
 # def render_to_file(request,slices, output_file_name): # (slices : List[patches.Lattice], output_file_name : str) -> str
 #     slices = list(map(sparse_lattice_to_array, slices))
@@ -61,11 +57,3 @@ def view_compiled(request):
 #             styles_map=styles_map,
 #             patches=patches
 #         ))
-
-# def render_html(slices : List[patches.Lattice]) -> str:
-#     template = Template(filename='templates/lattice_view.mak')
-#     return template.render(
-#         slices=list(map(sparse_lattice_to_array, slices)),
-#         styles_map=styles_map,
-#         patches=patches
-#     )
