@@ -45,5 +45,5 @@ class StateSeparator:
         for i in range(dict_state.num_qubits):
             maybe_state = StateSeparator.separate(i, dict_state)
             if maybe_state is not None:
-                out[i] = maybe_state
+                out[dict_state.num_qubits-i-1] = maybe_state
         return out
