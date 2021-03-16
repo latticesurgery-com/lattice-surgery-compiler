@@ -1,6 +1,7 @@
 from lattice_surgery_computation_composer import *
 from logical_patch_state_simulation import qk
 from webgui import lattice_view
+from debug.util import *
 
 if __name__ == "__main__":
     c = Circuit(4)
@@ -20,12 +21,7 @@ if __name__ == "__main__":
     logical_comp = LogicalLatticeComputation(c)
     sim = PatchSimulator(logical_comp)
 
-    def nice_print_dict_of_dict_states(ds):
-        out = "{"
-        for k,v in ds.items():
-            out += "\n\t" + str(k) + " : "
-            out +=        str(v.primitive) + " ,"
-        return out + "}"
+
 
 
     for op in logical_comp.ops:
