@@ -2,6 +2,7 @@ import patches
 import ancilla_patch_routing
 from logical_lattice_ops import *
 from logical_patch_state_simulation import PatchSimulator
+import debug.util
 
 from typing import *
 import copy
@@ -128,6 +129,9 @@ class LatticeSurgeryComputation:
                     slice.addLogicalOperation(logical_op)
                     sim.apply_logical_operation(logical_op)
                     slice.set_separable_states(sim)
+
+        # Display the sates in the final slice
+        comp.composer.set_separable_states(sim)
 
         return comp
 
