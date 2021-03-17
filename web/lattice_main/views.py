@@ -4,8 +4,7 @@ import os, sys, uuid, shutil
 from typing import *
 
 import patches, circuit
-from logical_lattice_ops import LogicalLatticeComputation
-from lattice_surgery_computation_composer import LatticeSurgeryComputation,LayoutType
+import lattice_surgery_computation_composer as lscc
 
 #from pauli_rotations_to_lattice_surgery import pauli_rotation_to_lattice_surgery_computation
 
@@ -24,10 +23,8 @@ def view_compiled(request):
     #print("post-request",request.FILES['circuit'].name)
     file_ext = request.FILES['circuit'].name.split('.')[-1]
     # Save the file to a tmp dir so that pyzx can read it
-    ### for Linux deployment ###
-    #circuit_tmp_save_location = os.path.join('/tmp','%s.%s'%(uuid.uuid4(),file_ext))
-    ### Windows Testing ###
-    circuit_tmp_save_location = os.path.join('C:/Users/Keelan/Documents/Websites and Programming Projects/Lattice Surgery/temp server files','%s.%s'%(uuid.uuid4(),file_ext))
+    tmp_abs_path = os.path.abspath("./lattice_main/tmp/")
+    circuit_tmp_save_location = os.path.join(tmp_abs_path,'%s.%s'%(uuid.uuid4(),file_ext))
     intput_circuit_file = request.FILES['circuit']
     intput_circuit_file.seek(0)
     with open(circuit_tmp_save_location, 'wb') as output_file:
@@ -38,8 +35,9 @@ def view_compiled(request):
     os.unlink(circuit_tmp_save_location)
 
     # TODO refactor the process of getting slices into circuit
-    logical_comp = LogicalLatticeComputation(input_circuit)
-    lattice_comp = LatticeSurgeryComputation(logical_comp, LayoutType.SimplePreDistilledStates)
+    logical_circuit = lscc.LogicalLatticeComputation(input_circuit)
+    layout_type = lscc.LayoutType.SimplePreDistilledStates
+    lattice_comp = lscc.LatticeSurgeryComputation.make_computation_with_simulation(logical_circuit, layout_type)
 
     slices = lattice_comp.composer.getSlices()
     mapped_slices = list(map(sparse_lattice_to_array, slices))
