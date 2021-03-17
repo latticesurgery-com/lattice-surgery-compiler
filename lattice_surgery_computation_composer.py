@@ -30,7 +30,7 @@ class LayoutInitializer:
     @staticmethod
     def singleSquarePatch(cell:Tuple[int,int],
                           patch_type:patches.PatchType = patches.PatchType.Qubit,
-                          patch_state:patches.QubitState = patches.DefalutSymbolicStates.Zero):
+                          patch_state:patches.QubitState = patches.DefaultSymbolicStates.Zero):
         return patches.Patch(patch_type, patch_state, [cell],[
             patches.Edge(patches.EdgeType.Dashed,  cell, patches.Orientation.Top),
             patches.Edge(patches.EdgeType.Dashed,  cell, patches.Orientation.Bottom),
@@ -43,12 +43,12 @@ class LayoutInitializer:
         # Requires
         x,y = top_left_corner
         return [
-            LayoutInitializer.singleSquarePatch((x + 2, y), patches.PatchType.DistillationQubit, patches.DefalutSymbolicStates.Magic),
-            LayoutInitializer.singleSquarePatch((x + 3, y), patches.PatchType.DistillationQubit, patches.DefalutSymbolicStates.Magic),
-            LayoutInitializer.singleSquarePatch((x + 4, y + 1), patches.PatchType.DistillationQubit, patches.DefalutSymbolicStates.Plus),
-            LayoutInitializer.singleSquarePatch((x + 3, y + 2), patches.PatchType.DistillationQubit, patches.DefalutSymbolicStates.Magic),
-            LayoutInitializer.singleSquarePatch((x + 2, y + 2), patches.PatchType.DistillationQubit, patches.DefalutSymbolicStates.Magic),
-            patches.Patch(patches.PatchType.DistillationQubit, patches.DefalutSymbolicStates.Zero, [(x, y), (x, y + 1)],
+            LayoutInitializer.singleSquarePatch((x + 2, y), patches.PatchType.DistillationQubit, patches.DefaultSymbolicStates.Magic),
+            LayoutInitializer.singleSquarePatch((x + 3, y), patches.PatchType.DistillationQubit, patches.DefaultSymbolicStates.Magic),
+            LayoutInitializer.singleSquarePatch((x + 4, y + 1), patches.PatchType.DistillationQubit, patches.DefaultSymbolicStates.Plus),
+            LayoutInitializer.singleSquarePatch((x + 3, y + 2), patches.PatchType.DistillationQubit, patches.DefaultSymbolicStates.Magic),
+            LayoutInitializer.singleSquarePatch((x + 2, y + 2), patches.PatchType.DistillationQubit, patches.DefaultSymbolicStates.Magic),
+            patches.Patch(patches.PatchType.DistillationQubit, patches.DefaultSymbolicStates.Zero, [(x, y), (x, y + 1)],
                           [
                               patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Top),
                               patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Left),
@@ -57,7 +57,7 @@ class LayoutInitializer:
                               patches.Edge(patches.EdgeType.Dashed,(x, y+1), patches.Orientation.Bottom),
                               patches.Edge(patches.EdgeType.Solid, (x, y+1), patches.Orientation.Right),
                           ]),
-            patches.Patch(patches.PatchType.DistillationQubit, patches.DefalutSymbolicStates.Magic, [(x + 1, y), (x + 1, y + 1)],
+            patches.Patch(patches.PatchType.DistillationQubit, patches.DefaultSymbolicStates.Magic, [(x + 1, y), (x + 1, y + 1)],
                           [
                               patches.Edge(patches.EdgeType.Dashed,  (x+1, y), patches.Orientation.Top),
                               patches.Edge(patches.EdgeType.Solid,  (x+1, y), patches.Orientation.Left),
@@ -154,7 +154,7 @@ class LatticeSurgeryComputation:
             self.composer.lattice().patches.append(LayoutInitializer.singleSquarePatch(
                 magic_state_pos,
                 patches.PatchType.DistillationQubit,
-                patches.DefalutSymbolicStates.Magic))
+                patches.DefaultSymbolicStates.Magic))
             self.magic_state_queue.append(magic_state_pos)
 
         self.composer.lattice().min_cols += num_magic_states
@@ -258,7 +258,7 @@ class LatticeSurgeryComputationComposer:
                 if edge.isStiched():
                     edge.border_type = edge.border_type.unstitched_type()
                     # After measurement we are not ready to track state yet
-                    self.lattice().getPatchOfCell(edge.cell).state = patches.DefalutSymbolicStates.UnknownState
+                    self.lattice().getPatchOfCell(edge.cell).state = patches.DefaultSymbolicStates.UnknownState
 
 
         is_not_ancilla  =lambda patch: patch.patch_type != patches.PatchType.Ancilla
@@ -334,7 +334,7 @@ class LatticeSurgeryComputationComposer:
                 if separable_states.get(idx) is not None:
                     alpha, beta = separable_states[idx].to_matrix()
                     if isinstance(patch.state, SymbolicState):
-                        patch.state = DefalutSymbolicStates.from_amplitudes(alpha, beta)
+                        patch.state = DefaultSymbolicStates.from_amplitudes(alpha, beta)
                     elif isinstance(patch.state, ActiveState):
-                        patch.state.next = DefalutSymbolicStates.from_amplitudes(alpha, beta)
+                        patch.state.next = DefaultSymbolicStates.from_amplitudes(alpha, beta)
 

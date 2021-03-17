@@ -10,12 +10,12 @@ lsc = LatticeSurgeryComputation(LayoutTypes.Simple,5);
 
 
 with lsc.timestep() as slice:
-    slice.addPatch(LayoutInitializer.singleSquarePatch((4, 2), patches.PatchType.Qubit, patches.DefalutSymbolicStates.Plus))
+    slice.addPatch(LayoutInitializer.singleSquarePatch((4, 2), patches.PatchType.Qubit, patches.DefaultSymbolicStates.Plus))
 
 
 with lsc.timestep() as slice:
 
-    slice.addPatch(LayoutInitializer.singleSquarePatch((3, 2), patches.PatchType.Qubit, patches.DefalutSymbolicStates.Plus))
+    slice.addPatch(LayoutInitializer.singleSquarePatch((3, 2), patches.PatchType.Qubit, patches.DefaultSymbolicStates.Plus))
 
 with lsc.timestep() as slice:
 

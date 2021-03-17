@@ -36,11 +36,11 @@ class SymbolicState(QubitState):
         return self.name
 
     def compose_operator(self, op: PauliOperator):
-        return ActiveState(self, DefalutSymbolicStates.UnknownState, QubitActivity(op, ActivityType.Unitary))
+        return ActiveState(self, DefaultSymbolicStates.UnknownState, QubitActivity(op, ActivityType.Unitary))
 
     def apply_measurement(self, basis: PauliOperator):
         return ActiveState(self,
-                           DefalutSymbolicStates.UnknownState,
+                           DefaultSymbolicStates.UnknownState,
                            QubitActivity(basis,ActivityType.Measurement))
 
 class ActiveState(QubitState):
@@ -58,7 +58,7 @@ class ActiveState(QubitState):
 
 
 
-class DefalutSymbolicStates():
+class DefaultSymbolicStates():
 
     Zero = SymbolicState('|0>')
     One = SymbolicState('|1>')
@@ -80,14 +80,14 @@ class DefalutSymbolicStates():
 
         close = lambda a,b: cmath.isclose(a,b,rel_tol=10**(-9))
 
-        if close(zero_ampl,0): return DefalutSymbolicStates.One
-        if close(one_ampl,0):  return DefalutSymbolicStates.Zero
+        if close(zero_ampl,0): return DefaultSymbolicStates.One
+        if close(one_ampl,0):  return DefaultSymbolicStates.Zero
         if close(zero_ampl,cmath.sqrt(2)):
-            if close(one_ampl, cmath.sqrt(2)):            return DefalutSymbolicStates.Plus
-            if close(one_ampl,-cmath.sqrt(2)):            return DefalutSymbolicStates.Minus
-            if close(one_ampl, cmath.sqrt(2)*1j):         return DefalutSymbolicStates.YPosEigenState
-            if close(one_ampl,-cmath.sqrt(2)*1j):         return DefalutSymbolicStates.YNegEigenState
-            if close(one_ampl, cmath.exp(1j*cmath.pi/4)): return DefalutSymbolicStates.YNegEigenState
+            if close(one_ampl, cmath.sqrt(2)):            return DefaultSymbolicStates.Plus
+            if close(one_ampl,-cmath.sqrt(2)):            return DefaultSymbolicStates.Minus
+            if close(one_ampl, cmath.sqrt(2)*1j):         return DefaultSymbolicStates.YPosEigenState
+            if close(one_ampl,-cmath.sqrt(2)*1j):         return DefaultSymbolicStates.YNegEigenState
+            if close(one_ampl, cmath.exp(1j*cmath.pi/4)): return DefaultSymbolicStates.YNegEigenState
 
         return SymbolicState("{:.2f}|0>\n{:+.2f}|1>".format(zero_ampl,one_ampl))
 
