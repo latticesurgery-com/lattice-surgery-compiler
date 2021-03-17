@@ -4,7 +4,10 @@ import os, sys, uuid, shutil
 from typing import *
 
 import patches, circuit
-from pauli_rotations_to_lattice_surgery import pauli_rotation_to_lattice_surgery_computation
+from logical_lattice_ops import LogicalLatticeComputation
+from lattice_surgery_computation_composer import LatticeSurgeryComputation,LayoutType
+
+#from pauli_rotations_to_lattice_surgery import pauli_rotation_to_lattice_surgery_computation
 
 from .sparse_lattice_to_array import sparse_lattice_to_array
 from qubit_state import *
@@ -17,11 +20,14 @@ def upload_circuit(request):
 
 def view_compiled(request):
     """ url shortcut name: lattice_main-latticeview """
-    # Save the file to a tmp dir so that pyzx can read it
-    print("post-request",request.FILES['circuit'].name)
 
+    #print("post-request",request.FILES['circuit'].name)
     file_ext = request.FILES['circuit'].name.split('.')[-1]
-    circuit_tmp_save_location = os.path.join('/tmp','%s.%s'%(uuid.uuid4(),file_ext))
+    # Save the file to a tmp dir so that pyzx can read it
+    ### for Linux deployment ###
+    #circuit_tmp_save_location = os.path.join('/tmp','%s.%s'%(uuid.uuid4(),file_ext))
+    ### Windows Testing ###
+    circuit_tmp_save_location = os.path.join('C:/Users/Keelan/Documents/Websites and Programming Projects/Lattice Surgery/temp server files','%s.%s'%(uuid.uuid4(),file_ext))
     intput_circuit_file = request.FILES['circuit']
     intput_circuit_file.seek(0)
     with open(circuit_tmp_save_location, 'wb') as output_file:
@@ -32,8 +38,10 @@ def view_compiled(request):
     os.unlink(circuit_tmp_save_location)
 
     # TODO refactor the process of getting slices into circuit
-    lsc = pauli_rotation_to_lattice_surgery_computation(input_circuit)
-    slices = lsc.composer.getSlices()
+    logical_comp = LogicalLatticeComputation(input_circuit)
+    lattice_comp = LatticeSurgeryComputation(logical_comp, LayoutType.SimplePreDistilledStates)
+
+    slices = lattice_comp.composer.getSlices()
     mapped_slices = list(map(sparse_lattice_to_array, slices))
     context = {
         'slices': mapped_slices,
