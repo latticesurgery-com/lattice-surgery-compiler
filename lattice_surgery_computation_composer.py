@@ -331,7 +331,10 @@ class LatticeSurgeryComputationComposer:
         for patch in self.lattice().patches:
             if patch.patch_uuid is not None:
                 idx = sim.mapper.get_idx(patch.patch_uuid)
-                if separable_states.get(idx) is not None and isinstance(patch.state, SymbolicState):
+                if separable_states.get(idx) is not None:
                     alpha, beta = separable_states[idx].to_matrix()
-                    patch.state = DefalutSymbolicStates.from_amplitudes(alpha, beta)
+                    if isinstance(patch.state, SymbolicState):
+                        patch.state = DefalutSymbolicStates.from_amplitudes(alpha, beta)
+                    elif isinstance(patch.state, ActiveState):
+                        patch.state.next = DefalutSymbolicStates.from_amplitudes(alpha, beta)
 
