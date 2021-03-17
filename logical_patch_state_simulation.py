@@ -25,16 +25,9 @@ class ConvertersToQiskit:
 
     @staticmethod
     def symbolic_state(s:SymbolicState)->qk.StateFn:
-        if s == DefaultSymbolicStates.Zero:
-            return qk.Zero
-        elif s == DefaultSymbolicStates.Plus:
-            return qk.One
-        elif s == DefaultSymbolicStates.YPosEigenState:
-            return (qk.Zero - 1j*qk.One)/math.sqrt(2)
-        elif s == DefaultSymbolicStates.Magic:
-            return (qk.Zero + cmath.exp(1j*math.pi/4)*qk.One)/math.sqrt(2)
-        else:
-            raise Exception("State cannot be converted to qiskit: "+repr(s))
+        zero_ampl, one_ampl = DefaultSymbolicStates.get_amplitudes(s)
+        return zero_ampl*qk.Zero + one_ampl*qk.One
+
 
 
 def circuit_add_op_to_qubit(circ : qk.CircuitOp, op: qk.PrimitiveOp, idx: int) -> qk.CircuitOp:
