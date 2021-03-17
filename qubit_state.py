@@ -15,7 +15,7 @@ class QubitActivity:
         self.activity_type = activity_type
     def ket_repr(self):
         if self.activity_type == ActivityType.Unitary: return self.op.value
-        if self.activity_type == ActivityType.Measurement: return self.op.value + "->"
+        if self.activity_type == ActivityType.Measurement: return "Measure "+ str(self.op.value) +" \n"
 
 class QubitState:
     def ket_repr(self):
@@ -64,8 +64,8 @@ class DefalutSymbolicStates():
     One = SymbolicState('|1>')
     Plus = SymbolicState('|+>')
     Minus = SymbolicState('|->')
-    YPosEigenState = SymbolicState('|Y_+>')
-    YNegEigenState = SymbolicState('|Y_->')
+    YPosEigenState = SymbolicState('|(Y+)>')
+    YNegEigenState = SymbolicState('|(Y-)>')
     Magic = SymbolicState('|m>')
     UnknownState = SymbolicState('|?>')
 
@@ -76,22 +76,36 @@ class DefalutSymbolicStates():
         zero_ampl /= mag
         one_ampl  /= mag
 
-        # TODO set global phase to 0
+        # Set global phase to 0
+        gphase = cmath.phase(zero_ampl)
+        zero_ampl /= cmath.exp(1j*gphase)
+        one_ampl  /= cmath.exp(1j*gphase)
 
-        close = lambda a,b: cmath.isclose(a,b,rel_tol=10**(-9))
+        close = lambda a,b: cmath.isclose(a,b,rel_tol=10**(-6))
 
         if close(zero_ampl,0): return DefalutSymbolicStates.One
         if close(one_ampl,0):  return DefalutSymbolicStates.Zero
-        if close(zero_ampl,cmath.sqrt(2)):
-            if close(one_ampl, cmath.sqrt(2)):            return DefalutSymbolicStates.Plus
-            if close(one_ampl,-cmath.sqrt(2)):            return DefalutSymbolicStates.Minus
-            if close(one_ampl, cmath.sqrt(2)*1j):         return DefalutSymbolicStates.YPosEigenState
-            if close(one_ampl,-cmath.sqrt(2)*1j):         return DefalutSymbolicStates.YNegEigenState
-            if close(one_ampl, cmath.exp(1j*cmath.pi/4)): return DefalutSymbolicStates.YNegEigenState
+        if close(zero_ampl,cmath.sqrt(2)/2):
+            if close(one_ampl, cmath.sqrt(2)/2):                            return DefalutSymbolicStates.Plus
+            if close(one_ampl,-cmath.sqrt(2)/2):                            return DefalutSymbolicStates.Minus
+            if close(one_ampl, cmath.sqrt(2)/2*1j):                         return DefalutSymbolicStates.YPosEigenState
+            if close(one_ampl,-cmath.sqrt(2)/2*1j):                         return DefalutSymbolicStates.YNegEigenState
+            if close(one_ampl, cmath.sqrt(2)/2*cmath.exp(1j*cmath.pi/4)):   return DefalutSymbolicStates.Magic
 
         return SymbolicState("{:.2f}|0>\n{:+.2f}|1>".format(zero_ampl,one_ampl))
 
 
+
+    @staticmethod
+    def get_amplitudes(s : SymbolicState) -> Tuple[complex,complex]:
+        """Returns in order the zero amplitude and the one amplitude"""
+        if s == DefalutSymbolicStates.Zero:             return 1, 0
+        if s == DefalutSymbolicStates.One:              return 0, 1
+        elif s == DefalutSymbolicStates.Plus:           return cmath.sqrt(2)/2,  cmath.sqrt(2)/2
+        elif s == DefalutSymbolicStates.Minus:          return cmath.sqrt(2)/2, -cmath.sqrt(2)/2
+        elif s == DefalutSymbolicStates.YPosEigenState: return cmath.sqrt(2)/2,  cmath.sqrt(2)/2*1j
+        elif s == DefalutSymbolicStates.YNegEigenState: return cmath.sqrt(2)/2, -cmath.sqrt(2)/2*1j
+        elif s == DefalutSymbolicStates.Magic:          return cmath.sqrt(2)/2,  cmath.exp(1j*cmath.pi/4)/cmath.sqrt(2)
 
 
 
