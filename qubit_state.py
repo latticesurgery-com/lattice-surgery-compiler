@@ -13,9 +13,6 @@ class QubitActivity:
     def __init__(self, op:PauliOperator, activity_type: ActivityType):
         self.op = op
         self.activity_type = activity_type
-    def ket_repr(self):
-        if self.activity_type == ActivityType.Unitary: return self.op.value
-        if self.activity_type == ActivityType.Measurement: return "Measure "+ str(self.op.value) +" \n"
 
 class QubitState:
     def ket_repr(self):
@@ -50,7 +47,19 @@ class ActiveState(QubitState):
         self.activity = activity
 
     def ket_repr(self):
-        return self.activity.ket_repr() + self.prev.ket_repr()
+        if self.activity.activity_type == ActivityType.Measurement:
+            return "Measuring {:s}:\n{:s}".format(str(self.activity.op),self.next.ket_repr())
+        if self.activity.activity_type == ActivityType.Unitary:
+            if self.prev == DefalutSymbolicStates.UnknownState:
+                return "Apply {:s}\n to entangled\n state".format(self.activity.op)
+            elif len(self.prev.ket_repr()+self.prev.ket_repr())<10:
+                # Compact printing
+                return str(self.activity.op) + self.prev.ket_repr() + " = "+ self.next.ket_repr()
+            else:
+                return "{:s}({:s})\n={:s}".format(str(self.activity.op),self.prev.ket_repr(),self.next.ket_repr())
+
+
+
 
     def disappears(self):
         return self.activity.activity_type == ActivityType.Measurement
