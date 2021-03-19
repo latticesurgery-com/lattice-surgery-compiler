@@ -333,8 +333,10 @@ class LatticeSurgeryComputationComposer:
                 idx = sim.mapper.get_idx(patch.patch_uuid)
                 if separable_states.get(idx) is not None:
                     alpha, beta = separable_states[idx].to_matrix()
-                    if isinstance(patch.state, SymbolicState):
-                        patch.state = DefaultSymbolicStates.from_amplitudes(alpha, beta)
-                    elif isinstance(patch.state, ActiveState):
+                    if isinstance(patch.state, ActiveState):
                         patch.state.next = DefaultSymbolicStates.from_amplitudes(alpha, beta)
+                    else:
+                        patch.state = DefaultSymbolicStates.from_amplitudes(alpha, beta)
+                else:
+                    patch.state = EntangledState()
 
