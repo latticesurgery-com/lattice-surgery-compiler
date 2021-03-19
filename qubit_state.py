@@ -50,7 +50,7 @@ class ActiveState(QubitState):
         if self.activity.activity_type == ActivityType.Measurement:
             return "Measuring {:s}:\n{:s}".format(str(self.activity.op),self.next.ket_repr())
         if self.activity.activity_type == ActivityType.Unitary:
-            if self.prev == DefalutSymbolicStates.UnknownState:
+            if isinstance(self.prev,EntangledState):
                 return "Apply {:s}\n to entangled\n state".format(self.activity.op)
             elif len(self.prev.ket_repr()+self.prev.ket_repr())<10:
                 # Compact printing
@@ -58,13 +58,16 @@ class ActiveState(QubitState):
             else:
                 return "{:s}({:s})\n={:s}".format(str(self.activity.op),self.prev.ket_repr(),self.next.ket_repr())
 
-
-
-
     def disappears(self):
         return self.activity.activity_type == ActivityType.Measurement
 
 
+class EntangledState(SymbolicState):
+    def __init__(self):
+        super().__init__("Entangled")
+
+    def ket_repr(self):
+        return "Entangled"
 
 
 class DefalutSymbolicStates():
