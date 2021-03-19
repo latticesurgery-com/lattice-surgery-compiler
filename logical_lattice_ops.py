@@ -213,6 +213,9 @@ class PiOverFourCorrectionCondition(EvaluationCondition):
         self.invert = invert
 
     def does_evaluate(self):
+        if not self.multi_body_measurement.does_evaluate():
+            return False
+
         out = self.multi_body_measurement.get_outcome()*self.ancilla_measurement.get_outcome() == -1
         if self.invert:
             out = not out
@@ -225,6 +228,9 @@ class PiOverEightCorrectionConditionPiOverFour(EvaluationCondition):
         self.invert = invert
 
     def does_evaluate(self):
+        if not self.multi_body_measurement.does_evaluate():
+            return False
+
         out = self.multi_body_measurement.get_outcome() == -1
         if self.invert:
             out = not out
@@ -235,4 +241,7 @@ class PiOverEightCorrectionConditionPiOverTwo(EvaluationCondition):
         self.ancilla_measurement = ancilla_measurement
 
     def does_evaluate(self):
+        if not self.ancilla_measurement.does_evaluate():
+            return False
+
         return self.ancilla_measurement.get_outcome() == -1
