@@ -39,6 +39,17 @@ class LayoutInitializer:
         ])
 
     @staticmethod
+    def rotatedSingleSquarePatch(cell:Tuple[int,int],
+                          patch_type:patches.PatchType = patches.PatchType.Qubit,
+                          patch_state:patches.QubitState = patches.DefalutSymbolicStates.Zero):
+        return patches.Patch(patch_type, patch_state, [cell],[
+            patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Top),
+            patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Bottom),
+            patches.Edge(patches.EdgeType.Dashed,  cell, patches.Orientation.Left),
+            patches.Edge(patches.EdgeType.Dashed,  cell, patches.Orientation.Right)
+        ])
+
+    @staticmethod
     def simpleRightFacingDistillery(top_left_corner: Tuple[int,int]) -> List[patches.Patch]:
         # Requires
         x,y = top_left_corner
@@ -111,10 +122,10 @@ class LatticeSurgeryComputation:
         self._initialize_layout(SimplePreDistilledStatesLayoutInitializer(self.num_qubits))
 
         self.ancilla_locations = [(j,2) for j in range(self.num_qubits)]
-        self._init_simple_magic_state_array(self.logical_computation.count_magic_states())
-
-        self.composer.lattice().min_cols = 2*self.num_qubits
+        self.composer.lattice().min_cols = 2 * self.num_qubits
         self.composer.lattice().min_rows = 3
+
+        self._init_simple_magic_state_array(self.logical_computation.count_magic_states())
 
     @staticmethod
     def make_computation_with_simulation(logical_computation: LogicalLatticeComputation, layout_type: LayoutType):
@@ -150,14 +161,14 @@ class LatticeSurgeryComputation:
         start_magic_state_array = self.composer.lattice().getCols()
         self.magic_state_queue:List[Tuple[int,int]] = []
         for j in range(start_magic_state_array, start_magic_state_array + num_magic_states):
-            magic_state_pos = (j, 0)
-            self.composer.lattice().patches.append(LayoutInitializer.singleSquarePatch(
+            magic_state_pos = (j+1, 0)
+            self.composer.lattice().patches.append(LayoutInitializer.rotatedSingleSquarePatch(
                 magic_state_pos,
                 patches.PatchType.DistillationQubit,
                 patches.DefalutSymbolicStates.Magic))
             self.magic_state_queue.append(magic_state_pos)
 
-        self.composer.lattice().min_cols += num_magic_states
+        self.composer.lattice().min_cols = self.composer.lattice().getCols()
 
     def timestep(self):
         class LatticeSurgeryComputationSliceContextManager:
