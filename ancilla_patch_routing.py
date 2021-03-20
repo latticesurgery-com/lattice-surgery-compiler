@@ -53,7 +53,7 @@ def add_directed_edges(
         lattice: patches.Lattice,
         patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator],
         source_patch_vertex: str,
-        tagret_patch_vertex: str
+        tagret_patch_vertex: List[str]
     ):
 
     for j, patch in enumerate(lattice.patches):
