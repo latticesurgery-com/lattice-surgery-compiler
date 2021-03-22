@@ -41,7 +41,7 @@ class LayoutInitializer:
     @staticmethod
     def rotatedSingleSquarePatch(cell:Tuple[int,int],
                           patch_type:patches.PatchType = patches.PatchType.Qubit,
-                          patch_state:patches.QubitState = patches.DefaultSymbolicStates.Zero):
+                          patch_state:patches.QubitState = patches.DefalutSymbolicStates.Zero):
         return patches.Patch(patch_type, patch_state, [cell],[
             patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Top),
             patches.Edge(patches.EdgeType.Solid,  cell, patches.Orientation.Bottom),
