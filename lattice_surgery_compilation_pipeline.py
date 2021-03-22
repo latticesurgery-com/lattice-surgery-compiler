@@ -32,7 +32,7 @@ def compile_file(circuit_file_name : str ,
     if apply_litinski_transform:
         input_circuit.apply_transformation()
         input_circuit.remove_y_operators_from_circuit()
-        compilation_text += "\nApplied Litinski Transform:\n"
+        compilation_text += "\nCircuit after the Litinski Transform:\n"
         compilation_text += input_circuit.render_ascii()
 
     logical_computation = logical_lattice_ops.LogicalLatticeComputation(input_circuit)
