@@ -1,5 +1,5 @@
 import patches
-from typing import *
+from typing import Dict
 
 class VisualArrayCell:
     def __init__(self, patch_type: patches.PatchType, edges: Dict[patches.Orientation, patches.EdgeType]):
