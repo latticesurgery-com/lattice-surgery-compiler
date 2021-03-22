@@ -25,13 +25,14 @@ def view_compiled(request):
         shutil.copyfileobj(intput_circuit_file, output_file)
 
     try:
-        slices = lattice_surgery_compilation_pipeline.compile_file(circuit_tmp_save_location)
+        slices, compilation_text = lattice_surgery_compilation_pipeline.compile_file(circuit_tmp_save_location)
     finally:
         os.unlink(circuit_tmp_save_location)
 
     context = {
         'slices': slices,
-        'patches': patches
+        'patches': patches,
+        'compilation_text' : compilation_text
     }
     return render(request,"lattice_main/lattice_view.html",context)
 
