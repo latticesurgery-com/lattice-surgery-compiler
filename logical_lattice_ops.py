@@ -45,9 +45,9 @@ class AncillaQubitPatchInitialization(LogicalLatticeOperation):
 
 
 class LogicalPauli(LogicalLatticeOperation):
-    def __init__(self,qubit_uuid: uuid.UUID, op:PauliOperator ):
+    def __init__(self,qubit_uuid: uuid.UUID, pauli_matrix: PauliOperator):
         self.qubit_uuid = qubit_uuid
-        self.op = op
+        self.pauli_matrix = pauli_matrix
 
     def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]
@@ -149,7 +149,7 @@ class RotationsComposer:
         """See Figure 11 of Litinski's GoSC
         """
         ancilla_uuid = uuid.uuid4()
-        ancilla_initialization = AncillaQubitPatchInitialization(InitializeableState.YEigenState, ancilla_uuid)
+        ancilla_initialization = AncillaQubitPatchInitialization(DefaultSymbolicStates.YPosEigenState, ancilla_uuid)
 
         multi_body_measurement = MultiBodyMeasurement({})
         multi_body_measurement.set_condition(condition)
@@ -158,7 +158,9 @@ class RotationsComposer:
         ancilla_measurement = SinglePatchMeasurement(ancilla_uuid, PauliOperator.X)
 
         corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1, 2))
-        corrective_rotation.set_condition(PiOverFourCorrectionCondition(multi_body_measurement,ancilla_measurement))
+        corrective_rotation.set_condition(PiOverFourCorrectionCondition(multi_body_measurement,
+                                                                        ancilla_measurement,
+                                                                        invert_correction))
         for qubit_idx, op in ops_map.items():
             patch = self.computation.logical_qubit_uuid_map[qubit_idx]
             multi_body_measurement.patch_pauli_operator_map[patch] = op
@@ -183,7 +185,8 @@ class RotationsComposer:
         multi_body_measurement.patch_pauli_operator_map[magic_state_uuid] = PauliOperator.Z
 
         first_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1,4))
-        first_corrective_rotation.set_condition(PiOverEightCorrectionConditionPiOverFour(multi_body_measurement))
+        first_corrective_rotation.set_condition(PiOverEightCorrectionConditionPiOverFour(multi_body_measurement,
+                                                                                         invert_correction))
 
         ancilla_measurement = SinglePatchMeasurement(magic_state_uuid, PauliOperator.X)
 
@@ -204,24 +207,41 @@ class RotationsComposer:
 
 
 class PiOverFourCorrectionCondition(EvaluationCondition):
-    def __init__(self,multi_body_measurement : MultiBodyMeasurement,ancilla_measurement:SinglePatchMeasurement):
+    def __init__(self,multi_body_measurement : MultiBodyMeasurement,ancilla_measurement:SinglePatchMeasurement, invert: bool):
         self.multi_body_measurement = multi_body_measurement
         self.ancilla_measurement = ancilla_measurement
+        self.invert = invert
 
     def does_evaluate(self):
-        return self.multi_body_measurement.get_outcome()*self.ancilla_measurement.get_outcome() == -1
+        if not self.multi_body_measurement.does_evaluate():
+            return False
+
+        out = self.multi_body_measurement.get_outcome()*self.ancilla_measurement.get_outcome() == -1
+        if self.invert:
+            out = not out
+        return out
 
 
 class PiOverEightCorrectionConditionPiOverFour(EvaluationCondition):
-    def __init__(self,multi_body_measurement : MultiBodyMeasurement):
+    def __init__(self,multi_body_measurement : MultiBodyMeasurement, invert : bool):
         self.multi_body_measurement = multi_body_measurement
+        self.invert = invert
 
     def does_evaluate(self):
-        return self.multi_body_measurement.get_outcome() == -1
+        if not self.multi_body_measurement.does_evaluate():
+            return False
+
+        out = self.multi_body_measurement.get_outcome() == -1
+        if self.invert:
+            out = not out
+        return out
 
 class PiOverEightCorrectionConditionPiOverTwo(EvaluationCondition):
     def __init__(self, ancilla_measurement: SinglePatchMeasurement):
         self.ancilla_measurement = ancilla_measurement
 
     def does_evaluate(self):
+        if not self.ancilla_measurement.does_evaluate():
+            return False
+
         return self.ancilla_measurement.get_outcome() == -1

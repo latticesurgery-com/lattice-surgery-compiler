@@ -25,16 +25,9 @@ class ConvertersToQiskit:
 
     @staticmethod
     def symbolic_state(s:SymbolicState)->qk.StateFn:
-        if s == InitializeableState.Zero:
-            return qk.Zero
-        elif s == InitializeableState.Plus:
-            return qk.One
-        elif s == InitializeableState.YEigenState:
-            return (qk.Zero - 1j*qk.One)/math.sqrt(2)
-        elif s == InitializeableState.Magic:
-            return (qk.Zero + cmath.exp(1j*math.pi/4)*qk.One)/math.sqrt(2)
-        else:
-            raise Exception("State cannot be converted to qiskit: "+repr(s))
+        zero_ampl, one_ampl = DefaultSymbolicStates.get_amplitudes(s)
+        return zero_ampl*qk.Zero + one_ampl*qk.One
+
 
 
 def circuit_add_op_to_qubit(circ : qk.CircuitOp, op: qk.PrimitiveOp, idx: int) -> qk.CircuitOp:
@@ -100,7 +93,7 @@ def proportional_choice(assoc_data_prob : List[Tuple[T, float]]) -> T:
 class PatchToQubitMapper:
     def __init__(self, logical_computation: LogicalLatticeComputation):
         self.patch_location_to_logical_idx: Dict[uuid.UUID, int] = dict()
-        for p in PatchToQubitMapper._get_all_operating_patches(logical_computation.ops):
+        for p in PatchToQubitMapper._get_all_operating_patches(logical_computation):
             if self.patch_location_to_logical_idx.get(p) is None:
                 self.patch_location_to_logical_idx[p] = self.max_num_patches()
 
@@ -122,10 +115,13 @@ class PatchToQubitMapper:
 
 
     @staticmethod
-    def _get_all_operating_patches(logical_ops: List[LogicalLatticeOperation]) -> List[uuid.UUID]:
+    def _get_all_operating_patches(logical_computation: LogicalLatticeComputation) -> List[uuid.UUID]:
         patch_set = set()
-        for op in logical_ops:
+        patch_set.update(logical_computation.logical_qubit_uuid_map.values())
+
+        for op in logical_computation.ops:
             patch_set = patch_set.union(op.get_operating_patches())
+
         return list(patch_set)
 
 
@@ -155,13 +151,13 @@ class PatchSimulator:
             initial_ancilla_states[quuid] = symbolic_state
 
         def get_init_state(quuid:uuid.UUID) -> qk.StateFn:
-            return ConvertersToQiskit.symbolic_state(initial_ancilla_states.get(quuid, InitializeableState.Zero))
+            return ConvertersToQiskit.symbolic_state(initial_ancilla_states.get(quuid, DefaultSymbolicStates.Zero))
 
         for op in self.logical_computation.ops:
                 if isinstance(op, AncillaQubitPatchInitialization):
                     add_initial_ancilla_state(op.qubit_uuid,op.qubit_state)
                 elif isinstance(op, MagicStateRequest):
-                    add_initial_ancilla_state(op.qubit_uuid,InitializeableState.Magic)
+                    add_initial_ancilla_state(op.qubit_uuid, DefaultSymbolicStates.Magic)
 
         all_init_states = [get_init_state(quuid) for idx, quuid in self.mapper.enumerate_patches_by_index()]
         return tensor_list(all_init_states)
@@ -183,11 +179,11 @@ class PatchSimulator:
             self.logical_state = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
 
-        elif isinstance(logical_op, PauliOperator):
-            for patch, op in logical_op.patch_pauli_operator_map.items():
-                symbolic_state = circuit_add_op_to_qubit(self.logical_state, ConvertersToQiskit.pauli_op(op),
-                                                        self.mapper.get_idx(patch))
-                self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
+        elif isinstance(logical_op, LogicalPauli):
+            symbolic_state = circuit_add_op_to_qubit(self.logical_state,
+                                                     ConvertersToQiskit.pauli_op(logical_op.pauli_matrix),
+                                                     self.mapper.get_idx(logical_op.qubit_uuid))
+            self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
 
         elif isinstance(logical_op, MultiBodyMeasurement):
             pauli_op_list : List[qk.PrimitiveOp] = []
