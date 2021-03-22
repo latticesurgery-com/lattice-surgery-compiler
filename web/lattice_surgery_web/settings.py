@@ -17,7 +17,7 @@ import os,sys
 BASE_DIR = Path(__file__).resolve().parent.parent
 import sys
 sys.path.append("..")
-TMP_FOLDER = os.path.join(BASE_DIR, 'lattice_main/tmp')
+TMP_FOLDER = os.path.join(BASE_DIR, './lattice_main/tmp')
 
 
 # Quick-start development settings - unsuitable for production
