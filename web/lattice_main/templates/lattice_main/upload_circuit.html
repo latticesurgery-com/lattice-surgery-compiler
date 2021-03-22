@@ -23,40 +23,54 @@
 <section>
   <nav>
     <ul>
-      <li><a href="#">Compile Quantum Circuit</a></li>
+{#        TODO figure out nesting of menu entries #}
+      <li><a href="#get-started">Get Started - Upload a circuit</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#surface-codes-lattice-surgery">Surface Codes and Lattice Surgery</a></li>
     </ul>
   </nav>
-
   <article>
-    <h2>Get Started</h2>
-      <p>Upload a quantum circuit. <a>What is supported</a>.
+    <h2 id="get-started">Get Started - Upload a circuit</h2>
+      <p>
+          Upload a an OpenQASM circuit.
         <form action="{% url 'lattice_main-latticeview' %}" method="post" accept-charset="utf-8"
           enctype="multipart/form-data">
             {% csrf_token %}
             <input id="circuit" name="circuit" type="file"/>
             <input type="submit" value="Go!" />
         </form>
-
       </p>
-    <h1>About</h1>
+      <p>
+          Or try an <a href="javascript:alert('Coming soon')">example</a>.
+      </p>
+    <h2 id="about">About</h2>
+      <p>
+        This compiler accepts a quantum circuit and compiles it to a computation expressed in terms of lattice surgery operations on a surface code lattice.
+      </p>
+      <img src="{% static 'lattice_main/lattice_view_example.png' %}" style="width: 100%" alt="Lattice Viewer">
+      <p>
+        The output of the compiler is a computation is expressed in terms of <em>patches</em> of a surface code lattice. Each patch is associated with quantum states. The states are tracked and ``evolved", so that one can view what the lattice surgery operations are doing to the quantum states. When compilation terminates, the user is presented with a viewer (in figure) to explore this computation. Additionally one can choose to display the intermediate stages, expressed as quantum circuits.
+      </p>
+      <p>
+        This tool is the result of a project aimed at exploring the challenges involved with compiling fault tolerant quantum circuits. It is intended primarily as a framework onto which develop ideas for compiling real world circuits. One day we hope to see te compiler be able to translate a quantum circuit all the way to a physical circuit that can run on a real device.
+      </p>
+    <h1 id="surface-codes-lattice-surgery"> Surface Codes and Lattice Surgery </h1>
     <p>
-        A proposed solution to mitigate the occurrence of errors in quantum computers are the so-called quantum error correcting codes (QECC). Specifically we focus on the protocol of <strong>lattice surgery</strong>, which is based on the prominent methodology of <strong>surface codes</strong>. A natural question relates to how these techniques can be employed to systematically obtain fault tolerant logical qubits from less reliable ones. Recent work has focused on building compilers that translate a logical quantum circuit to a much larger error corrected one, with the output circuit performing the computation specified by the logical circuit with QECCs [1][2].
+        A proposed solution to mitigate the occurrence of errors in quantum computers are the so-called quantum error correcting codes (QECC). Specifically we focus on the protocol of lattice surgery, which is based on the prominent methodology of surface codes. A natural question relates to how these techniques can be employed to systematically obtain fault tolerant logical qubits from less reliable ones. Recent work has focused on building compilers that translate a logical quantum circuit to a much larger error corrected one, with the output circuit performing the computation specified by the logical circuit with QECCs <a href="https://arxiv.org/abs/1906.07994">[1]</a><a href="https://quantum-journal.org/papers/q-2019-03-05-128/">[2]</a>.
     </p>
     <p>
-        <img src="{% static 'lattice_main/lattice_view_example.png' %}" style="width: 100%">
-    </p>
-    <p>
-        Surface codes are a family of QECCs that aims at improving computation fidelity by entangling many quantum mechanical entities in a two dimensional lattice. Our technique of choice for operating on this lattice is a protocol known as lattice surgery, which stores logical qubits in portions of the surface code's lattice patches and performs logical operations by merging and splitting patches [3].
+        Surface codes are a family of QECCs that aims at improving computation fidelity by entangling many quantum mechanical entities in a two dimensional lattice. Our technique of choice for operating on this lattice is a protocol known as lattice surgery, which stores logical qubits in portions of the surface code's lattice patches and performs logical operations by merging and splitting patches <a href="https://iopscience.iop.org/article/10.1088/1367-2630/14/12/123011/meta">[3]</a>.
     </p>
     <p>
         This program handles a portion of the logical to physical compilation. It takes a quantum circuit and translates it to a representation of lattice surgery operations, which are in direct correspondence with the physical error corrected circuit, up to code distance. The project comes with a visualizer tool (figure), that shows the state of the surface code lattice state in between surgery operations.
     </p>
-
   </article>
 </section>
 
 <footer>
-  <p>Contact &nbsp; | &nbsp; Github &nbsp; | &nbsp; Paper</p>
+{#    Commenting these out untill thery are implemented #}
+{#    <p>Contact &nbsp; | &nbsp; <a href="https://github.com/latticesurgery-com">Github</a> &nbsp; | &nbsp; Paper</p>#}
+    <a href="https://github.com/latticesurgery-com">Github</a>
 </footer>
 
 </body>
