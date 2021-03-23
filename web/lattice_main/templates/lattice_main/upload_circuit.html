@@ -17,7 +17,7 @@
             enctype="multipart/form-data">
               {% csrf_token %}
               <div class="input-group">
-                <input id="circuit" class="form-control" name="circuit" type="file"/>
+                <input id="circuit" class="form-control circuit" name="circuit" type="file"/>
                 <div class="input-group-append">
                   <input type="submit" class="btn btn-primary" value="Go!" />
                 </div>
@@ -27,18 +27,26 @@
         </p>
         <p>
             Or choose from the following example circuits:
-            <div class="dropdown">
-              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                Example Circuits
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="example-circuits">
-                {% for circuit in circuits %}
-                  <li><a class="dropdown-item" href="#">{{ circuit }}</a></li>
-                {% endfor %}
-                <!-- <li><a class="dropdown-item" href="#">Another action</a></li>
-                <li><a class="dropdown-item" href="#">Something else here</a></li> -->
-              </ul>
-            </div>
+
+            <form action="{% url 'lattice_main-latticeview' %}" method="post"
+            enctype="multipart/form-data">
+              {% csrf_token %}
+
+              <div class="input-group">
+                <select class="form-select" name="circuit" style='max-width:250px'>
+                  <option value='' disabled selected> Select a Circuit </option>
+                  {% for circuit in circuits %}
+                    <option value="{{ circuit }}"> {{ circuit }} </option>
+                  {% endfor %}
+                </select>
+                <div class="input-group-append">
+                  <input type="submit" class="btn btn-info" value="Go!" />
+                </div>
+                <input type="hidden" name="localcircuit" value="yes">
+                
+              </div>
+
+            </form>
 
         </p>
       <h2 id="about">About</h2>

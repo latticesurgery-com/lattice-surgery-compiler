@@ -13,9 +13,9 @@
 }
 
 .foot-bg {
-background: rgb(0,0,0);
-background: linear-gradient(90deg, rgba(0,0,0,1) 10%, rgba(0,255,248,1) 48%, rgba(0,0,0,1) 86%);
-min-height: 200px;
+  background: rgb(0,0,0);
+  background: linear-gradient(90deg, rgba(0,0,0,1) 10%, rgba(0,255,248,1) 48%, rgba(0,0,0,1) 86%);
+  height: 200px;
 }
 
 #the-navbar {
@@ -23,9 +23,13 @@ min-height: 200px;
   font-size: 22px;
 }
 
-#circuit {
+.circuit {
   max-width: 250px;
 }
+
+/*select {
+  max-width: 250px;
+}*/
 
 /* Add some top padding to the page content to prevent sudden quick movement (as the navigation bar gets a new position at the top of the page (position:fixed and top:0) */
 .main {
@@ -53,4 +57,44 @@ a {
 
 .last-paragraph {
   margin-bottom:0px;
+}
+
+
+/* lattice view styles */
+
+
+/*html, body{
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}*/
+#toolbar
+{
+    /* Make it independent of zoom */
+  height: 10%;
+  line-height: 10vh;
+  font-size: 5vh;
+  /* Keep it above the lattice */
+  z-index: 100;
+  position: relative;
+  /* style */
+  background-color: lavender;
+  border-bottom: solid darkgrey 1.5vh;
+}
+#draggable-container{
+  font-size: 0;
+  z-index: 10;
+}
+.slice{
+  display: none;
+}
+.lattice-cell{
+  border: 0.5px solid #a2abae;
+  height: 50pt;
+  width: 50pt;
+  display: inline-block;
+  position: relative;
+  font-size:10px;
 }
