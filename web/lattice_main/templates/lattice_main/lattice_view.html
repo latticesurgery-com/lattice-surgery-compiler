@@ -76,8 +76,15 @@
     <a href="javascript:change_slice(-1)">Prev</a>
     &nbsp;<span id="slice-number"></span>&nbsp;
     <a href="javascript:change_slice(+1)">Next</a>
-    &nbsp;
+      &nbsp;&nbsp; | &nbsp;&nbsp;
+    <a href="javascript:(function(){$('#compilation-text').slideToggle()})()">Compilation</a>
+       &nbsp;&nbsp;
   </span>
+</div>
+
+<!-- compilation visualization-->
+<div id="compilation-text" style="display: none">
+    <pre>{{ compilation_text }}</pre>
 </div>
 
 <!-- slices -->

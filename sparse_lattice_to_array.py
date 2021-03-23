@@ -1,4 +1,4 @@
-from .VisualArrayCell import VisualArrayCell
+from visual_array_cell import VisualArrayCell
 from qubit_state import ActiveState
 import patches
 
