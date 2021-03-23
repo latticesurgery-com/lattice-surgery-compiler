@@ -77,7 +77,10 @@ class LogicalLatticeComputation:
 
         def to_lattice_operation(op: PauliProductOperation) -> Union[LogicalLatticeOperation, Rotation]:
             if isinstance(op, Rotation): return op
-            if isinstance(op, Measurement): return self.circuit_to_patch_measurement(op)
+            if isinstance(op, Measurement):
+                patches_measurement =  self.circuit_to_patch_measurement(op)
+                patches_measurement.set_condition(op.get_condition())
+                return patches_measurement
             raise Exception("Unsupported PauliProductOperation " + repr(op))
 
         operations_queue: Deque[Union[Rotation, LogicalLatticeOperation]] \

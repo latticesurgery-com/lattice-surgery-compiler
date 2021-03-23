@@ -4,6 +4,9 @@ import patches
 
 from typing import List,Optional
 
+
+GUISlice = List[List[Optional[VisualArrayCell]]] # 2D array of cells
+
 def sparse_lattice_to_array(lattice: patches.Lattice) -> List[List[Optional[VisualArrayCell]]]:
     array = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
 

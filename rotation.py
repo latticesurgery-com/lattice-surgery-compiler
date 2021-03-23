@@ -157,7 +157,7 @@ class Rotation(PauliProductOperation):
 
 
 
-class Measurement(PauliProductOperation):
+class Measurement(PauliProductOperation,HasPauliEigenvalueOutcome):
     """
     Representing a Pauli Product Measurement Block
 
