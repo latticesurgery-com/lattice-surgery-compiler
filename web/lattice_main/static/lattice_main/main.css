@@ -1,62 +1,65 @@
-* {
-  box-sizing: border-box;
+@font-face {
+  font-family: Aquire;
+  src: local(Aquire),
+       url('./fonts/Aquire-BW0ox.otf') format("opentype");
+}
+.aquire {
+  font-family: Aquire;
+}
+.nav-background {
+/*  background: rgb(0,0,0);
+  background: linear-gradient(180deg, rgba(0,0,0,1) 1%, rgba(255,173,209,1) 15%, rgba(130,234,255,0.7259278711484594) 100%);*/
+ background-image: linear-gradient(to bottom, #00b78f, #27c49e, #3cd2ad, #4edfbd, #5fedcc, #6af3df, #79f9f0, #8cffff, #affdff, #d6fbff, #f3fbff, #ffffff);
 }
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
+.foot-bg {
+background: rgb(0,0,0);
+background: linear-gradient(90deg, rgba(0,0,0,1) 10%, rgba(0,255,248,1) 48%, rgba(0,0,0,1) 86%);
+min-height: 200px;
 }
 
-/* Style the header */
-header {
-  background-color: #666;
-  padding: 10px;
-  text-align: center;
-  font-size: 15px;
-  color: white;
+#the-navbar {
+  padding:19px 10px;
+  font-size: 22px;
 }
 
-/* Create two columns/boxes that floats next to each other */
-nav {
-    float: left;
-    width: 20%;
-    background: #ccc;
-    padding: 20px;
-    height: 100%;
+/*.thenav {
+  padding:25px 8px;
+  font-size: 23px;
+}*/
+
+
+ /*The sticky class is added to the navbar with JS when it reaches its scroll position */
+/*.sticky {
+  position: sticky;
+  top: 56px;
+  width: 100%;
 }
 
-/* Style the list inside the menu */
-nav ul {
-  list-style-type: none;
-  padding: 0;
+/* Add some top padding to the page content to prevent sudden quick movement (as the navigation bar gets a new position at the top of the page (position:fixed and top:0) */
+.main {
+  padding-top: 50px;
 }
 
-article {
-    float: left;
-    padding: 20px;
-    width: 80%;
-    background-color: #f1f1f1;
-    font-size: 10pt;
+a {
+   text-decoration:none;
+   color: inherit;
 }
 
-/* Clear floats after the columns */
-section::after {
-  content: "";
-  display: table;
-  clear: both;
+.fas, .fab {
+  padding:30px;
+  color:black;
+
 }
 
-/* Style the footer */
-footer {
-  background-color: #777;
-  padding: 10px;
-  text-align: center;
-  color: white;
+.fas:hover,.fab:hover {
+    color: white;
 }
 
-/* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
-@media (max-width: 600px) {
-  nav, article {
-    width: 100%;
-    height: auto;
-  }
+.flex-container {
+  display: flex;
+}
+
+.last-paragraph {
+  margin-bottom:0px;
 }
