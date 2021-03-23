@@ -23,22 +23,13 @@ min-height: 200px;
   font-size: 22px;
 }
 
-/*.thenav {
-  padding:25px 8px;
-  font-size: 23px;
-}*/
-
-
- /*The sticky class is added to the navbar with JS when it reaches its scroll position */
-/*.sticky {
-  position: sticky;
-  top: 56px;
-  width: 100%;
+#circuit {
+  max-width: 250px;
 }
 
 /* Add some top padding to the page content to prevent sudden quick movement (as the navigation bar gets a new position at the top of the page (position:fixed and top:0) */
 .main {
-  padding-top: 50px;
+  padding-top: 30px;
 }
 
 a {
