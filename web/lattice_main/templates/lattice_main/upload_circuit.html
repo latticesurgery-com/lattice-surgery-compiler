@@ -32,7 +32,9 @@
                 Example Circuits
               </button>
               <ul class="dropdown-menu" aria-labelledby="example-circuits">
-                <li><a class="dropdown-item" href="#">nontrivial</a></li>
+                {% for circuit in circuits %}
+                  <li><a class="dropdown-item" href="#">{{ circuit }}</a></li>
+                {% endfor %}
                 <!-- <li><a class="dropdown-item" href="#">Another action</a></li>
                 <li><a class="dropdown-item" href="#">Something else here</a></li> -->
               </ul>

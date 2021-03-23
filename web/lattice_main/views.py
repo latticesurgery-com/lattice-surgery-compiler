@@ -14,7 +14,10 @@ from qubit_state import *
 
 
 def upload_circuit(request):
-    context = {}
+    path_to_assests = "../assets/"
+    circuits = os.listdir(path_to_assests)
+    print(circuits)
+    context = {"circuits":circuits}
     return render(request,"lattice_main/upload_circuit.html",context)
 
 def view_compiled(request):
