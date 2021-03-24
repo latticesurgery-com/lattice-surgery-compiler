@@ -18,6 +18,12 @@
   height: 200px;
 }
 
+/*.anchor {
+  padding-top: 83px;
+  margin-top: -83px;
+  display: inline-block;
+}*/
+
 #the-navbar {
   padding:19px 10px;
   font-size: 22px;
