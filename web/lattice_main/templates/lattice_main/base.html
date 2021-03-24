@@ -90,6 +90,7 @@
     window.onscroll = function() {scrollFunction()};
 
     function scrollFunction() {
+      return; // Temporarily disable
       if (document.scrollTop > 90 || document.documentElement.scrollTop > 90) {
         // when scrolling down get smaller and change blue
         document.getElementById("the-navbar").style.padding = "18px 8px";
@@ -102,7 +103,7 @@
         document.getElementById("the-navbar").style.fontSize = "22px";
         $("#the-navbar").removeClass("nav-background")
         $("#the-navbar").switchClass("navbar-light","navbar-dark",500)
-        
+
       }
     }
 
