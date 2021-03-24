@@ -32,8 +32,13 @@ def view_compiled(request):
     with open(circuit_tmp_save_location, 'wb') as output_file:
         shutil.copyfileobj(input_circuit_file, output_file)
 
+    apply_litinski_transform = True
+    if "litinsky" not in request.POST:
+        apply_litinski_transform = False
+    print(apply_litinski_transform)
+
     try:
-        slices, compilation_text = lattice_surgery_compilation_pipeline.compile_file(circuit_tmp_save_location)
+        slices, compilation_text = lattice_surgery_compilation_pipeline.compile_file(circuit_tmp_save_location,apply_litinski_transform)
     finally:
         os.unlink(circuit_tmp_save_location)
 

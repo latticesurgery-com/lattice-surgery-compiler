@@ -18,11 +18,16 @@
               {% csrf_token %}
               <div class="input-group">
                 <input id="circuit" class="form-control circuit" name="circuit" type="file"/>
+
+
                 <div class="input-group-append">
                   <input type="submit" class="btn btn-primary" value="Go!" />
                 </div>
               </div>
-              
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="litinsky_check1" name='litinsky' value='true' checked>
+                  <label class="form-check-label" for="litinsky_check1">Litinsky Transform</label>
+                </div>
           </form>
         </p>
         <p>
@@ -43,7 +48,11 @@
                   <input type="submit" class="btn btn-info" value="Go!" />
                 </div>
                 <input type="hidden" name="localcircuit" value="yes">
-                
+              </div>
+
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="litinsky_check1" name='litinsky' value='true' checked>
+                <label class="form-check-label" for="litinsky_check1">Litinsky Transform</label>
               </div>
 
             </form>
