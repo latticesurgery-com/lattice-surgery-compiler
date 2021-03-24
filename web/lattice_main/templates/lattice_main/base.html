@@ -1,15 +1,127 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    
+    <meta charset="utf-8">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/jpg" href="{% static 'lattice_main/favicon.jpg' %}">
+
+    <!-- Responsive Meta Tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- link main.css -->
+    <link href="{% static 'lattice_main/main.css' %}" rel="stylesheet" />
+
+    <!-- font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+
+    <!-- Jquery -->
+      <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    
     <title>Lattice Surgery Compiler</title>
 </head>
-<body>
 
-{% block content %}{% endblock content %}
+<body>
+  <div style="background-color: black; padding:10px">
+      <h1 class='aquire' style="color:#1dc700;text-align: center;">Quantum Error Correction Compiler with Lattice Surgery</h1>
+  </div>
+
+  <div class="sticky-top">
+    <nav id="the-navbar" class="navbar navbar-expand-lg navbar-dark bg-dark"> <!-- bg-light-->
+      <div class="container-fluid">
+        <!-- <a class="navbar-brand" href="#"> Logo</a> -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'lattice_main-uploadcircuit' %}">Get Started</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Contact</a>
+            </li>
+<!--             <li class="nav-item">
+              <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+            </li> -->
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <div style="background-color: black">
+    <div class="container pb-5" style="background-color: white;min-height:500px;">
+      {% block content %}{% endblock content %}
+    </div>
+  </div>
+
+  <footer class="foot-bg site-footer">
+  <!-- commenting these out untill thery are implemented  -->
+    <div class="container">
+      <div class="flex-container justify-content-center">
+        <div>
+           <a href="https://github.com/latticesurgery-com/lattice-surgery-compiler/"><i class="fab fa-github fa-3x"></i></a>
+        </div>
+        <div>
+          <a href="https://google.ca"><i class="fas fa-book-open fa-3x"></i></a>
+        </div>
+<!--         <div>
+          
+        </div> -->
+      </div>
+     
+    </a>
+    </div>
+  </footer>
+  <!-- Bootstrap JS and Popper Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+
+  <script>
+    // When the user scrolls down 80px from the top of the document, resize the navbar's padding and the logo's font size
+    window.onscroll = function() {scrollFunction()};
+
+    function scrollFunction() {
+      if (document.scrollTop > 90 || document.documentElement.scrollTop > 90) {
+        // when scrolling down get smaller and change blue
+        document.getElementById("the-navbar").style.padding = "18px 8px";
+        document.getElementById("the-navbar").style.fontSize = "20px";
+        $("#the-navbar").addClass("nav-background");
+        $("#the-navbar").switchClass("navbar-dark","navbar-light",500)
+      } else {
+        // when at the top, stay bigger, and stay dark
+        document.getElementById("the-navbar").style.padding = "19px 10px";
+        document.getElementById("the-navbar").style.fontSize = "22px";
+        $("#the-navbar").removeClass("nav-background")
+        $("#the-navbar").switchClass("navbar-light","navbar-dark",500)
+        
+      }
+    }
+
+    // const navLinks = document.querySelectorAll('.nav-item')
+    // const menuToggle = document.getElementById('navbarNav')
+    // const bsCollapse = new bootstrap.Collapse(menuToggle)
+    // navLinks.forEach((l) => {
+    //   l.addEventListener('click', () => { bsCollapse.toggle() })
+    // })
+
+    $('.navbar-collapse').click(function (e) {
+      $('.navbar-collapse').collapse('toggle');
+    });
+
+    // if ($(window).width() < 992) {
+      
+    // }
+
+  </script>
 
 </body>
 </html>

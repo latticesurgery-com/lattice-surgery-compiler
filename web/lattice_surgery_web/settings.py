@@ -17,6 +17,7 @@ import os,sys
 BASE_DIR = Path(__file__).resolve().parent.parent
 import sys
 sys.path.append("..")
+TMP_FOLDER = os.path.join(BASE_DIR, './lattice_main/tmp')
 
 
 # Quick-start development settings - unsuitable for production
@@ -28,7 +29,7 @@ SECRET_KEY = '3&ymkxv1tr%8n)=&st&8l8h(-=l(+9f3xs(#gho$qoxh6r4udd'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost","http://latticesurgery.com/"] # add DOMAIN here for production
+ALLOWED_HOSTS = ["localhost","https://latticesurgery.com/"] # add DOMAIN here for production
 
 
 # Application definition
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'lattice_main',
+    'crispy_forms'
 ]
 
 MIDDLEWARE = [
