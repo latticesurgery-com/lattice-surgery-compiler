@@ -56,13 +56,14 @@
         </p>
         <img src="{% static 'lattice_main/lattice_view_example.png' %}" style="width: 100%" alt="Lattice Viewer">
         <p>
-          The output of the compiler is a computation is expressed in terms of <em>patches</em> of a surface code lattice. Each patch is associated with quantum states. The states are tracked and ``evolved", so that one can view what the lattice surgery operations are doing to the quantum states. When compilation terminates, the user is presented with a viewer (in figure) to explore this computation. Additionally one can choose to display the intermediate stages, expressed as quantum circuits.
+          The output of the compiler is a computation is expressed in terms of <em>patches</em> of a surface code lattice. Each patch is associated with quantum states. The states are tracked and "evolved", so that one can view what the lattice surgery operations are doing to the quantum states. When compilation terminates, the user is presented with a viewer (in figure) to explore this computation. Additionally one can choose to display the intermediate stages, expressed as quantum circuits.
         </p>
         <p>
           This tool is the result of a project aimed at exploring the challenges involved with compiling fault tolerant quantum circuits. It is intended primarily as a framework onto which develop ideas for compiling real world circuits. One day we hope to see te compiler be able to translate a quantum circuit all the way to a physical circuit that can run on a real device.
         </p>
       <h1 id="surface-codes-lattice-surgery"> Surface Codes and Lattice Surgery </h1>
       <hr>
+
       <p>
           A proposed solution to mitigate the occurrence of errors in quantum computers are the so-called quantum error correcting codes (QECC). Specifically we focus on the protocol of lattice surgery, which is based on the prominent methodology of surface codes. A natural question relates to how these techniques can be employed to systematically obtain fault tolerant logical qubits from less reliable ones. Recent work has focused on building compilers that translate a logical quantum circuit to a much larger error corrected one, with the output circuit performing the computation specified by the logical circuit with QECCs <a href="https://arxiv.org/abs/1906.07994">[1]</a><a href="https://quantum-journal.org/papers/q-2019-03-05-128/">[2]</a>.
       </p>
