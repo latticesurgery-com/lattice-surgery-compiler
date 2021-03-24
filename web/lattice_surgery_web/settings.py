@@ -27,7 +27,7 @@ TMP_FOLDER = os.path.join(BASE_DIR, './lattice_main/tmp')
 SECRET_KEY = '3&ymkxv1tr%8n)=&st&8l8h(-=l(+9f3xs(#gho$qoxh6r4udd'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["localhost","https://latticesurgery.com/","0.0.0.0"] # add DOMAIN here for production
 
