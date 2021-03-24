@@ -29,7 +29,7 @@ SECRET_KEY = '3&ymkxv1tr%8n)=&st&8l8h(-=l(+9f3xs(#gho$qoxh6r4udd'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost","https://latticesurgery.com/"] # add DOMAIN here for production
+ALLOWED_HOSTS = ["localhost","https://latticesurgery.com/","0.0.0.0"] # add DOMAIN here for production
 
 
 # Application definition
