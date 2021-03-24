@@ -102,5 +102,10 @@ a {
   width: 50pt;
   display: inline-block;
   position: relative;
-  font-size:10px;
+  font-size:9px;
+}
+
+.qubit-state
+{
+  line-height: 1;
 }
