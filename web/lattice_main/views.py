@@ -6,11 +6,13 @@ from typing import *
 import lattice_surgery_compilation_pipeline
 import patches # TODO remove the dependency on this import
 
+
+PATH_TO_DEMO_CIRCUITS="../assets/demo_circuits"
+
 def upload_circuit(request):
-    path_to_assests = "../assets/"
-    circuits = [circuit for circuit in os.listdir(path_to_assests) if ".qasm" in circuit]
-    #print(circuits)
-    context = {"circuits":circuits}
+    demo_circuits = [circuit for circuit in os.listdir(PATH_TO_DEMO_CIRCUITS) if ".qasm" in circuit]
+    #print(demo_circuits)
+    context = {"demo_circuits":demo_circuits}
     return render(request,"lattice_main/upload_circuit.html",context)
 
 def view_compiled(request):
@@ -19,7 +21,7 @@ def view_compiled(request):
     if "localcircuit" in request.POST: # then select dropdown was used and therefore we have a local copy of the circuit in /assets/
         filename = request.POST['circuit']
         file_ext = filename.split('.')[-1]
-        input_circuit_file = open(f"../assets/{filename}", "rb")
+        input_circuit_file = open(f"{PATH_TO_DEMO_CIRCUITS}/{filename}", "rb")
     else:
         file_ext = request.FILES['circuit'].name.split('.')[-1]
         # Save the file to a tmp dir so that pyzx can read it
