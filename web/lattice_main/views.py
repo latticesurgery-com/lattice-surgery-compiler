@@ -8,7 +8,7 @@ import patches # TODO remove the dependency on this import
 
 def upload_circuit(request):
     path_to_assests = "../assets/"
-    circuits = os.listdir(path_to_assests)
+    circuits = [circuit for circuit in os.listdir(path_to_assests) if ".qasm" in circuit]
     #print(circuits)
     context = {"circuits":circuits}
     return render(request,"lattice_main/upload_circuit.html",context)
