@@ -33,7 +33,7 @@ def view_compiled(request):
         shutil.copyfileobj(input_circuit_file, output_file)
 
     apply_litinski_transform = True
-    if "litinsky" not in request.POST:
+    if "litinski" not in request.POST:
         apply_litinski_transform = False
     print(apply_litinski_transform)
 
