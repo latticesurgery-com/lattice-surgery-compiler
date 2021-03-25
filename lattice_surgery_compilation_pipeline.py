@@ -43,31 +43,3 @@ def compile_file(circuit_file_name : str ,
     return list(map(sparse_lattice_to_array.sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text
 
 
-def make_teleportation_protocol_computation_example() -> Tuple[List[GUISlice], str]:
-    composer_class = lattice_surgery_computation_composer.LatticeSurgeryComputation
-    layout_types = lattice_surgery_computation_composer.LayoutType
-
-
-
-    compilation_text = "Input Circuit:\n"
-
-    compilation_text += qkvis.circuit_drawer(qkcirc.QuantumCircuit.from_qasm_file(circuit_file_name)).single_string()
-
-    compilation_text += "\nCircuit as Pauli rotations:\n"
-    compilation_text += input_circuit.render_ascii()
-
-    if apply_litinski_transform:
-        input_circuit.apply_transformation()
-        input_circuit.remove_y_operators_from_circuit()
-        compilation_text += "\nCircuit after the Litinski Transform:\n"
-        compilation_text += input_circuit.render_ascii()
-
-    logical_computation = logical_lattice_ops.LogicalLatticeComputation(input_circuit)
-    lsc = composer_class.make_computation_with_simulation(logical_computation, layout_types.SimplePreDistilledStates)
-
-    return list(map(sparse_lattice_to_array.sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text
-
-
-
-
-
