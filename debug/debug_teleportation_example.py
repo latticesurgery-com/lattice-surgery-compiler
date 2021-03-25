@@ -19,6 +19,7 @@ class CondtitionOnMeasurement(ls.EvaluationCondition):
         return self.reference_measurement.get_outcome()==self.required_value
 
 if __name__ == "__main__":
+    compilation_text = ""
 
     I = ls.PauliOperator.I
     X = ls.PauliOperator.X
@@ -66,6 +67,14 @@ if __name__ == "__main__":
     m2 = logical_lattice_ops.Measurement.from_list([I, X, I])
     input_circuit.add_pauli_block(m2)
 
+    compilation_text += "State preparation Circuit\n"
+    compilation_text += qkvis.circuit_drawer(qiskit_circ).single_string()
+
+    compilation_text += "State preparation Circuit Litinski\n"
+    first_non_bell_preparation_rotation = 6
+    input_circuit.apply_transformation(first_non_bell_preparation_rotation)
+    compilation_text += input_circuit.render_ascii()
+
     # Bob's recovery of the state with the help of the classical bits
 
     qiskit_circ.x(2).c_if(crx, 1)
@@ -80,8 +89,7 @@ if __name__ == "__main__":
 
     # q[2] now holds the non trivial state Alice wanted to transfer
 
-
-    compilation_text = "Input Circuit:\n"
+    compilation_text += "Input Circuit:\n"
 
     compilation_text += qkvis.circuit_drawer(qiskit_circ).single_string()
 
