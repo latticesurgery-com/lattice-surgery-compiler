@@ -59,7 +59,7 @@ class ProjectiveMeasurement:
             prob = ProjectiveMeasurement.borns_rule(projector, state)
             assert prob.imag < 10 ** (-8)
             prob = prob.real
-            state = (projector @ state) / math.sqrt(prob)
+            state = (projector @ state) / math.sqrt(prob) if prob != 0 else (projector @ state)
             return state, prob
 
         @staticmethod
