@@ -123,10 +123,11 @@ class Lattice:
         self.logical_ops : List[LogicalLatticeOperation] = []
 
     def getMaxCoord(self, coord_type: CoordType)->int:
-        all_coords = itertools.chain.from_iterable(map(lambda patch: patch.getCoordList(coord_type), self.patches))
+        all_coords = list(itertools.chain.from_iterable(map(lambda patch: patch.getCoordList(coord_type), self.patches)))
         lower_bound = self.min_rows if coord_type == CoordType.Row else self.min_cols
 
-        return max(1 + max(all_coords), lower_bound)
+        max_coords = max(all_coords) if len(all_coords) else 0
+        return max(1 + max_coords, lower_bound)
 
     def getCols(self):
         return self.getMaxCoord(CoordType.Col)
