@@ -17,9 +17,19 @@ def upload_circuit(request):
 
 def view_compiled(request):
     """ url shortcut name: lattice_main-latticeview """
-    # print(request.POST)
+
     if "localcircuit" in request.POST: # then select dropdown was used and therefore we have a local copy of the circuit in /assets/
+
         filename = request.POST['circuit']
+        if filename == "bell_pair_example":
+            slices, compilation_text = lattice_surgery_compilation_pipeline.bell_state_example()
+            context = {
+                'slices': slices,
+                'patches': patches,
+                'compilation_text': compilation_text
+            }
+            return render(request, "lattice_main/lattice_view.html", context)
+
         file_ext = filename.split('.')[-1]
         input_circuit_file = open(f"{PATH_TO_DEMO_CIRCUITS}/{filename}", "rb")
     else:

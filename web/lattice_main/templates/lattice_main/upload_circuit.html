@@ -39,10 +39,14 @@
 
               <div class="input-group">
                 <select class="form-select" name="circuit" style='max-width:250px'>
-                  <option value='' disabled selected> Select a Circuit </option>
-                  {% for circuit in demo_circuits %}
-                    <option value="{{ circuit }}"> {{ circuit }} </option>
-                  {% endfor %}
+                    <optgroup label="Examples">
+                        <option value="bell_pair_example"> Bell Pair Example </option>
+                    </optgroup>
+                    <optgroup label="From file">
+                      {% for circuit in demo_circuits %}
+                        <option value="{{ circuit }}"> {{ circuit }} </option>
+                      {% endfor %}
+                    </optgroup>
                 </select>
                 <div class="input-group-append">
                   <input type="submit" class="btn btn-info" value="Go!" />
