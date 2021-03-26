@@ -28,60 +28,60 @@
 
 <body>
   <div style="background-color: black; padding:10px">
-      <h1 class='aquire' style="color:#1dc700;text-align: center;">Lattice Surgery Quantum Error Correction Compiler</h1>
+      <h1 class='aquire' style="color:#E0E0E0;text-align: center;">Lattice Surgery Quantum Error Correction Compiler</h1>
   </div>
 
-  <div class="sticky-top">
-    <nav id="the-navbar" class="navbar navbar-expand-lg navbar-dark bg-dark"> <!-- bg-light-->
-      <div class="container-fluid">
-        <!-- <a class="navbar-brand" href="#"> Logo</a> -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="{% url 'lattice_main-uploadcircuit' %}#get-started">Get Started</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}#about">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}#surface-codes">Surface Codes and Lattice Surgery</a>
-            </li>
-{#            <li class="nav-item">#}
-{#              <a class="nav-link" href="#">Contact</a>#}
-{#            </li>#}
-<!--             <li class="nav-item">
-              <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-            </li> -->
-          </ul>
-        </div>
-      </div>
-    </nav>
-  </div>
+
 
   <div style="background-color: black">
-    <div class="container pb-5" style="background-color: white;min-height:500px;">
+    <div class="container" style="background-color: white;min-height:500px;">
+
+      <div class="sticky-top" style="margin:-12px">
+        <nav id="the-navbar" class="navbar navbar-expand-lg navbar-dark bg-dark"> <!-- bg-light-->
+          <div class="container-fluid">
+            <!-- <a class="navbar-brand" href="#"> Logo</a> -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="{% url 'lattice_main-uploadcircuit' %}#get-started">Get Started</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}#about">About</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}#surface-codes">Surface Codes and Lattice Surgery</a>
+                </li>
+    {#            <li class="nav-item">#}
+    {#              <a class="nav-link" href="#">Contact</a>#}
+    {#            </li>#}
+    <!--             <li class="nav-item">
+                  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                </li> -->
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+
       {% block content %}{% endblock content %}
+
+      <footer class="foot-bg" style="margin:-12px;">
+        <div class="container">
+          <div class="flex-container justify-content-center">
+            <div>
+               <a href="https://github.com/latticesurgery-com/lattice-surgery-compiler/"><i class="fab fa-github fa-3x"></i></a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
     </div>
   </div>
 
-  <footer class="foot-bg site-footer">
-  <!-- commenting these out untill thery are implemented  -->
-    <div class="container">
-      <div class="flex-container justify-content-center">
-        <div>
-           <a href="https://github.com/latticesurgery-com/lattice-surgery-compiler/"><i class="fab fa-github fa-3x"></i></a>
-        </div>
-{#        <div>#}
-{#          <a href="https://google.ca"><i class="fas fa-book-open fa-3x"></i></a>#}
-{#        </div>#}
-      </div>
-     
-    </a>
-    </div>
-  </footer>
+
   <!-- Bootstrap JS and Popper Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
 

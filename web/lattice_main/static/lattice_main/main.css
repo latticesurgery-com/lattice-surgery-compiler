@@ -15,7 +15,7 @@
 .foot-bg {
   background: rgb(0,0,0);
   background: linear-gradient(90deg, rgba(0,0,0,1) 10%, rgba(0,255,248,1) 48%, rgba(0,0,0,1) 86%);
-  height: 200px;
+  height: 150px;
 }
 
 /*.anchor {
@@ -43,8 +43,9 @@
 }
 
 a {
-   text-decoration: underline;
-   color: inherit;
+  color:blue;
+  /*text-decoration: none;*/
+/*  color: inherit;*/
 }
 
 .fas, .fab {
@@ -56,13 +57,16 @@ a {
 .fas:hover,.fab:hover {
     color: white;
 }
+.fas:visited, .fab:visited {
+  color:black;
+}
 
 .flex-container {
   display: flex;
 }
 
 .last-paragraph {
-  margin-bottom:0px;
+  margin-bottom:55px;
 }
 
 
