@@ -25,8 +25,8 @@
 }*/
 
 #the-navbar {
-  padding:19px 10px;
-  font-size: 22px;
+  padding:5px 5px;
+  font-size: 18px;
 }
 
 .circuit {
@@ -43,7 +43,7 @@
 }
 
 a {
-   text-decoration:none;
+   text-decoration: underline;
    color: inherit;
 }
 
@@ -102,5 +102,10 @@ a {
   width: 50pt;
   display: inline-block;
   position: relative;
-  font-size:10px;
+  font-size:9px;
+}
+
+.qubit-state
+{
+  line-height: 1;
 }

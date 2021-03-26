@@ -5,3 +5,5 @@ webgui/deploy.log
 webgui/env
 webgui/server_pid
 index.html
+Pipfile
+Pipfile.lock

@@ -32,8 +32,15 @@ $( function() {
       <a href="javascript:change_slice(-1)">Prev</a>
       &nbsp;<span id="slice-number"></span>&nbsp;
       <a href="javascript:change_slice(+1)">Next</a>
-      &nbsp;
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <a href="javascript:(function(){$('#compilation-text').slideToggle()})()">Compilation</a>
+      &nbsp;&nbsp;
     </span>
+  </div>
+
+  <!-- compilation visualization-->
+  <div id="compilation-text" style="display: none">
+      <pre>{{ compilation_text }}</pre>
   </div>
 
   <!-- slices -->
@@ -46,8 +53,8 @@ $( function() {
               <div class="lattice-cell">
                 <div class="lattice-cell-inside"
                 style="
-                  height: 44pt;
-                  width: 44pt;
+                  height: 50pt;
+                  width: 50pt;
                   vertical-align: middle;
                   display: inline-block;
                   border-width: 4pt;
@@ -77,7 +84,11 @@ $( function() {
                   </span><br>
                   <span>
                      {% if cell is not None and cell|cell_text is not None %}
-                          <span style="font-size: 17px"><b>{{ cell|cell_text }}</b></span>
+                         {% autoescape off %}
+                            <p class="qubit-state">
+                                <span style="font-size: {{ cell | cell_font_size }}px"><b>{{ cell|cell_text }}</b></span>
+                            </p>
+                         {% endautoescape %}
                      {% endif %}
                   </span>
 

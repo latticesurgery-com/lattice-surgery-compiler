@@ -65,5 +65,11 @@ def styles_map_activity_color_cell_activity_activity_type(cell):
 
 @register.filter
 def cell_text(cell):
-    text = cell.text
+    text = cell.text.replace("\n", "<br>")
     return text
+
+@register.filter
+def cell_font_size(cell):
+    if len(cell.text) > 20: return "7"
+    if len(cell.text) > 7: return "9"
+    return "15"
