@@ -18,11 +18,16 @@
   height: 150px;
 }
 
-/*.anchor {
-  padding-top: 83px;
-  margin-top: -83px;
-  display: inline-block;
-}*/
+.anchor-pc {
+    display:block;
+    padding-top:70px;
+    margin-top:-70px;
+}
+.anchor-mob{
+    display:block;
+    padding-top:180px;
+    margin-top:-180px;
+}
 
 #the-navbar {
   padding:5px 5px;
@@ -43,9 +48,9 @@
 }
 
 a {
-  color:blue;
-  /*text-decoration: none;*/
-/*  color: inherit;*/
+/*  color:blue;
+  text-decoration: none;
+  color: inherit;*/
 }
 
 .fas, .fab {
@@ -54,9 +59,10 @@ a {
 
 }
 
-.fas:hover,.fab:hover {
+.fas:hover,.fab:hover,.fas:active,.fab:active {
     color: white;
 }
+
 .fas:visited, .fab:visited {
   color:black;
 }
@@ -80,8 +86,7 @@ a {
   white-space: nowrap;
   overflow: hidden;
 }*/
-#toolbar
-{
+#toolbar{
     /* Make it independent of zoom */
   height: 10%;
   line-height: 10vh;
@@ -109,7 +114,6 @@ a {
   font-size:9px;
 }
 
-.qubit-state
-{
+.qubit-state{
   line-height: 1;
 }

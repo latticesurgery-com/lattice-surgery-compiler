@@ -20,8 +20,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
 
     <!-- Jquery -->
-      <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     
     <title>Lattice Surgery Compiler</title>
 </head>
@@ -46,7 +46,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" aria-current="page" href="{% url 'lattice_main-uploadcircuit' %}#get-started">Get Started</a>
+                  <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}#get-started">Get Started</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}#about">About</a>
@@ -87,41 +87,42 @@
 
   <script>
     // When the user scrolls down 80px from the top of the document, resize the navbar's padding and the logo's font size
-    window.onscroll = function() {scrollFunction()};
+    window.onscroll = function() {anchor_position_shift()};
 
-    function scrollFunction() {
-      return; // Temporarily disable
-      if (document.scrollTop > 90 || document.documentElement.scrollTop > 90) {
-        // when scrolling down get smaller and change blue
-        document.getElementById("the-navbar").style.padding = "18px 8px";
-        document.getElementById("the-navbar").style.fontSize = "20px";
-        $("#the-navbar").addClass("nav-background");
-        $("#the-navbar").switchClass("navbar-dark","navbar-light",500)
-      } else {
-        // when at the top, stay bigger, and stay dark
-        document.getElementById("the-navbar").style.padding = "19px 10px";
-        document.getElementById("the-navbar").style.fontSize = "22px";
-        $("#the-navbar").removeClass("nav-background")
-        $("#the-navbar").switchClass("navbar-light","navbar-dark",500)
+    // function scrollFunction() {
+    //   return; // Temporarily disable
+    //   if (document.scrollTop > 90 || document.documentElement.scrollTop > 90) {
+    //     // when scrolling down get smaller and change blue
+    //     document.getElementById("the-navbar").style.padding = "18px 8px";
+    //     document.getElementById("the-navbar").style.fontSize = "20px";
+    //     $("#the-navbar").addClass("nav-background");
+    //     $("#the-navbar").switchClass("navbar-dark","navbar-light",500)
+    //   } else {
+    //     // when at the top, stay bigger, and stay dark
+    //     document.getElementById("the-navbar").style.padding = "19px 10px";
+    //     document.getElementById("the-navbar").style.fontSize = "22px";
+    //     $("#the-navbar").removeClass("nav-background")
+    //     $("#the-navbar").switchClass("navbar-light","navbar-dark",500)
 
-      }
-    }
-
-    // const navLinks = document.querySelectorAll('.nav-item')
-    // const menuToggle = document.getElementById('navbarNav')
-    // const bsCollapse = new bootstrap.Collapse(menuToggle)
-    // navLinks.forEach((l) => {
-    //   l.addEventListener('click', () => { bsCollapse.toggle() })
-    // })
-
-    $('.navbar-collapse').click(function (e) {
-      $('.navbar-collapse').collapse('toggle');
-    });
-
-    // if ($(window).width() < 992) {
-      
+    //   }
     // }
 
+    // Collapse Mobile Navbar after link click
+    $('.navbar-collapse a').click(function(){
+      $(".navbar-collapse").collapse('hide');
+    });
+
+    // When mobile navbar is enabled, 
+    function anchor_position_shift() {
+      if ($(window).width() > 991) {
+        var anchor_elements = $(".anchor-mob");
+        anchor_elements.switchClass("anchor-mob","anchor-pc");
+      } else {
+        var anchor_elements = $(".anchor-pc");
+        anchor_elements.switchClass("anchor-pc","anchor-mob")
+      }
+    };
+  
   </script>
 
 </body>
