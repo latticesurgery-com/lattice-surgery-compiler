@@ -75,7 +75,7 @@ PauliOperator._anticommute_tbl = {
 }
 
 
-class PauliProductOperation(EvaluationConditionManager):
+class PauliProductOperation(ConditionalOperation):
 
     qubit_num:  int = None
     ops_list:   List[PauliOperator] = None
