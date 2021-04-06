@@ -52,28 +52,28 @@ def view_compiled(request):
     }
     return render(request,"lattice_main/lattice_view.html",context)
 
-def render_to_file(request) -> str:
-    # circuit_file_name: str, output_file_name: str, apply_litinski_transform: bool=True) -> str:
-    """ 
-    save output to file for debugging by calling the url /render_file/
-    hard-code desired circuit input name, make sure the file is in /web/ folder (appending assets dir isn't working)
-    outputs to /web/ directory with name given by output_file
-    """
-    print("current working directory: \n",os.getcwd())
-    #sys.path.append(PATH_TO_DEMO_CIRCUITS)
-    circuit_file_name = "nontrivial_state.qasm"
-    apply_litinski_transform = True
-    output_file_name = "saved.html"
+# def render_to_file(request) -> str:
+#     # circuit_file_name: str, output_file_name: str, apply_litinski_transform: bool=True) -> str:
+#     """ 
+#     save output to file for debugging by calling the url /render_file/
+#     hard-code desired circuit input name, make sure the file is in /web/ folder (appending assets dir isn't working)
+#     outputs to /web/ directory with name given by output_file
+#     """
+#     print("current working directory: \n",os.getcwd())
+#     #sys.path.append(PATH_TO_DEMO_CIRCUITS)
+#     circuit_file_name = "nontrivial_state.qasm"
+#     apply_litinski_transform = True
+#     output_file_name = "saved.html"
 
-    slices, compilation_text = lattice_surgery_compilation_pipeline.compile_file(circuit_file_name,apply_litinski_transform)
-    context = {
-        'slices': slices,
-        'patches': patches,
-        'compilation_text' : compilation_text
-    }
-    rendered_page = render_to_string("lattice_main/lattice_view.html",context)
-    with open(output_file_name, 'w', encoding="UTF-8") as f:
-        f.write(rendered_page)
+#     slices, compilation_text = lattice_surgery_compilation_pipeline.compile_file(circuit_file_name,apply_litinski_transform)
+#     context = {
+#         'slices': slices,
+#         'patches': patches,
+#         'compilation_text' : compilation_text
+#     }
+#     rendered_page = render_to_string("lattice_main/lattice_view.html",context)
+#     with open(output_file_name, 'w', encoding="UTF-8") as f:
+#         f.write(rendered_page)
 
-    return redirect('/')
+#     return redirect('/')
 
