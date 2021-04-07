@@ -9,7 +9,7 @@ from django.conf import settings
 import os, django, sys
 
 sys.path.append("..")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE","lattice_surgery_web.settings_template_test")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE","lattice_surgery_web.settings_render_to_file")
 django.setup()
 
 sys.path.append("../../")
@@ -33,4 +33,5 @@ DEMO_CIRCUITS_DIR = "../../assets/demo_circuits/"
 circuit = "nontrivial_state.qasm"
 output_filename = "saved.html"
 
-render_to_file(DEMO_CIRCUITS_DIR + circuit, output_filename)
+if __name__ == '__main__':
+    render_to_file(DEMO_CIRCUITS_DIR + circuit, output_filename)
