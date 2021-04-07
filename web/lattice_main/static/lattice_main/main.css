@@ -86,6 +86,11 @@ a {
   white-space: nowrap;
   overflow: hidden;
 }*/
+#lattice-view-output {
+  /*Hacky way to make sure footer stays at the bottom when there isn't much page content*/
+  min-height: 90vh;
+}
+
 #toolbar{
     /* Make it independent of zoom */
   height: 10%;
