@@ -1,4 +1,8 @@
-#### Stand-alone script version of render. (not yet sure why the CSS won't render)
+"""
+Stand-alone script version of render-to-html-file
+
+Modify the hard-coded filename of the circuit you want to run at the bottom of this script, and update the path to the demo_circuit folder if it has changed. Html file saves in current directory and is git-ignored.
+"""
 
 from django.template.loader import render_to_string
 from django.conf import settings
