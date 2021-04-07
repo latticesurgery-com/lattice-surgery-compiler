@@ -1,6 +1,6 @@
 from circuit import *
 from rotation import *
-from dependency_tree import *
+from dependency_graph import *
 
 I = PauliOperator.I 
 X = PauliOperator.X 
@@ -17,7 +17,7 @@ c.add_pauli_block(Rotation.from_list([Z, I],Fraction(-1,4)))
 c.add_pauli_block(Rotation.from_list([I, Z],Fraction(-1,4)))
 
 print(c.render_ascii())
-a = DependencyTree.from_circuit(c)
+a = DependencyGraph.from_circuit(c)
 
 print("Returned terminal nodes:")
 print(a.terminal_node)

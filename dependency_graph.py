@@ -2,13 +2,13 @@ from typing import *
 from circuit import *
 import copy
 
-class DependencyTree: 
+class DependencyGraph: 
 
     class Node:
         def __init__(self, op: int):
             self.op = op 
-            self.parents: List['DependencyTree.Node'] = list()
-            self.children: List['DependencyTree.Node'] = list()
+            self.parents: List['DependencyGraph.Node'] = list()
+            self.children: List['DependencyGraph.Node'] = list()
         
         def __str__(self) -> str:
             return '({}: Parent: {}, Children: {})'.format(self.op, [a.op for a in self.parents], [b.op for b in self.children]) 
@@ -17,7 +17,7 @@ class DependencyTree:
             return str(self)
             
         def __eq__(self, other) -> bool:
-            if isinstance(other, DependencyTree.Node):
+            if isinstance(other, DependencyGraph.Node):
                 return self.op == other.op
             else:
                 return False
@@ -26,17 +26,17 @@ class DependencyTree:
         self.terminal_node = list()
 
     @staticmethod
-    def from_circuit(circuit : Circuit) -> 'DependencyTree':
+    def from_circuit(circuit : Circuit) -> 'DependencyGraph':
         """
         Build a dependency tree from a Pauli circuit
 
         """
-        ret_graph = DependencyTree()
+        ret_graph = DependencyGraph()
         frontier = list()
         current = len(circuit) 
         while current > 0: 
             current -= 1 
-            new_node = DependencyTree.Node(current)
+            new_node = DependencyGraph.Node(current)
             is_added = False    # Check to avoid adding a node twice or momre
 
             # First node
