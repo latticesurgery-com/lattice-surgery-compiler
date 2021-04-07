@@ -307,6 +307,18 @@ class Circuit(object):
 
         return ret_circ
 
+    @staticmethod
+    def load_from_quasm_string(quasm_string: str) -> 'Circuit':
+        """
+        Generate circuit from file. Supported formats are QASM, QC and Quipper ASCII (per PyZX)
+        """
+
+        pyzx_circ = zx.Circuit.from_qasm(quasm_string)
+        ret_circ = Circuit.load_from_pyzx(pyzx_circ)
+
+        return ret_circ
+
+
 
     def count_rotations_by(self, rotation_amount : Fraction) -> int:
         return len(list(filter(lambda r: isinstance(r, Rotation) and r.rotation_amount==rotation_amount, self.ops)))
