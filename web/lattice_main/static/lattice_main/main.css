@@ -15,14 +15,19 @@
 .foot-bg {
   background: rgb(0,0,0);
   background: linear-gradient(90deg, rgba(0,0,0,1) 10%, rgba(0,255,248,1) 48%, rgba(0,0,0,1) 86%);
-  height: 200px;
+  height: 150px;
 }
 
-/*.anchor {
-  padding-top: 83px;
-  margin-top: -83px;
-  display: inline-block;
-}*/
+.anchor-pc {
+    display:block;
+    padding-top:70px;
+    margin-top:-70px;
+}
+.anchor-mob{
+    display:block;
+    padding-top:180px;
+    margin-top:-180px;
+}
 
 #the-navbar {
   padding:5px 5px;
@@ -43,8 +48,9 @@
 }
 
 a {
-   text-decoration: underline;
-   color: inherit;
+/*  color:blue;
+  text-decoration: none;
+  color: inherit;*/
 }
 
 .fas, .fab {
@@ -53,8 +59,12 @@ a {
 
 }
 
-.fas:hover,.fab:hover {
+.fas:hover,.fab:hover,.fas:active,.fab:active {
     color: white;
+}
+
+.fas:visited, .fab:visited {
+  color:black;
 }
 
 .flex-container {
@@ -62,7 +72,7 @@ a {
 }
 
 .last-paragraph {
-  margin-bottom:0px;
+  margin-bottom:55px;
 }
 
 
@@ -76,8 +86,12 @@ a {
   white-space: nowrap;
   overflow: hidden;
 }*/
-#toolbar
-{
+#lattice-view-output {
+  /*Hacky way to make sure footer stays at the bottom when there isn't much page content*/
+  min-height: 90vh;
+}
+
+#toolbar{
     /* Make it independent of zoom */
   height: 10%;
   line-height: 10vh;
@@ -105,7 +119,6 @@ a {
   font-size:9px;
 }
 
-.qubit-state
-{
+.qubit-state{
   line-height: 1;
 }
