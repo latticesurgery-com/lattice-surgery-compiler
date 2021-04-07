@@ -11,7 +11,7 @@ from circuit import *
 """Patches are now identified by uuids"""
 
 
-class LogicalLatticeOperation(EvaluationConditionManager):
+class LogicalLatticeOperation(ConditionalOperation):
 
     def get_operating_patches(self) -> List[uuid.UUID]:
         raise NotImplemented()

@@ -22,7 +22,7 @@ class EvaluationCondition:
 
 
 
-class EvaluationConditionManager:
+class ConditionalOperation:
     """ Mixin for objects representing operations conditional on outcomes. Uses instances EvaluationCondition
     as functors to be called when checking if a condtional operation needs to execute or not"""
     
