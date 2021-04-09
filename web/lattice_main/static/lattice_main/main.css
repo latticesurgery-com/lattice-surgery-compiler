@@ -53,13 +53,13 @@ a {
   color: inherit;*/
 }
 
-.fas, .fab {
+.fas, .fab, .far {
   padding:30px;
   color:black;
 
 }
 
-.fas:hover,.fab:hover,.fas:active,.fab:active {
+.fas:hover,.fab:hover,.far:hover,.fas:active,.fab:active,.far:active{
     color: white;
 }
 
@@ -89,6 +89,11 @@ a {
 #lattice-view-output {
   /*Hacky way to make sure footer stays at the bottom when there isn't much page content*/
   min-height: 90vh;
+}
+
+#contact-expand {
+  /*Hacky way to make sure footer stays at the bottom when there isn't much page content*/
+  min-height: 80vh;
 }
 
 #toolbar{

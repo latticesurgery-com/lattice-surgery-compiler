@@ -52,6 +52,9 @@
                   <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}#about">About</a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="{% url 'lattice_main-contact' %}">Contact</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="{% url 'lattice_main-uploadcircuit' %}#surface-codes">Surface Codes and Lattice Surgery</a>
                 </li>
     {#            <li class="nav-item">#}
@@ -72,7 +75,10 @@
         <div class="container">
           <div class="flex-container justify-content-center">
             <div>
-               <a href="https://github.com/latticesurgery-com/lattice-surgery-compiler/"><i class="fab fa-github fa-3x"></i></a>
+              <a href="https://github.com/latticesurgery-com/lattice-surgery-compiler/"><i class="fab fa-github fa-3x"></i></a>
+            </div>
+            <div>
+              <a href="{% url 'lattice_main-contact' %}"><i class="far fa-envelope fa-3x"></i></a>
             </div>
           </div>
         </div>

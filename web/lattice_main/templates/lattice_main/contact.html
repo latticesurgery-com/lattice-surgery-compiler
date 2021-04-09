@@ -1,12 +1,19 @@
 {% extends 'lattice_main/base.html' %}
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 
-<div class="container mt-3">
+<div class="container mt-3" id="contact-expand">
 <h1> Contact </h1>
 
-Contact Form
+<h5> Feel free to inquire about our research or provide feedback</h5>
+
+<form>
+  {% csrf_token %}
+  {{ contact|crispy }}
+  <div class='btn btn-primary p-3' type="submit">Submit</div>
+</form>
 
 </div>
 {% endblock content %}

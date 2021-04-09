@@ -6,6 +6,7 @@ from typing import *
 
 import lattice_surgery_compilation_pipeline
 import patches # TODO remove the dependency on this import
+from .forms import Contact_Form
 
 
 PATH_TO_DEMO_CIRCUITS="../assets/demo_circuits"
@@ -17,8 +18,14 @@ def upload_circuit(request):
     return render(request,"lattice_main/upload_circuit.html",context)
 
 def contact(request):
-    context = {}
+    contact_form = Contact_Form()
+    context = {"contact": contact_form}
     return render(request,"lattice_main/contact.html",context)
+
+def contact_submit(request):
+    if request.method=="POST":
+        contact_form = Contact_Form(request.POST)
+        
 
 def view_compiled(request):
     """ url shortcut name: lattice_main-latticeview """
