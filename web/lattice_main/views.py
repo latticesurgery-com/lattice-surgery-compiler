@@ -16,6 +16,10 @@ def upload_circuit(request):
     context = {"demo_circuits":demo_circuits}
     return render(request,"lattice_main/upload_circuit.html",context)
 
+def contact(request):
+    context = {}
+    return render(request,"lattice_main/contact.html",context)
+
 def view_compiled(request):
     """ url shortcut name: lattice_main-latticeview """
     # print(request.POST)
