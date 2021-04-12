@@ -80,7 +80,8 @@ class Circuit(object):
         self.add_pauli_block(new_rotation, index)
 
 
-    def apply_transformation(self) -> None:
+
+    def apply_transformation(self, start_index:int=0, remove_y_operators:bool = True) -> None:
         """
         Apply Litinski's Transformation
 
@@ -100,9 +101,10 @@ class Circuit(object):
                 self.commute_pi_over_four_rotation(index)
                 index += 1
             self.ops.pop()
-        
-        # Remove all pi/4 rotations from the circuit
-        self.remove_y_operators_from_circuit()
+
+
+        if remove_y_operators:
+            self.remove_y_operators_from_circuit()
 
 
     def remove_y_operators_from_circuit(self) -> None:
