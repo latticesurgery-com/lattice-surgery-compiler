@@ -10,8 +10,6 @@ import re
 from typing import *
 
 
-__all__ = ['parse']
-
 def parse(qasm_filename : str) -> ls.Circuit:
     """
     Read a QASM file (currently supports only OPENQASM 2.0) into a circuit.
