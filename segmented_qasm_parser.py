@@ -1,4 +1,5 @@
-import lattice_surgery_computation_composer as ls
+import circuit
+import rotation
 
 import qiskit.qasm
 import qiskit.qasm.node
@@ -10,7 +11,7 @@ import re
 from typing import *
 
 
-def parse(qasm_filename : str) -> ls.Circuit:
+def parse_file(qasm_filename : str) -> circuit.Circuit:
     """
     Read a QASM file (currently supports only OPENQASM 2.0) into a circuit.
 
@@ -31,7 +32,7 @@ class _SegmentedQASMParser:
                     qiskit.qasm.node.Measure,
                     qiskit.qasm.node.Barrier]
     individual_segment_node_types = {'if','measure'}
-    measurement_operator = ls.PauliOperator.Z
+    measurement_operator = rotation.PauliOperator.Z
 
     def __init__(self, qasm_filename: str):
         ast = _QASMASTSegmenter.ast_from_file(qasm_filename)
@@ -49,10 +50,10 @@ class _SegmentedQASMParser:
 
         segments = _QASMASTSegmenter.ast_to_segments(ast)
         sub_circuits = map(self.segment_to_circuit, segments)
-        self.circuit = functools.reduce(ls.Circuit.join, sub_circuits)
+        self.circuit = functools.reduce(circuit.Circuit.join, sub_circuits)
 
 
-    def get_circuit(self) -> ls.Circuit:
+    def get_circuit(self) -> circuit.Circuit:
         return self.circuit
 
     def segment_to_circuit(self, segment: Segment):
@@ -65,7 +66,7 @@ class _SegmentedQASMParser:
         else:
             raise Exception('Unsupported QASM node type ' + segment.type)
 
-    def reversible_segment_to_circuit(self, segment: List[qiskit.qasm.node.node.Node]) -> ls.Circuit:
+    def reversible_segment_to_circuit(self, segment: List[qiskit.qasm.node.node.Node]) -> circuit.Circuit:
         program_wrapper_node = qiskit.qasm.node.Program(segment)
         text_qasm_program_wrapper =\
             'OPENQASM 2.0;\n'+\
@@ -73,19 +74,19 @@ class _SegmentedQASMParser:
             self.qreg.qasm()+"\n"+\
             program_wrapper_node.qasm()
 
-        return ls.Circuit.load_reversible_from_qasm_string(text_qasm_program_wrapper)
+        return circuit.Circuit.load_reversible_from_qasm_string(text_qasm_program_wrapper)
 
     def if_node_to_circuit(self, node: qiskit.qasm.node.if_.If):
         raise NotImplementedError # TODO
 
     def measure_node_to_circuit(self, measurement_node: qiskit.qasm.node.Measure)\
-            -> ls.Circuit:
-        c = ls.Circuit(self.num_qubits())
+            -> circuit.Circuit:
+        c = circuit.Circuit(self.num_qubits())
 
-        op_list = [ls.PauliOperator.I] * self.num_qubits()
+        op_list = [rotation.PauliOperator.I] * self.num_qubits()
         measure_idx: int = _SegmentedQASMParser.extract_measurement_idx(measurement_node)
         op_list[measure_idx] = _SegmentedQASMParser.measurement_operator
-        c.add_pauli_block(ls.Measurement.from_list(op_list))
+        c.add_pauli_block(rotation.Measurement.from_list(op_list))
 
         return c
 

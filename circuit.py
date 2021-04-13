@@ -5,7 +5,6 @@ from fractions import Fraction
 from utils import decompose_pi_fraction
 import pyzx as zx
 from typing import *
-import segmented_qasm_parser
 
 class Circuit(object):
     """
@@ -295,14 +294,6 @@ class Circuit(object):
         print("Conversion completed")
         print("Gate Missed: ", gate_missed)
         return ret_circ
-
-   
-    @staticmethod
-    def load_from_file(fname: str) -> 'Circuit':
-        """
-        Generate circuit from file. See segmented_qasm_parser.parse() for feature support details.
-        """
-        return segmented_qasm_parser.parse(fname)
 
     @staticmethod
     def load_reversible_from_qasm_string(quasm_string: str) -> 'Circuit':

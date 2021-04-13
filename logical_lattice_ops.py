@@ -3,7 +3,7 @@ from rotation import *
 import uuid
 from collections import deque
 from qubit_state import *
-from circuit import *
+from circuit import Circuit
 
 
 # TODO give a uuid to all patches

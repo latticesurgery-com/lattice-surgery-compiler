@@ -1,5 +1,5 @@
 
-import circuit
+import segmented_qasm_parser
 import lattice_surgery_computation_composer
 import logical_lattice_ops
 import sparse_lattice_to_array
@@ -20,7 +20,7 @@ def compile_file(circuit_file_name : str ,
     composer_class = lattice_surgery_computation_composer.LatticeSurgeryComputation
     layout_types = lattice_surgery_computation_composer.LayoutType
 
-    input_circuit = circuit.Circuit.load_from_file(circuit_file_name)
+    input_circuit = segmented_qasm_parser.parse_file(circuit_file_name)
 
     compilation_text = "Input Circuit:\n"
 

@@ -37,7 +37,7 @@ if __name__ == "__main__":
     print(qkvis.circuit_drawer(c).single_string())
 
 
-    c = segmented_qasm_parser.parse(EXAMPLE_FILE)
+    c = segmented_qasm_parser.parse_file(EXAMPLE_FILE)
     print(c.render_ascii())
 
 
