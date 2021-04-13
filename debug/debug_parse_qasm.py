@@ -41,7 +41,7 @@ if __name__ == "__main__":
     c = segmented_qasm_parser.parse_file(EXAMPLE_FILE)
     print(c.render_ascii())
 
-    render_to_file(EXAMPLE_FILE,'index.html')
+    render_to_file(EXAMPLE_FILE,'index.html',False)
 
 
 

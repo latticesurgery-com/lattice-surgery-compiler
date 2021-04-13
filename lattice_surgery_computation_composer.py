@@ -281,8 +281,9 @@ class LatticeSurgeryComputationComposer:
     def clearActiveStates(self):
         # Make measured patches disappear
         def patch_stays(patch : patches.Patch) -> bool:
-            if patch.state is not None and isinstance(patch.state,patches.ActiveState)\
-                    and patch.state.activity == ActivityType.Measurement\
+            if patch.state is not None\
+                    and isinstance(patch.state,patches.ActiveState)\
+                    and patch.state.activity.activity_type == ActivityType.Measurement\
                     and self.computation.is_ancilla_location(patch.getRepresentative()):
                 return False
             return True
