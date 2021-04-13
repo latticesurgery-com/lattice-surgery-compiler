@@ -170,6 +170,9 @@ class LatticeSurgeryComputation:
 
         self.composer.lattice().min_cols = self.composer.lattice().getCols()
 
+    def is_ancilla_location(self, cell: Tuple[int,int]) -> bool:
+        return cell in self.ancilla_locations
+
     def timestep(self):
         class LatticeSurgeryComputationSliceContextManager:
             def __init__(self, root_composer: LatticeSurgeryComputationComposer):
@@ -278,7 +281,9 @@ class LatticeSurgeryComputationComposer:
     def clearActiveStates(self):
         # Make measured patches disappear
         def patch_stays(patch : patches.Patch) -> bool:
-            if patch.state is not None and isinstance(patch.state,patches.ActiveState) and patch.state.disappears():
+            if patch.state is not None and isinstance(patch.state,patches.ActiveState)\
+                    and patch.state.activity == ActivityType.Measurement\
+                    and self.computation.is_ancilla_location(patch.getRepresentative()):
                 return False
             return True
 
@@ -308,7 +313,9 @@ class LatticeSurgeryComputationComposer:
         return self.get_patch(quuid).getRepresentative()
 
     def get_patch(self, quuid: uuid.UUID) -> patches.Patch:
-        return  self.lattice().getPatchByUuid(quuid)
+        p = self.lattice().getPatchByUuid(quuid)
+        assert p is not None
+        return p
 
     def addLogicalOperation(self, current_op: LogicalLatticeOperation):
         self.lattice().logical_ops.append(current_op)

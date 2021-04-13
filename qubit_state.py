@@ -58,9 +58,6 @@ class ActiveState(QubitState):
             else:
                 return "{:s}({:s})\n={:s}".format(str(self.activity.op),self.prev.ket_repr(),self.next.ket_repr())
 
-    def disappears(self):
-        return self.activity.activity_type == ActivityType.Measurement
-
 
 class EntangledState(SymbolicState):
     def __init__(self):
