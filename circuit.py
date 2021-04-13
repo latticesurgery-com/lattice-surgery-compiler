@@ -1,12 +1,11 @@
 import copy
 
-import numpy as np
 from rotation import PauliProductOperation, Rotation, Measurement, PauliOperator
 from fractions import Fraction
 from utils import decompose_pi_fraction
 import pyzx as zx
 from typing import *
-
+import segmented_qasm_parser
 
 class Circuit(object):
     """
@@ -301,31 +300,14 @@ class Circuit(object):
     @staticmethod
     def load_from_file(fname: str) -> 'Circuit':
         """
-        Generate circuit from file. Supported formats are QASM, QC and Quipper ASCII (per PyZX)
+        Generate circuit from file. See segmented_qasm_parser.parse() for feature support details.
         """
-
-        pyzx_circ = zx.Circuit.load(fname)
-        ret_circ = Circuit.load_from_pyzx(pyzx_circ)
-
-        return ret_circ
+        return segmented_qasm_parser.parse(fname)
 
     @staticmethod
-    def load_from_quasm_string(quasm_string: str) -> 'Circuit':
+    def load_reversible_from_qasm_string(quasm_string: str) -> 'Circuit':
         """
-        Generate circuit from file. Supported formats are QASM, QC and Quipper ASCII (per PyZX)
-        """
-
-        pyzx_circ = zx.Circuit.from_qasm(quasm_string)
-        ret_circ = Circuit.load_from_pyzx(pyzx_circ)
-
-        return ret_circ
-
-
-
-    @staticmethod
-    def load_from_quasm_string(quasm_string: str) -> 'Circuit':
-        """
-        Generate circuit from file. Supported formats are QASM, QC and Quipper ASCII (per PyZX)
+        Load a string as if it were a QASM circuit. Only supports reversible circuits.
         """
 
         pyzx_circ = zx.Circuit.from_qasm(quasm_string)
