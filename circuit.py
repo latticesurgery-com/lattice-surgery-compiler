@@ -1,4 +1,6 @@
-import numpy as np 
+import copy
+
+import numpy as np
 from rotation import PauliProductOperation, Rotation, Measurement, PauliOperator
 from fractions import Fraction
 from utils import decompose_pi_fraction
@@ -38,8 +40,7 @@ class Circuit(object):
 
 
     def copy(self) -> 'Circuit':
-        new_circuit = Circuit(self.qubit_num, self.name)
-        new_circuit.ops = [r.copy() for r in self.ops]
+        return copy.deepcopy(self)
 
 
     def add_pauli_block(self, new_block: PauliProductOperation, index: int = None) -> None:
