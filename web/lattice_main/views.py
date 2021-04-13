@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
+from django.template.loader import render_to_string
 
-import os, sys, uuid, shutil
+import os, sys, uuid, shutil, sys
 from typing import *
 
 import lattice_surgery_compilation_pipeline
@@ -50,21 +51,3 @@ def view_compiled(request):
         'compilation_text' : compilation_text
     }
     return render(request,"lattice_main/lattice_view.html",context)
-
-# TODO restore this for debugging
-# def render_to_file(request,slices, output_file_name): # (slices : List[patches.Lattice], output_file_name : str) -> str
-#     slices = list(map(sparse_lattice_to_array, slices))
-#     styles_map = styles_map
-#     patches = patches
-#     context = {
-#         "slices":slices,
-#         "styles_map":styles_map,
-#         "patches":patches
-#     }
-#     template = Template(filename='templates/lattice_view.mak')
-#     with open(output_file_name, 'w') as f:
-#         f.write(template.render(
-#             slices=list(map(sparse_lattice_to_array, slices)),
-#             styles_map=styles_map,
-#             patches=patches
-#         ))
