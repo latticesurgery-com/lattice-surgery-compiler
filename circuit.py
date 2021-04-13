@@ -80,7 +80,6 @@ class Circuit(object):
         self.add_pauli_block(new_rotation, index)
 
 
-
     def apply_transformation(self, start_index:int=0, remove_y_operators:bool = True) -> None:
         """
         Apply Litinski's Transformation
@@ -90,7 +89,7 @@ class Circuit(object):
 
         # Build a stack of pi/4 rotations
 
-        for i in range(len(self)):
+        for i in range(start_index,len(self)):
             if isinstance(self.ops[i], Rotation) and self.ops[i].rotation_amount in {Fraction(1,4), Fraction(-1,4)}:
                 quarter_rotation.append(i)
         
@@ -107,13 +106,13 @@ class Circuit(object):
             self.remove_y_operators_from_circuit()
 
 
-    def remove_y_operators_from_circuit(self) -> None:
+    def remove_y_operators_from_circuit(self, start_index:int=0) -> None:
         """
         Removes Y operators from pi/8 and measurement blocks. To be called after pi/4 rotations 
         have been commuted to the end of the circuit.
 
         """
-        i = 0 
+        i = start_index
 
         while i < len(self.ops):
             pauli_block = self.ops[i]
@@ -154,7 +153,7 @@ class Circuit(object):
             else:
                 # This is assuming pi/4 rotations (not including ones from this operation) 
                 # have been commuted to the end of the circuit.
-                continue
+                break
            
             i += 1
                 
@@ -308,6 +307,18 @@ class Circuit(object):
         ret_circ = Circuit.load_from_pyzx(pyzx_circ)
 
         return ret_circ
+
+    @staticmethod
+    def load_from_quasm_string(quasm_string: str) -> 'Circuit':
+        """
+        Generate circuit from file. Supported formats are QASM, QC and Quipper ASCII (per PyZX)
+        """
+
+        pyzx_circ = zx.Circuit.from_qasm(quasm_string)
+        ret_circ = Circuit.load_from_pyzx(pyzx_circ)
+
+        return ret_circ
+
 
 
     def count_rotations_by(self, rotation_amount : Fraction) -> int:
