@@ -1,10 +1,10 @@
-import numpy as np 
+import copy
+
 from rotation import PauliProductOperation, Rotation, Measurement, PauliOperator
 from fractions import Fraction
 from utils import decompose_pi_fraction
 import pyzx as zx
 from typing import *
-
 
 class Circuit(object):
     """
@@ -38,8 +38,7 @@ class Circuit(object):
 
 
     def copy(self) -> 'Circuit':
-        new_circuit = Circuit(self.qubit_num, self.name)
-        new_circuit.ops = [r.copy() for r in self.ops]
+        return copy.deepcopy(self)
 
 
     def add_pauli_block(self, new_block: PauliProductOperation, index: int = None) -> None:
@@ -296,22 +295,10 @@ class Circuit(object):
         print("Gate Missed: ", gate_missed)
         return ret_circ
 
-   
     @staticmethod
-    def load_from_file(fname: str) -> 'Circuit':
+    def load_reversible_from_qasm_string(quasm_string: str) -> 'Circuit':
         """
-        Generate circuit from file. Supported formats are QASM, QC and Quipper ASCII (per PyZX)
-        """
-
-        pyzx_circ = zx.Circuit.load(fname)
-        ret_circ = Circuit.load_from_pyzx(pyzx_circ)
-
-        return ret_circ
-
-    @staticmethod
-    def load_from_quasm_string(quasm_string: str) -> 'Circuit':
-        """
-        Generate circuit from file. Supported formats are QASM, QC and Quipper ASCII (per PyZX)
+        Load a string as if it were a QASM circuit. Only supports reversible circuits.
         """
 
         pyzx_circ = zx.Circuit.from_qasm(quasm_string)
@@ -319,6 +306,12 @@ class Circuit(object):
 
         return ret_circ
 
+    @staticmethod
+    def join(lhs: 'Circuit', rhs: 'Circuit') -> 'Circuit':
+        assert lhs.qubit_num == rhs.qubit_num
+        c = lhs.copy()
+        c.ops.extend(rhs.ops)
+        return c
 
 
     def count_rotations_by(self, rotation_amount : Fraction) -> int:

@@ -1,9 +1,9 @@
-from circuit import *
+import segmented_qasm_parser
 
 
 
 if __name__ == "__main__":
 
-    c = Circuit.load_from_file("assets/reversible.qasm")
+    c = segmented_qasm_parser.parse_file("assets/reversible.qasm")
 
     print(c.render_ascii())

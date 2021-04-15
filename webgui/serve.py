@@ -1,4 +1,6 @@
 import circuit
+import segmented_qasm_parser
+
 from pauli_rotations_to_lattice_surgery import pauli_rotation_to_lattice_surgery_computation
 import webgui.lattice_view
 
@@ -32,7 +34,7 @@ def view_compiled(request : Request):
     with open(circuit_tmp_save_location, 'wb') as output_file:
         shutil.copyfileobj(intput_circuit_file, output_file)
 
-    input_circuit = circuit.Circuit.load_from_file(circuit_tmp_save_location)
+    input_circuit = segmented_qasm_parser.parse_file(circuit_tmp_save_location)
     print(input_circuit.render_ascii())
     os.unlink(circuit_tmp_save_location)
 
