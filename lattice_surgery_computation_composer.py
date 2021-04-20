@@ -255,7 +255,7 @@ class LatticeSurgeryComputationComposer:
             if v not in {patches.PauliOperator.X,patches.PauliOperator.Z}:
                 raise Exception("Only X and Y operators are supported in multibody mesurement, got "+repr(v))
 
-        ancilla_region_routing.compute_ancilla_cells(self.qubit_patch_slices[-1], cell_pauli_operator_map)
+        ancilla_region_routing.compute_ancilla_region_cells(self.qubit_patch_slices[-1], cell_pauli_operator_map)
 
 
     def applyPauliOperator(self,
