@@ -7,6 +7,9 @@ from functools import reduce
 from ast import literal_eval as make_tuple
 
 
+class AncillaRegionRoutingException(Exception):
+    pass
+
 # TODO reference to paper explaining this part of the algorithm
 
 def get_pauli_op_listing(
@@ -80,7 +83,7 @@ def add_directed_edges(
 
 
 
-def add_ancilla_to_lattice_from_paths(
+def add_ancilla_region_to_lattice_from_paths(
         lattice: patches,
         paths: List[List[Tuple[int ,int]]] # Lists of cells
 ) -> None:
@@ -127,10 +130,13 @@ def add_ancilla_to_lattice_from_paths(
 
 
 
-def compute_ancilla_cells(
+def compute_ancilla_region_cells(
         lattice: patches.Lattice,
         patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]
 ) -> None:
+    """ Compute which cells of the lattice are occupied by the ancilla region to perform the multibody measurement
+        specified by the dict of operators.
+    """
 
     assert(all(map(lambda cell: lattice.getPatchRepresentative(cell) == cell, patch_pauli_operator_map.keys())))
 
@@ -155,8 +161,9 @@ def compute_ancilla_cells(
     shortest_paths_raw = g.get_shortest_paths(source_qubit, target_qubits, mode='all', output='vpath')
     shortest_paths = [[make_tuple(g.vs[v_idx]["name"]) for v_idx in path] for path in shortest_paths_raw]
 
-    #make_path_extremes_join_a_neigbouring_cell(lattice,shortest_paths,op)
+    if len(shortest_paths)<1 or len(shortest_paths)==1 and len(shortest_paths[0])==0:
+        raise AncillaRegionRoutingException
 
-    add_ancilla_to_lattice_from_paths(lattice, shortest_paths)
+    add_ancilla_region_to_lattice_from_paths(lattice, shortest_paths)
 
 
