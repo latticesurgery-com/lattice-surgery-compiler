@@ -174,7 +174,7 @@ class Circuit(object):
             raise Exception("First operand must be +-pi/4 Pauli rotation")
 
         # Need to calculate iPP' when PP' = -P'P (anti-commute)
-        if not self.are_commuting(index, next_block):
+        if not Circuit.are_commuting(self.ops[index], self.ops[next_block]):
             product_of_coefficients = 1
             
             for i in range(self.qubit_num):
@@ -198,14 +198,17 @@ class Circuit(object):
         self.ops[next_block] = temp
         # print(self.render_ascii())
         
-
-    def are_commuting(self, block1: int, block2: int) -> bool:
+    @staticmethod
+    def are_commuting(block1: PauliProductOperation, block2: PauliProductOperation) -> bool:
         """
-        Check if 2 Pauli Product blocks in the circuit (identified by indices) commute or anti-commute.
+        Check if 2 Pauli Product blocks commute or anti-commute.
 
         Returns:
             bool: True if they commute, False if they anti-commute
         """
+        if block1.qubit_num != block2.qubit_num:
+            return False
+        
         ret_val = 1 
 
         # Use the fact that:
@@ -221,8 +224,8 @@ class Circuit(object):
         #
         # The loop below computes (c_1*...*c_n) in ret_val
         
-        for i in range(self.qubit_num):
-            ret_val *= 1 if PauliOperator.are_commuting(self.ops[block1].get_op(i), self.ops[block2].get_op(i)) else -1
+        for i in range(block1.qubit_num):
+            ret_val *= 1 if PauliOperator.are_commuting(block1.get_op(i), block2.get_op(i)) else -1
 
         return (ret_val > 0) 
     
