@@ -1,6 +1,6 @@
 import patches
 import ancilla_region_routing
-from ancilla_region_routing import  AncillaRegionRoutingException
+from ancilla_region_routing import AncillaRegionRoutingException
 from logical_lattice_ops import *
 from logical_patch_state_simulation import PatchSimulator
 import debug.util
