@@ -2,11 +2,12 @@ from typing import *
 from circuit import *
 import copy
 
+T = TypeVar('T')
 class DependencyGraph: 
 
     class Node:
-        def __init__(self, op: int):
-            self.op = op 
+        def __init__(self, op):
+            self.op: T = op 
             self.parents: List['DependencyGraph.Node'] = list()
             self.children: List['DependencyGraph.Node'] = list()
         
@@ -22,32 +23,53 @@ class DependencyGraph:
             else:
                 return False
 
+
     def __init__(self):
         self.terminal_node = list()
 
+
     @staticmethod
-    def from_circuit(circuit : Circuit) -> 'DependencyGraph':
+    def from_circuit_by_commutation(circuit: Circuit) -> 'DependencyGraph':
         """
-        Build a dependency tree from a Pauli circuit
+        Build a dependency tree from a Pauli circuit based on commutation.
 
         """
+        # This because new dependency is added between non-commuting operations  
+        def func(arg1, arg2):
+            return not Circuit.are_commuting(arg1, arg2)
+        
+        return DependencyGraph.from_list(circuit.ops, func)
+
+
+    @staticmethod
+    def from_list(input_list: list(), comparing_function) -> 'DependencyGraph':
+        """
+        Build a DependencyGraph from a list. 
+
+        Args:
+            input_list: list used to generate the graph
+            comparing_function: function used for deciding dependency in the graph. New dependency 
+                is added when it returns True.
+
+        """
+
         ret_graph = DependencyGraph()
         frontier = list()
-        current = len(circuit) 
+        current = len(input_list) 
         while current > 0: 
             current -= 1 
-            new_node = DependencyGraph.Node(current)
+            new_node = DependencyGraph.Node(input_list[current])
             is_added = False    # Check to avoid adding a node twice or momre
 
             # First node
-            if current == len(circuit) - 1:
+            if current == len(input_list) - 1:
                 ret_graph.terminal_node.append(new_node)
                 frontier.append(new_node)
                 continue
             
             for node in copy.copy(frontier): 
-                # Non-commuting case: add new dependency 
-                if not circuit.are_commuting(node.op, new_node.op):
+                # comparing_function() returns True: add new dependency 
+                if comparing_function(node.op, new_node.op):
                     new_node.parents.append(node)
                     node.children.append(new_node)
                     frontier.pop(frontier.index(node))
@@ -56,14 +78,15 @@ class DependencyGraph:
                     is_added = True
                     continue
                 
-                # Commuting case: Traverse the graph backwards, add new dependencies if non-commuting nodes found
+                # Else: traverse the graph backwards, add new dependencies if found nodes to 
+                # which comparing_function() return True to.
                 queue = list()
                 visited = set()
                 queue += node.parents
                 # 'Reversed' BFS to avoid traversing deeper than necessary
                 while queue:
                     s = queue.pop(0)
-                    if not circuit.are_commuting(s.op, new_node.op):
+                    if comparing_function(s.op, new_node.op):
                         new_node.parents.append(s)
                         s.children.append(new_node)
                         is_added = True 
@@ -80,7 +103,6 @@ class DependencyGraph:
             
         return ret_graph
 
-    
     def generate_adjacency_list(self):
         # Currently used to print out the tree, but might come useful in the future :wink:
         graph = dict()
@@ -100,4 +122,3 @@ class DependencyGraph:
                     visited.add(child.op)
 
         return graph
-    
