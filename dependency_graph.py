@@ -6,8 +6,8 @@ T = TypeVar('T')
 class DependencyGraph: 
 
     class Node:
-        def __init__(self, op):
-            self.op: T = op 
+        def __init__(self, op: T):
+            self.op = op 
             self.parents: List['DependencyGraph.Node'] = list()
             self.children: List['DependencyGraph.Node'] = list()
         
