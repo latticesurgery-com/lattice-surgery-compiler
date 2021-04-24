@@ -320,7 +320,37 @@ class Circuit(object):
     def count_rotations_by(self, rotation_amount : Fraction) -> int:
         return len(list(filter(lambda r: isinstance(r, Rotation) and r.rotation_amount==rotation_amount, self.ops)))
 
-   
+
+    def render_latex(self) -> str:
+        """
+        Generate latex render output of the current circuit. 
+
+        """
+        # NOTE: INCOMPLETE
+        from mako.template import Template
+        latex_template = Template(filename='assets\circuit_latex_render.mak')
+
+        operator_list = list()
+        phase_list = list()
+        for operation in self.ops:
+            for operator in operation.ops_list:
+                operator_list += str(operator) 
+            
+            if isinstance(operation, Rotation):
+                phase_list.append((operation.rotation_amount.numerator, operation.rotation_amount.numerator)) 
+            elif isinstance(operation, Measurement):
+                operator_str = '-M' if operation.isNegative else 'M'
+                phase_list.append(operator_str)
+
+        doc_params = dict(
+            qubit_num = self.qubit_num,
+            operator_list = operator_list,
+            phase_list = phase_list, 
+        )
+
+        return latex_template.render(**doc_params)
+
+
     def render_ascii(self) -> str:
         """
         Return circuit diagram in text format 
