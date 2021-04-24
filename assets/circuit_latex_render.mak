@@ -6,7 +6,9 @@
 
 \begin{document}
 
-\begin{tikzpicture}
+\hoffset=-1in
+\voffset=-1in
+\setbox0\hbox{\begin{tikzpicture}
     \tikzstyle{paulicomponent} = [draw,draw=none,fill=white,minimum size=1.5em] 
     \tikzstyle{phase} = [draw,fill,shape=circle,minimum size=5pt,inner sep=0pt]
     \matrix[row sep=0.4cm, column sep=0.4cm] (circuit) {
@@ -46,5 +48,10 @@
         ;
     \end{pgfonlayer}
     
-\end{tikzpicture}
+\end{tikzpicture}}
+\pdfpageheight=\dimexpr\ht0+\dp0\relax
+\pdfpagewidth=\wd0
+\shipout\box0
+
+\stop
 \end{document}
