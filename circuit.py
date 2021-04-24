@@ -330,11 +330,19 @@ class Circuit(object):
             for operator in operation.ops_list:
                 operator_list += str(operator) 
             
+            # Latex format for phase label (I didnt want to do this in the template file)
             if isinstance(operation, Rotation):
-                phase_list.append((operation.rotation_amount.numerator, operation.rotation_amount.numerator)) 
+                operator_str = '$\\frac{'
+                if abs(operation.rotation_amount.numerator) != 1:
+                    operator_str += str(operation.rotation_amount.numerator)
+                elif operation.rotation_amount.numerator == -1:
+                    operator_str += '-'
+                operator_str += '\pi}{' + str(operation.rotation_amount.denominator) + '}$'
+
             elif isinstance(operation, Measurement):
                 operator_str = '-M' if operation.isNegative else 'M'
-                phase_list.append(operator_str)
+            
+            phase_list.append(operator_str)
 
         doc_params = dict(
             qubit_num = self.qubit_num,

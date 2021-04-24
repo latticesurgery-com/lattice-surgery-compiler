@@ -19,15 +19,22 @@
         %endfor 
         \coordinate (end${i}); \\\
 
-        ## Won't need the below line later (when adding phase labels)
-        % if i == qubit_num - 1: 
-    }; 
-        % endif 
+    % endfor
+        [-0.3cm]
+        ##
+        ## Phase labelling:
+        ##
+        \node (op_angle_begin) {}; &
+    % for phase_label in phase_list:
+        \node[paulicomponent] {${phase_label}}; &
+    %endfor
+        \coordinate (op_angle_end); \\\
+
+    };
 
     ## Drawing borders for each Pauli operation:
-    % endfor
     % for k in range(0, len(operator_list), qubit_num):
-        \draw (H${k}.north east) rectangle (H${(k+qubit_num-1)}.south west);
+    \draw (H${k}.north east) rectangle (H${(k+qubit_num-1)}.south west);
     % endfor 
     
     ## Drawing circuit lines: 
