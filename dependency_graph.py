@@ -103,6 +103,7 @@ class DependencyGraph:
             
         return ret_graph
 
+
     def generate_adjacency_list(self):
         # Currently used to print out the tree, but might come useful in the future :wink:
         graph = dict()
@@ -111,7 +112,7 @@ class DependencyGraph:
         queue += self.terminal_node
         
         while queue:
-            curr = queue.pop()
+            curr = queue.pop(0)
             if curr.op not in graph:
                 graph[curr.op] = list()
             graph[curr.op] += [i.op for i in curr.children]
@@ -122,3 +123,13 @@ class DependencyGraph:
                     visited.add(child.op)
 
         return graph
+    
+    
+    def generate_edge_list(self):
+        adjacency_list = self.generate_adjacency_list()
+        return_list = list()
+        for node in adjacency_list:
+            for child in adjacency_list[node]:
+                return_list.append((node, child))
+        
+        return return_list

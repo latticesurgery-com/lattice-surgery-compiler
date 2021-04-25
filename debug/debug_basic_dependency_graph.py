@@ -17,7 +17,7 @@ c.add_pauli_block(Rotation.from_list([Z, I],Fraction(-1,4)))
 c.add_pauli_block(Rotation.from_list([I, Z],Fraction(-1,4)))
 
 print(c.render_ascii())
-a = DependencyGraph.from_circuit(c)
+a = DependencyGraph.from_circuit_by_commutation(c)
 
 print("Returned terminal nodes:")
 print(a.terminal_node)
