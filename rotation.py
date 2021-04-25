@@ -88,6 +88,15 @@ class PauliProductOperation(ConditionalOperation):
         return str(self)
 
     
+    def to_latex(self) -> str:
+        return_str = '(' + str(self.ops_list[0])
+        if self.qubit_num > 1: 
+            for i in range(1, len(self.ops_list)):
+                return_str += ' \otimes' + ' ' + str(self.ops_list[i])
+        return_str += ')'
+        return return_str
+
+
     def change_single_op(self, qubit: int, new_op: PauliOperator) -> None:
         """
         Modify a Pauli Operator
@@ -147,7 +156,19 @@ class Rotation(PauliProductOperation):
     def __str__(self) -> str:
         return '{}: {}'.format(self.rotation_amount, self.ops_list) 
             
-        
+
+    def to_latex(self) -> str:
+        return_str = super().to_latex() 
+        return_str += '_\\frac{'
+        if abs(self.rotation_amount.numerator) != 1:
+            return_str += str(self.rotation_amount.numerator)
+        elif self.rotation_amount.numerator == -1:
+            return_str += '-'
+        return_str += '\pi}{' + str(self.rotation_amount.denominator) + '}'
+
+        return return_str
+
+
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> 'Rotation':
         r = Rotation(len(pauli_ops), rotation)
@@ -179,6 +200,11 @@ class Measurement(PauliProductOperation):
     def __str__(self) -> str:
         return '{}M: {}'.format('-' if self.isNegative else '', self.ops_list) 
 
+
+    def to_latex(self) -> str:
+        return_str = super().to_latex() 
+        return_str += '_{-M}' if self.isNegative else '_M' 
+        return return_str
 
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], isNegative: bool = False) -> 'Measurement':
