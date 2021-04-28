@@ -3,6 +3,7 @@ from typing import *
 from enum import Enum
 from fractions import Fraction
 import qiskit.aqua.operators
+from utils import phase_frac_to_latex
 
 
 class PauliOperator(Enum):
@@ -159,12 +160,7 @@ class Rotation(PauliProductOperation):
 
     def to_latex(self) -> str:
         return_str = super().to_latex() 
-        return_str += '_\\frac{'
-        if abs(self.rotation_amount.numerator) != 1:
-            return_str += str(self.rotation_amount.numerator)
-        elif self.rotation_amount.numerator == -1:
-            return_str += '-'
-        return_str += '\pi}{' + str(self.rotation_amount.denominator) + '}'
+        return_str += '_' + phase_frac_to_latex(self.rotation_amount)
 
         return return_str
 

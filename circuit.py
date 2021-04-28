@@ -1,7 +1,7 @@
 import numpy as np 
 from rotation import PauliProductOperation, Rotation, Measurement, PauliOperator
 from fractions import Fraction
-from utils import decompose_pi_fraction
+from utils import decompose_pi_fraction, phase_frac_to_latex
 import pyzx as zx
 from typing import *
 
@@ -320,7 +320,7 @@ class Circuit(object):
         Generate latex render output of the current circuit. 
 
         """
-        # NOTE: INCOMPLETE
+
         from mako.template import Template
         latex_template = Template(filename='assets\circuit_latex_render.mak')
 
@@ -332,12 +332,7 @@ class Circuit(object):
             
             # Latex format for phase label (I didnt want to do this in the template file)
             if isinstance(operation, Rotation):
-                operator_str = '$\\frac{'
-                if abs(operation.rotation_amount.numerator) != 1:
-                    operator_str += str(operation.rotation_amount.numerator)
-                elif operation.rotation_amount.numerator == -1:
-                    operator_str += '-'
-                operator_str += '\pi}{' + str(operation.rotation_amount.denominator) + '}$'
+                operator_str = '$' + phase_frac_to_latex(operation.rotation_amount) + '$'
 
             elif isinstance(operation, Measurement):
                 operator_str = '-M' if operation.isNegative else 'M'
