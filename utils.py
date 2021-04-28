@@ -23,3 +23,18 @@ def decompose_pi_fraction(f:Fraction):
       largest_pow_of_2 = int(pow(2, p))  
       return [Fraction(largest_pow_of_2, f.denominator)] \
         + decompose_pi_fraction(Fraction(f.numerator - largest_pow_of_2,f.denominator))
+
+
+def phase_frac_to_latex(phi : Fraction):
+  """Assumes phi is multiplied by pi"""
+  if phi.numerator== 0: return "0"
+
+  sign = "" if phi.numerator > 0 else "-"
+  num = "" if abs(phi.numerator) == 1 else str(abs(phi.numerator))
+
+  if phi.denominator == 1:
+    return "%s%s\\pi"%(sign,num)
+
+  den = str(phi.denominator)
+
+  return "%s\\frac{%s\\pi}{%s}"%(sign,num,den)

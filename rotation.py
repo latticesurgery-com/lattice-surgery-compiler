@@ -3,6 +3,7 @@ from typing import *
 from enum import Enum
 from fractions import Fraction
 import qiskit.aqua.operators
+from utils import phase_frac_to_latex
 
 
 class PauliOperator(Enum):
@@ -88,6 +89,15 @@ class PauliProductOperation(ConditionalOperation):
         return str(self)
 
     
+    def to_latex(self) -> str:
+        return_str = '(' + str(self.ops_list[0])
+        if self.qubit_num > 1: 
+            for i in range(1, len(self.ops_list)):
+                return_str += ' \otimes' + ' ' + str(self.ops_list[i])
+        return_str += ')'
+        return return_str
+
+
     def change_single_op(self, qubit: int, new_op: PauliOperator) -> None:
         """
         Modify a Pauli Operator
@@ -147,7 +157,14 @@ class Rotation(PauliProductOperation):
     def __str__(self) -> str:
         return '{}: {}'.format(self.rotation_amount, self.ops_list) 
             
-        
+
+    def to_latex(self) -> str:
+        return_str = super().to_latex() 
+        return_str += '_' + phase_frac_to_latex(self.rotation_amount)
+
+        return return_str
+
+
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> 'Rotation':
         r = Rotation(len(pauli_ops), rotation)
@@ -179,6 +196,11 @@ class Measurement(PauliProductOperation):
     def __str__(self) -> str:
         return '{}M: {}'.format('-' if self.isNegative else '', self.ops_list) 
 
+
+    def to_latex(self) -> str:
+        return_str = super().to_latex() 
+        return_str += '_{-M}' if self.isNegative else '_M' 
+        return return_str
 
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], isNegative: bool = False) -> 'Measurement':
