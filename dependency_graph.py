@@ -1,11 +1,13 @@
 from typing import *
 from circuit import *
+from collections import deque
 import copy
 
 T = TypeVar('T')
-class DependencyGraph: 
+S = TypeVar('S')
+class DependencyGraph(Generic[T]):
 
-    class Node:
+    class Node(Generic[T]):
         def __init__(self, op: T):
             self.op = op 
             self.parents: List['DependencyGraph.Node'] = list()
@@ -24,9 +26,21 @@ class DependencyGraph:
                 return False
 
 
-    def __init__(self):
+    def __init__(self, qubit_num: int):
         self.terminal_node = list()
+        self.qubit_num = qubit_num
 
+    def traverse_bfs(self, f: Callable[T,S]) ->'DependencyGraph[S]':
+        new_dag = copy.deepcopy(self)
+
+        frontier: Deque[DependencyGraph.Node] = deque(new_dag.terminal_node)
+
+        while len(frontier) > 0:
+            curr = frontier.popleft()
+            curr.op = f(curr.op)
+            frontier.extendleft(curr.parents)
+
+        return new_dag
 
     @staticmethod
     def from_circuit_by_commutation(circuit: Circuit) -> 'DependencyGraph':
@@ -42,7 +56,7 @@ class DependencyGraph:
 
 
     @staticmethod
-    def from_list(input_list: list(), comparing_function) -> 'DependencyGraph':
+    def from_list(input_list: List[PauliProductOperation], comparing_function) -> 'DependencyGraph':
         """
         Build a DependencyGraph from a list. 
 
@@ -53,7 +67,8 @@ class DependencyGraph:
 
         """
 
-        ret_graph = DependencyGraph()
+        assert len(input_list) > 0;
+        ret_graph = DependencyGraph(input_list[0].qubit_num)
         frontier = list()
         current = len(input_list) 
         while current > 0: 
@@ -122,3 +137,11 @@ class DependencyGraph:
                     visited.add(child.op)
 
         return graph
+
+    @staticmethod
+    def chain(l: List[T]) -> Node[T]:
+        """First node is youngest, ancestors follow"""
+        n = DependencyGraph.Node(l[0])
+        if l>1:
+            n.parents = [DependencyGraph.chain(l[1:])]
+        return n
