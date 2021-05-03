@@ -1,5 +1,6 @@
 from typing import *
 from rotation import *
+from dependency_graph import *
 import uuid
 from collections import deque
 from qubit_state import *
@@ -63,33 +64,18 @@ class MagicStateRequest(LogicalLatticeOperation):
 
 
 
+
 class LogicalLatticeComputation:
-    
-    def __init__(self, circuit: Circuit):
-        self.circuit = circuit
-        self.logical_qubit_uuid_map = dict([(j,uuid.uuid4()) for j in range(circuit.qubit_num)])
-        self.ops : List[LogicalLatticeOperation] = []
 
-        self._load_circuit()
+    def __init__(self, starting_qubit_num : int):
+        self.logical_qubit_uuid_map : Dict[int,uuid.UUID] = \
+            dict([(j,uuid.uuid4()) for j in range(starting_qubit_num)])
 
+    def to_lattice_operation(self, op: PauliProductOperation) -> Union[LogicalLatticeOperation, Rotation]:
+        if isinstance(op, Rotation): return op
+        if isinstance(op, Measurement): return self.circuit_to_patch_measurement(op)
+        raise Exception("Unsupported PauliProductOperation " + repr(op))
 
-    def _load_circuit(self):
-
-        def to_lattice_operation(op: PauliProductOperation) -> Union[LogicalLatticeOperation, Rotation]:
-            if isinstance(op, Rotation): return op
-            if isinstance(op, Measurement): return self.circuit_to_patch_measurement(op)
-            raise Exception("Unsupported PauliProductOperation " + repr(op))
-
-        operations_queue: Deque[Union[Rotation, LogicalLatticeOperation]] \
-            = deque(map(to_lattice_operation, self.circuit.ops))
-
-        while len(operations_queue) > 0:
-            current_op = operations_queue.popleft()
-            if isinstance(current_op, Rotation):
-                rotations_composer = RotationsComposer(self)
-                operations_queue.extendleft(reversed(rotations_composer.expand_rotation(current_op)))
-            else:
-                self.ops.append(current_op)
 
     def circuit_to_patch_measurement(self,m: Measurement) -> Union[SinglePatchMeasurement, MultiBodyMeasurement]:
 
@@ -106,12 +92,78 @@ class LogicalLatticeComputation:
     def num_logical_qubits(self) -> int:
         return len(self.logical_qubit_uuid_map)
 
+    def count_magic_states(self):
+        raise NotImplemented
+
+
+
+
+class LinearLogicalLatticeComputation(LogicalLatticeComputation):
+    
+    def __init__(self, circuit: Circuit):
+        super().__init__(circuit.qubit_num)
+        self.circuit = circuit
+        self.ops : List[LogicalLatticeOperation] = []
+        self._load_circuit()
+
+    def _load_circuit(self):
+
+        operations_queue: Deque[Union[Rotation, LogicalLatticeOperation]] \
+            = deque(map(self.to_lattice_operation, self.circuit.ops))
+
+        while len(operations_queue) > 0:
+            current_op = operations_queue.popleft()
+            if isinstance(current_op, Rotation):
+                rotations_composer = RotationsComposer(self)
+                operations_queue.extendleft(reversed(rotations_composer.expand_rotation(current_op)))
+            else:
+                self.ops.append(current_op)
+
     def count_magic_states(self) -> int:
         c=0
         for op in self.ops:
             if isinstance(op,MagicStateRequest):
                 c += 1
         return c
+
+
+class ParallelLogicalLatticeComputation(LogicalLatticeComputation):
+    def __init__(self, pauli_op_dag : DependencyGraph[PauliProductOperation]):
+        super().__init__(pauli_op_dag.qubit_num)
+        self.pauli_op_dag = pauli_op_dag
+        self.logical_op_dag : DependencyGraph[LogicalLatticeOperation] = self._expand_pauli_rotations(pauli_op_dag)
+
+
+
+    def _expand_pauli_rotations(self, pauli_op_dag: DependencyGraph[PauliProductOperation]) -> DependencyGraph[LogicalLatticeOperation]:
+        new_dag = copy.deepcopy(pauli_op_dag)
+
+        # BFS Traversal
+        frontier : Deque[DependencyGraph.Node] = deque(new_dag.terminal_node)
+
+        while len(frontier)>0:
+            curr : DependencyGraph.Node[Union[PauliProductOperation,LogicalLatticeOperation]] = frontier.popleft()
+
+            if isinstance(curr.op, Rotation):
+                rotations_composer = RotationsComposer(self)
+                new_ops = DependencyGraph.chain(reversed(rotations_composer.expand_rotation(curr.op)))
+                for c in curr.children:
+                    c.parents.remove(curr)
+                    c.parents.append(new_ops[0])
+                for p in curr.parents:
+                    p.children.remove(curr)
+                    p.children.append(new_ops[-1])
+
+            elif isinstance(curr.op, Measurement):
+                curr.op = self.to_lattice_operation(curr.op)
+
+            frontier.extend(curr.parents)
+
+        return new_dag
+
+
+
+
 
 
 class RotationsComposer:
