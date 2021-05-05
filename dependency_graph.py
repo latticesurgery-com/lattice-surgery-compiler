@@ -34,6 +34,9 @@ class DependencyGraph:
         Build a dependency tree from a Pauli circuit based on commutation.
 
         """
+        if circuit.has_transversal_op():
+            raise NotImplementedError("Method not supports transversal operations")
+
         # This because new dependency is added between non-commuting operations  
         def func(arg1, arg2):
             return not PauliCircuit.are_commuting(arg1, arg2)

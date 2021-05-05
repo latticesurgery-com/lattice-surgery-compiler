@@ -4,6 +4,7 @@ from rotation import PauliProductOperation, Rotation, Measurement, PauliOperator
 from fractions import Fraction
 from utils import decompose_pi_fraction, phase_frac_to_latex
 import pyzx as zx
+from transversal_op import *
 from typing import *
 
 class PauliCircuit(object):
@@ -21,7 +22,7 @@ class PauliCircuit(object):
             name (str, optional): Circuit's name (for display). Defaults to ''.
         """
         self.qubit_num:     int = no_of_qubit
-        self.ops:           List[PauliProductOperation] = list()
+        self.ops:           List[Union[Circuit, TransversalOp]] = list()
         self.name:          str = name 
 
 
@@ -84,6 +85,10 @@ class PauliCircuit(object):
         Apply Litinski's Transformation
 
         """
+
+        if self.has_transversal_op():
+            raise NotImplementedError("Method not supports transversal operations")
+
         quarter_rotation = list()
 
         # Build a stack of pi/4 rotations
@@ -103,6 +108,18 @@ class PauliCircuit(object):
 
         if remove_y_operators:
             self.remove_y_operators_from_circuit()
+
+
+    def has_transversal_op(self) -> bool:
+        """
+        Return True if there is transversal op in the circuit and vice versa. 
+
+        """
+        for op in self.ops:
+            if isinstance(op, TransversalOp):
+                return True
+        
+        return False
 
 
     def remove_y_operators_from_circuit(self, start_index:int=0) -> None:
@@ -149,10 +166,14 @@ class PauliCircuit(object):
                             self.commute_pi_over_four_rotation(right_block_index)
                             right_block_index += 1
                         self.ops.pop()
-            else:
+            
+            elif pauli_block.rotation_amount in {Fraction(1,4), Fraction(-1,4)}:
                 # This is assuming pi/4 rotations (not including ones from this operation) 
                 # have been commuted to the end of the circuit.
                 break
+
+            else: 
+                continue
            
             i += 1
                 
@@ -198,6 +219,7 @@ class PauliCircuit(object):
         self.ops[next_block] = temp
         # print(self.render_ascii())
         
+
     @staticmethod
     def are_commuting(block1: PauliProductOperation, block2: PauliProductOperation) -> bool:
         """
@@ -326,6 +348,8 @@ class PauliCircuit(object):
         Generate latex render output of the current circuit. 
 
         """
+        if self.has_transversal_op():
+            raise NotImplementedError("Method not supports transversal operations")
 
         from mako.template import Template
         latex_template = Template(filename='assets\circuit_latex_render.mak')
@@ -357,7 +381,10 @@ class PauliCircuit(object):
     def render_ascii(self) -> str:
         """
         Return circuit diagram in text format 
+
         """
+        if self.has_transversal_op():
+            raise NotImplementedError("Method not supports transversal operations")
 
         cols : List[List[str]] = []
 
