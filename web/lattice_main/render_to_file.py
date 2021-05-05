@@ -9,16 +9,29 @@ from django.conf import settings
 import os, django, sys
 
 sys.path.append("..")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE","lattice_surgery_web.settings_render_to_file")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "lattice_surgery_web.settings_render_to_file")
 django.setup()
 
 sys.path.append("../../")
-import patches # TODO remove the dependency on this import
+import patches  # TODO remove the dependency on this import
 import lattice_surgery_compilation_pipeline
+import lattice_surgery_computation_composer
+import compiler_options
 
-def render_to_file(circuit_file_name: str, output_file_name: str, apply_litinski_transform: bool=True) -> str:
+from typing import *
+
+
+
+def render_qasm_file_to_file(circuit_file_name: str, output_file_name: str, options : compiler_options.CompilerOptions) -> None:
+    slices, compilation_text = lattice_surgery_compilation_pipeline.compile_file(circuit_file_name, options)
+    render_slices_to_file(slices, output_file_name, compilation_text)
+
+
+def render_slices_to_file(slices: List[lattice_surgery_compilation_pipeline.GUISlice],
+                          output_file_name: str,
+                          compilation_text : str = "") -> None:
+
     """ input"""
-    slices, compilation_text = lattice_surgery_compilation_pipeline.compile_file(circuit_file_name,apply_litinski_transform)
     context = {
         'slices': slices,
         'patches': patches,
@@ -28,10 +41,10 @@ def render_to_file(circuit_file_name: str, output_file_name: str, apply_litinski
     with open(output_file_name, 'w', encoding="UTF-8") as f:
         f.write(rendered_page)
 
-DEMO_CIRCUITS_DIR = "../../assets/demo_circuits/"
-
-circuit = "nontrivial_state.qasm"
-output_filename = "saved.html"
-
 if __name__ == '__main__':
-    render_to_file(DEMO_CIRCUITS_DIR + circuit, output_filename)
+    DEMO_CIRCUITS_DIR = "../../assets/demo_circuits/"
+
+    circuit = "nontrivial_state.qasm"
+    output_filename = "saved.html"
+
+    render_qasm_file_to_file(DEMO_CIRCUITS_DIR + circuit, output_filename)

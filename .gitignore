@@ -7,3 +7,4 @@ webgui/server_pid
 index.html
 Pipfile
 Pipfile.lock
+web/lattice_main/tmp
