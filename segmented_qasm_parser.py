@@ -11,9 +11,9 @@ import re
 from typing import *
 
 
-def parse_file(qasm_filename : str) -> circuit.Circuit:
+def parse_file(qasm_filename : str) -> circuit.PauliCircuit:
     """
-    Read a QASM file (currently supports only OPENQASM 2.0) into a circuit.
+    Read a QASM file (currently supports only OPENQASM 2.0) into a Pauli circuit.
 
     Supports all gates from the standard library also supported by PyZX, measurements and barriers.
     Barriers have the effect of breaking reversible sections to be passed to pyzx.
@@ -50,10 +50,10 @@ class _SegmentedQASMParser:
 
         segments = _QASMASTSegmenter.ast_to_segments(ast)
         sub_circuits = map(self.segment_to_circuit, segments)
-        self.circuit = functools.reduce(circuit.Circuit.join, sub_circuits)
+        self.circuit = functools.reduce(circuit.PauliCircuit.join, sub_circuits)
 
 
-    def get_circuit(self) -> circuit.Circuit:
+    def get_circuit(self) -> circuit.PauliCircuit:
         return self.circuit
 
     def segment_to_circuit(self, segment: Segment):
@@ -66,7 +66,7 @@ class _SegmentedQASMParser:
         else:
             raise Exception('Unsupported QASM node type ' + segment.type)
 
-    def reversible_segment_to_circuit(self, segment: List[qiskit.qasm.node.node.Node]) -> circuit.Circuit:
+    def reversible_segment_to_circuit(self, segment: List[qiskit.qasm.node.node.Node]) -> circuit.PauliCircuit:
         program_wrapper_node = qiskit.qasm.node.Program(segment)
         text_qasm_program_wrapper =\
             'OPENQASM 2.0;\n'+\
@@ -74,14 +74,14 @@ class _SegmentedQASMParser:
             self.qreg.qasm()+"\n"+\
             program_wrapper_node.qasm()
 
-        return circuit.Circuit.load_reversible_from_qasm_string(text_qasm_program_wrapper)
+        return circuit.PauliCircuit.load_reversible_from_qasm_string(text_qasm_program_wrapper)
 
     def if_node_to_circuit(self, node: qiskit.qasm.node.if_.If):
         raise NotImplementedError # TODO
 
     def measure_node_to_circuit(self, measurement_node: qiskit.qasm.node.Measure)\
-            -> circuit.Circuit:
-        c = circuit.Circuit(self.num_qubits())
+            -> circuit.PauliCircuit:
+        c = circuit.PauliCircuit(self.num_qubits())
 
         op_list = [rotation.PauliOperator.I] * self.num_qubits()
         measure_idx: int = _SegmentedQASMParser.extract_measurement_idx(measurement_node)

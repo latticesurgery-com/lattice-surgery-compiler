@@ -3,7 +3,7 @@ from rotation import *
 import uuid
 from collections import deque
 from qubit_state import *
-from circuit import Circuit
+from circuit import PauliCircuit
 
 
 # TODO give a uuid to all patches
@@ -65,7 +65,7 @@ class MagicStateRequest(LogicalLatticeOperation):
 
 class LogicalLatticeComputation:
     
-    def __init__(self, circuit: Circuit):
+    def __init__(self, circuit: PauliCircuit):
         self.circuit = circuit
         self.logical_qubit_uuid_map = dict([(j,uuid.uuid4()) for j in range(circuit.qubit_num)])
         self.ops : List[LogicalLatticeOperation] = []

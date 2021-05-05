@@ -6,15 +6,15 @@ from utils import decompose_pi_fraction, phase_frac_to_latex
 import pyzx as zx
 from typing import *
 
-class Circuit(object):
+class PauliCircuit(object):
     """
-    Class for representing quantum circuit.
+    Class for representing quantum Pauli circuit.
 
     """
 
     def __init__(self, no_of_qubit: int, name: str = '') -> None:
         """
-        Generating a circuit
+        Generating a Pauli circuit
 
         Args:
             no_of_qubit (int): Number of qubits in the circuit
@@ -37,7 +37,7 @@ class Circuit(object):
         return len(self.ops)
 
 
-    def copy(self) -> 'Circuit':
+    def copy(self) -> 'PauliCircuit':
         return copy.deepcopy(self)
 
 
@@ -174,7 +174,7 @@ class Circuit(object):
             raise Exception("First operand must be +-pi/4 Pauli rotation")
 
         # Need to calculate iPP' when PP' = -P'P (anti-commute)
-        if not Circuit.are_commuting(self.ops[index], self.ops[next_block]):
+        if not PauliCircuit.are_commuting(self.ops[index], self.ops[next_block]):
             product_of_coefficients = 1
             
             for i in range(self.qubit_num):
@@ -231,9 +231,9 @@ class Circuit(object):
     
 
     @staticmethod
-    def load_from_pyzx(circuit) -> 'Circuit':
+    def load_from_pyzx(circuit) -> 'PauliCircuit':
         """
-        Generate circuit from PyZX Circuit
+        Generate Pauli circuit from PyZX Circuit
 
         Returns:
             circuit: PyZX Circuit
@@ -243,7 +243,7 @@ class Circuit(object):
         Z = PauliOperator.Z
 
         basic_circ = circuit.to_basic_gates()
-        ret_circ = Circuit(basic_circ.qubits, circuit.name)
+        ret_circ = PauliCircuit(basic_circ.qubits, circuit.name)
 
         gate_missed = 0
 
@@ -299,18 +299,18 @@ class Circuit(object):
         return ret_circ
 
     @staticmethod
-    def load_reversible_from_qasm_string(quasm_string: str) -> 'Circuit':
+    def load_reversible_from_qasm_string(quasm_string: str) -> 'PauliCircuit':
         """
         Load a string as if it were a QASM circuit. Only supports reversible circuits.
         """
 
         pyzx_circ = zx.Circuit.from_qasm(quasm_string)
-        ret_circ = Circuit.load_from_pyzx(pyzx_circ)
+        ret_circ = PauliCircuit.load_from_pyzx(pyzx_circ)
 
         return ret_circ
 
     @staticmethod
-    def join(lhs: 'Circuit', rhs: 'Circuit') -> 'Circuit':
+    def join(lhs: 'PauliCircuit', rhs: 'PauliCircuit') -> 'PauliCircuit':
         assert lhs.qubit_num == rhs.qubit_num
         c = lhs.copy()
         c.ops.extend(rhs.ops)

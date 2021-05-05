@@ -8,7 +8,7 @@ Z = PauliOperator.Z
 Y = PauliOperator.Y  
 
 # Example from #71 as the base test case
-c = Circuit(2)
+c = PauliCircuit(2)
 c.add_pauli_block(Rotation.from_list([X, X],Fraction(1,8)))
 c.add_pauli_block(Rotation.from_list([Z, Z],Fraction(1,4)))
 c.add_pauli_block(Rotation.from_list([X, Z],Fraction(-1,4)))

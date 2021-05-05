@@ -2,7 +2,7 @@ from lattice_surgery_computation_composer import *
 from webgui import lattice_view
 
 if __name__ == "__main__":
-    c = Circuit(4)
+    c = PauliCircuit(4)
     I = PauliOperator.I
     X = PauliOperator.X
     Y = PauliOperator.Y

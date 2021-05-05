@@ -29,14 +29,14 @@ class DependencyGraph:
 
 
     @staticmethod
-    def from_circuit_by_commutation(circuit: Circuit) -> 'DependencyGraph':
+    def from_circuit_by_commutation(circuit: PauliCircuit) -> 'DependencyGraph':
         """
         Build a dependency tree from a Pauli circuit based on commutation.
 
         """
         # This because new dependency is added between non-commuting operations  
         def func(arg1, arg2):
-            return not Circuit.are_commuting(arg1, arg2)
+            return not PauliCircuit.are_commuting(arg1, arg2)
         
         return DependencyGraph.from_list(circuit.ops, func)
 

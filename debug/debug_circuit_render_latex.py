@@ -9,7 +9,7 @@ Z = PauliOperator.Z
 Y = PauliOperator.Y  
 
 # Random example
-c = Circuit(4)
+c = PauliCircuit(4)
 c.add_pauli_block(Rotation.from_list([Z, I, I, I],Fraction(1,8)))
 c.add_pauli_block(Rotation.from_list([I, X, Z, I],Fraction(1,4)))
 c.add_pauli_block(Rotation.from_list([I, I, I, X],Fraction(-1,4)))

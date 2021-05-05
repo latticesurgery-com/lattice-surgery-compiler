@@ -3,7 +3,7 @@ from webgui import lattice_view
 from debug.util import *
 
 if __name__ == "__main__":
-    c = Circuit(4)
+    c = PauliCircuit(4)
     I = PauliOperator.I
     X = PauliOperator.X
     Y = PauliOperator.Y
