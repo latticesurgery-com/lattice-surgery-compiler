@@ -131,7 +131,8 @@ class LatticeSurgeryComputation:
 
         with comp.timestep() as blank_slice: pass
 
-        if options.scheduling_mode == compiler_options.SchedulingMode.Sequential:
+        if isinstance(logical_computation,LinearLogicalLatticeComputation):
+
             for logical_op in comp.logical_computation.ops:
                 if logical_op.does_evaluate():
                     with comp.timestep() as slice:
@@ -139,7 +140,7 @@ class LatticeSurgeryComputation:
                         sim.apply_logical_operation(logical_op)
                         slice.set_separable_states(sim)
 
-        if options.scheduling_mode == compiler_options.SchedulingMode.Parallel:
+        if isinstance(logical_computation,LinearLogicalLatticeComputation):
             raise NotImplemented
 
 
