@@ -131,7 +131,7 @@ class LatticeSurgeryComputation:
 
         with comp.timestep() as blank_slice: pass
 
-        if isinstance(logical_computation,LinearLogicalLatticeComputation):
+        if isinstance(logical_computation, SequentialLogicalLatticeComputation):
 
             for logical_op in comp.logical_computation.ops:
                 if logical_op.does_evaluate():
@@ -140,7 +140,7 @@ class LatticeSurgeryComputation:
                         sim.apply_logical_operation(logical_op)
                         slice.set_separable_states(sim)
 
-        if isinstance(logical_computation,LinearLogicalLatticeComputation):
+        if isinstance(logical_computation, SequentialLogicalLatticeComputation):
             raise NotImplemented
 
 

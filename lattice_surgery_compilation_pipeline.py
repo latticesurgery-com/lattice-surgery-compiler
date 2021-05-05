@@ -46,7 +46,7 @@ def compile_circuit(input_pauli_circuit: circuit.Circuit,
 
 
     if options.scheduling_mode == compiler_options.SchedulingMode.Sequential:
-        logical_computation = logical_lattice_ops.LinearLogicalLatticeComputation(input_pauli_circuit)
+        logical_computation = logical_lattice_ops.SequentialLogicalLatticeComputation(input_pauli_circuit)
     else:
         assert options.scheduling_mode == compiler_options.SchedulingMode.Parallel
         dag = dependency_graph.DependencyGraph.from_circuit_by_commutation(input_pauli_circuit)

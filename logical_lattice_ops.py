@@ -98,7 +98,7 @@ class LogicalLatticeComputation:
 
 
 
-class LinearLogicalLatticeComputation(LogicalLatticeComputation):
+class SequentialLogicalLatticeComputation(LogicalLatticeComputation):
     
     def __init__(self, circuit: Circuit):
         super().__init__(circuit.qubit_num)
