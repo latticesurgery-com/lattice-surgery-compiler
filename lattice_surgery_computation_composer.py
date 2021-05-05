@@ -1,9 +1,10 @@
 import patches
 import ancilla_region_routing
-from ancilla_region_routing import AncillaRegionRoutingException
 from logical_lattice_ops import *
 from logical_patch_state_simulation import PatchSimulator
 import debug.util
+from routing_exception import RoutingException
+import compiler_options
 
 from typing import *
 import copy
@@ -12,12 +13,6 @@ import enum
 import uuid
 
 from qiskit_opflow_utils import StateSeparator
-
-
-class LayoutType(enum.Enum):
-    SimplePreDistilledStates = "Simple"
-
-
 
 
 class LayoutInitializer:
@@ -108,14 +103,14 @@ class SimplePreDistilledStatesLayoutInitializer(LayoutInitializer):
 
 class LatticeSurgeryComputation:
 
-    def __init__(self, logical_computation: LogicalLatticeComputation, layout_type: LayoutType):
+    def __init__(self, logical_computation: LogicalLatticeComputation, layout_type: compiler_options.LayoutType):
         """
         Layout arguments:
             - Simple: n_logical_qubits: int
         """
         self.logical_computation = logical_computation
 
-        if layout_type!= LayoutType.SimplePreDistilledStates:
+        if layout_type!= compiler_options.LayoutType.SimplePreDistilledStates:
             raise NotImplemented("Layout Type not supported: "+layout_type.value)
 
         self.num_qubits = logical_computation.num_logical_qubits()
@@ -129,18 +124,24 @@ class LatticeSurgeryComputation:
         self._init_simple_magic_state_array(self.logical_computation.count_magic_states())
 
     @staticmethod
-    def make_computation_with_simulation(logical_computation: LogicalLatticeComputation, layout_type: LayoutType):
-        comp = LatticeSurgeryComputation(logical_computation,layout_type)
+    def make_computation_with_simulation(logical_computation: LogicalLatticeComputation,
+                                         options : compiler_options.CompilerOptions):
+        comp = LatticeSurgeryComputation(logical_computation,options.layout_type)
         sim = PatchSimulator(logical_computation)
 
         with comp.timestep() as blank_slice: pass
 
-        for logical_op in comp.logical_computation.ops:
-            if logical_op.does_evaluate():
-                with comp.timestep() as slice:
-                    slice.addLogicalOperation(logical_op)
-                    sim.apply_logical_operation(logical_op)
-                    slice.set_separable_states(sim)
+        if options.scheduling_mode == compiler_options.SchedulingMode.Sequential:
+            for logical_op in comp.logical_computation.ops:
+                if logical_op.does_evaluate():
+                    with comp.timestep() as slice:
+                        slice.addLogicalOperation(logical_op)
+                        sim.apply_logical_operation(logical_op)
+                        slice.set_separable_states(sim)
+
+        if options.scheduling_mode == compiler_options.SchedulingMode.Parallel:
+            raise NotImplemented
+
 
         # Display the sates in the final slice
         comp.composer.set_separable_states(sim)
@@ -241,6 +242,8 @@ class LatticeSurgeryComputationComposer:
             raise Exception("Can't measure with basis matrix "+basis_matrix.value+" yet")
         for patch in self.qubit_patch_slices[-1].patches:
             if patch.getRepresentative() == cell_of_patch:
+                if isinstance(patch.state,ActiveState):
+                    raise RoutingException
                 patch.state = patch.state.apply_measurement(basis_matrix)
 
     def newTimeSlice(self):
@@ -261,9 +264,10 @@ class LatticeSurgeryComputationComposer:
     def applyPauliOperator(self,
                            cell_of_patch : Tuple[int,int],
                            operator: patches.PauliOperator):
-
         for patch in self.lattice().patches:
             if patch.getRepresentative() == cell_of_patch and patch.state is not None:
+                if isinstance(patch.state,ActiveState):
+                    raise RoutingException
                 patch.state = patch.state.compose_operator(operator)
 
 

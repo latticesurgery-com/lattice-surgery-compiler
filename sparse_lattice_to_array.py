@@ -1,10 +1,10 @@
-from visual_array_cell import VisualArrayCell
+from visual_array_cell import *
 from qubit_state import ActiveState
 import patches
 
 from typing import List,Optional
 
-def sparse_lattice_to_array(lattice: patches.Lattice) -> List[List[Optional[VisualArrayCell]]]:
+def slice(lattice: patches.Lattice) -> List[List[Optional[VisualArrayCell]]]:
     array = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
 
     for patch in lattice.patches:
@@ -20,3 +20,7 @@ def sparse_lattice_to_array(lattice: patches.Lattice) -> List[List[Optional[Visu
             array[edge.cell[1]][edge.cell[0]].edges[edge.orientation] = edge.border_type
 
     return array
+
+def slices(lattices : List[patches.Lattice]) -> List[GUISlice]:
+    return list(map(slice, lattices))
+

@@ -148,6 +148,9 @@ class Lattice:
     def cellIsFree(self, target : Tuple[int,int]):
         return self.getPatchOfCell(target) is None
 
+    def cellsAreFree(self, targets: Iterable[Tuple[int,int]]):
+        return all(map(self.cellIsFree,targets))
+
     def getPatchRepresentative(self, cell: Tuple[int,int]):
         maybe_patch = self.getPatchOfCell(cell)
         return maybe_patch.cells[0] if maybe_patch is not None else cell

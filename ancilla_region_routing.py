@@ -5,9 +5,9 @@ import igraph
 from typing import *
 from functools import reduce
 from ast import literal_eval as make_tuple
+from routing_exception import RoutingException
 
-
-class AncillaRegionRoutingException(Exception):
+class AncillaRegionRoutingException(RoutingException):
     pass
 
 # TODO reference to paper explaining this part of the algorithm
