@@ -5,7 +5,10 @@ class TransversalOp():
 
 
 class Hadamard(TransversalOp):
-    pass
+    def __init__(self, target):
+        self.qubit: int = target
 
 class CNOT(TransversalOp):
-    pass
+    def __init__(self, control, target):
+        self.control: int = control
+        self.target: int = target
