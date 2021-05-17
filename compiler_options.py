@@ -14,7 +14,7 @@ class CompilerOptions:
     def __init__(self,
         layout_type : LayoutType = LayoutType.SimplePreDistilledStates,
         scheduling_mode: SchedulingMode = SchedulingMode.Sequential,
-        apply_stabilizer_commuting_transform : bool = True):
+        apply_stabilizer_commuting_transform : bool = False):
 
         self.layout_type : LayoutType = layout_type
         self.scheduling_mode : SchedulingMode = scheduling_mode

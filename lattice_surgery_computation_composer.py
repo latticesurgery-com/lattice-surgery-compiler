@@ -133,15 +133,16 @@ class LatticeSurgeryComputation:
 
         if isinstance(logical_computation, SequentialLogicalLatticeComputation):
 
-            for logical_op in comp.logical_computation.ops:
+            for logical_op in cast(SequentialLogicalLatticeComputation, comp.logical_computation).ops:
                 if logical_op.does_evaluate():
                     with comp.timestep() as slice:
                         slice.addLogicalOperation(logical_op)
                         sim.apply_logical_operation(logical_op)
                         slice.set_separable_states(sim)
 
-        if isinstance(logical_computation, SequentialLogicalLatticeComputation):
-            raise NotImplemented
+        else:
+            assert isinstance(logical_computation, ParallelLogicalLatticeComputation)
+            raise NotImplementedError
 
 
         # Display the sates in the final slice

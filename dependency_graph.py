@@ -30,7 +30,7 @@ class DependencyGraph(Generic[T]):
         self.terminal_node = list()
         self.qubit_num = qubit_num
 
-    def traverse_bfs(self, f: Callable[T,S]) ->'DependencyGraph[S]':
+    def traverse_bfs(self, f: Callable[[T],S]) ->'DependencyGraph[S]':
         new_dag = copy.deepcopy(self)
 
         frontier: Deque[DependencyGraph.Node] = deque(new_dag.terminal_node)
