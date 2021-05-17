@@ -146,13 +146,8 @@ class ParallelLogicalLatticeComputation(LogicalLatticeComputation):
 
             if isinstance(curr.op, Rotation):
                 rotations_composer = RotationsComposer(self)
-                new_ops = DependencyGraph.chain(reversed(rotations_composer.expand_rotation(curr.op)))
-                for c in curr.children:
-                    c.parents.remove(curr)
-                    c.parents.append(new_ops[0])
-                for p in curr.parents:
-                    p.children.remove(curr)
-                    p.children.append(new_ops[-1])
+                chain_youngest, chain_oldest = DependencyGraph.chain(reversed(rotations_composer.expand_rotation(curr.op)))
+                self._replace_node_with_chain(curr, chain_youngest, chain_oldest)
 
             elif isinstance(curr.op, Measurement):
                 curr.op = self.to_lattice_operation(curr.op)
@@ -161,9 +156,16 @@ class ParallelLogicalLatticeComputation(LogicalLatticeComputation):
 
         return new_dag
 
+    def _replace_node_with_chain(self, target_node : DependencyGraph.Node[T],
+                                 chain_youngest : DependencyGraph.Node[T],
+                                 chain_oldest : DependencyGraph.Node[T]) -> None:
 
-
-
+        for c in target_node.children:
+            c.parents.remove(target_node)
+            c.parents.append(chain_oldest)
+        for p in target_node.parents:
+            p.children.remove(target_node)
+            p.children.append(chain_youngest)
 
 
 class RotationsComposer:

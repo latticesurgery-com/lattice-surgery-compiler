@@ -139,9 +139,13 @@ class DependencyGraph(Generic[T]):
         return graph
 
     @staticmethod
-    def chain(l: List[T]) -> Node[T]:
+    def chain(l: List[T]) -> Tuple[Node[T],Node[T]]:
         """First node is youngest, ancestors follow"""
-        n = DependencyGraph.Node(l[0])
-        if l>1:
-            n.parents = [DependencyGraph.chain(l[1:])]
-        return n
+        youngest = DependencyGraph.Node(l[0])
+        if len(l)>1:
+            next_youngest, oldest = DependencyGraph.chain(l[1:])
+            youngest.parents = [next_youngest]
+        else:
+            oldest = youngest
+
+        return youngest, oldest
