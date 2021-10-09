@@ -148,6 +148,6 @@ class _QASMASTSegmenter:
     @staticmethod
     def ast_from_str(qasm_circuit: str) -> qiskit.qasm.node.program.Program:
         if re.search(r'include\s+"qelib1\.inc"\s*;', qasm_circuit) is None:
-            raise Exception("Standard library not includes, add 'include \"qelib1.inc\";' to fix")
+            raise Exception("Standard library not included, add 'include \"qelib1.inc\";' to fix")
         qiskit_qasm_file = qiskit.qasm.qasm.Qasm(data=qasm_circuit)
         return qiskit_qasm_file.parse()
