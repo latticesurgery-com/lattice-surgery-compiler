@@ -11,14 +11,14 @@ import re
 from typing import *
 
 
-def parse_file(qasm_filename : str) -> circuit.Circuit:
+def parse_str(qasm_str : str) -> circuit.Circuit:
     """
-    Read a QASM file (currently supports only OPENQASM 2.0) into a circuit.
+    Read a string containing QASM (currently supports only OPENQASM 2.0) into a circuit.
 
     Supports all gates from the standard library also supported by PyZX, measurements and barriers.
     Barriers have the effect of breaking reversible sections to be passed to pyzx.
     """
-    parser = _SegmentedQASMParser(qasm_filename)
+    parser = _SegmentedQASMParser(qasm_str)
     return parser.get_circuit()
 
 
@@ -34,8 +34,8 @@ class _SegmentedQASMParser:
     individual_segment_node_types = {'if','measure'}
     measurement_operator = rotation.PauliOperator.Z
 
-    def __init__(self, qasm_filename: str):
-        ast = _QASMASTSegmenter.ast_from_file(qasm_filename)
+    def __init__(self, qasm_circuit: str):
+        ast = _QASMASTSegmenter.ast_from_str(qasm_circuit)
 
         _SegmentedQASMParser.accept_format_version(ast)
 
@@ -146,12 +146,8 @@ class _QASMASTSegmenter:
         return gate_segments
 
     @staticmethod
-    def ast_from_file(filename: str) -> qiskit.qasm.node.program.Program:
-        with open(filename) as input_file:
-            data = input_file.read()
-            if re.search(r'include\s+"qelib1\.inc"\s*;',data) is None:
-                raise Exception("Standard library not includes, add 'include \"qelib1.inc\";' to fix")
-            qiskit_qasm_file = qiskit.qasm.qasm.Qasm(data=data)
-            return qiskit_qasm_file.parse()
-
-
+    def ast_from_str(qasm_circuit: str) -> qiskit.qasm.node.program.Program:
+        if re.search(r'include\s+"qelib1\.inc"\s*;', qasm_circuit) is None:
+            raise Exception("Standard library not includes, add 'include \"qelib1.inc\";' to fix")
+        qiskit_qasm_file = qiskit.qasm.qasm.Qasm(data=qasm_circuit)
+        return qiskit_qasm_file.parse()
