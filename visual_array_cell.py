@@ -6,4 +6,5 @@ class VisualArrayCell:
         self.edges = edges
         self.patch_type = patch_type
         self.text = None
-        self.activity: Optional[QubitActivity] = None
+        self.activity: Optional[patches.QubitActivity] = None
+
