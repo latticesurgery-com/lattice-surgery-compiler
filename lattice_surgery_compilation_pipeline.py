@@ -16,7 +16,7 @@ __all__ = ['compile_file','VisualArrayCell','GUISlice']
 
 
 def compile_file(circuit_file_name : str ,
-                 apply_litinski_transform:bool=True) :
+                 apply_litinski_transform:bool=True)  -> Tuple[List[GUISlice], str]:
     """DEPRECATED. compile_str"""
     with open(circuit_file_name) as input_file:
         return compile_str(input_file.read(),apply_litinski_transform)
