@@ -9,7 +9,10 @@ class JsonResponse:
         self.status = status
         self.body = body
 
-class SliceArrayJSONEncoder(json.JSONEncoder):
+class _SliceArrayJSONEncoder(json.JSONEncoder):
+    """Used to encode slices (Array[Array[Array[VisualArrayCell]]]) as JSON.
+    Necessary to work around the fact that slices contain types that don't convert directly to JSON
+    """
     def __init__(self):
         super().__init__()
         self.indent = 2
@@ -28,6 +31,22 @@ class SliceArrayJSONEncoder(json.JSONEncoder):
 
 
 def handle(json_request: str) -> JsonResponse:
+    """
+    @param json_request:
+    Accepts a string containing request for compilation in JSON format. Currently the only supported parameters are:
+    {
+       circuit : "A string containing a QASM circuit",
+       circuit_source : "str", // in the future this will support "file"
+       apply_litinski_transform : true | false.
+    }
+
+    @return:
+    a json containing the following JSON
+    {
+        slices : Array[Array[Array[VisualArrayCellAsJSON]]]
+        compilation_text : "A string containing information about how the compilation process went"
+    }
+    """
     request_data = json.loads(json_request)
 
     if 'circuit' in request_data and request_data['circuit_source'] == 'str':
@@ -37,7 +56,7 @@ def handle(json_request: str) -> JsonResponse:
             request_data['circuit'], apply_litinski_transform)
         respnse_body = {'slices':slices, 'compilation_text': compilation_text}
 
-        return JsonResponse(200, SliceArrayJSONEncoder().encode(respnse_body))
+        return JsonResponse(200, _SliceArrayJSONEncoder().encode(respnse_body))
     else:
         return JsonResponse(501, "Not implemented.\n Request was:\n%s\n"%json.dumps(request_data, indent=4, sort_keys=True))
 
