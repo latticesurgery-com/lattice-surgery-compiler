@@ -1,13 +1,12 @@
-from typing import Dict, List, Optional
-
 import qiskit.aqua.operators as qk
 import qiskit.exceptions as qkexcept
 import qiskit.quantum_info as qkinfo
+from typing import Dict, List, Optional
 
 
 class StateSeparator:
     """Namespace for functions that deal with separating states."""
-    
+
     @staticmethod
     def trace_dict_state(state: qk.DictStateFn, trace_over: List[int]) -> qk.DictStateFn:
         """
@@ -33,7 +32,7 @@ class StateSeparator:
         return qkinfo.partial_trace(input_statevector, trace_over)
 
     @staticmethod
-    def separate(qnum:int, dict_state : qk.DictStateFn) -> Optional[qk.DictStateFn]:
+    def separate(qnum: int, dict_state: qk.DictStateFn) -> Optional[qk.DictStateFn]:
         """
         When a qubit is not entangled (up to a small tolerance) with the rest of the register,
         trace over the rest of the system, giving the qubits' pure state.
@@ -48,16 +47,15 @@ class StateSeparator:
         selected_qubit_maybe_mixed_state = StateSeparator.trace_to_density_op(dict_state, remaing_qubits)
 
         try:
-            selected_qubit_pure_state = selected_qubit_maybe_mixed_state.to_statevector(rtol=10**(-10))
+            selected_qubit_pure_state = selected_qubit_maybe_mixed_state.to_statevector(rtol=10 ** (-10))
             return qk.DictStateFn(selected_qubit_pure_state.to_dict())
 
         except qkexcept.QiskitError as e:
             if e.message != 'Density matrix is not a pure state':  raise e
             return None
 
-
     @staticmethod
-    def get_separable_qubits(dict_state : qk.DictStateFn) -> Dict[int,qk.DictStateFn]:
+    def get_separable_qubits(dict_state: qk.DictStateFn) -> Dict[int, qk.DictStateFn]:
         """
         For each qubit, numerically detect if it's seprabale or not. If it is, add to
         the result dict, indexed by subsystem, the state traced over the remaining qubits.
@@ -68,5 +66,5 @@ class StateSeparator:
         for i in range(dict_state.num_qubits):
             maybe_state = StateSeparator.separate(i, dict_state)
             if maybe_state is not None:
-                out[dict_state.num_qubits-i-1] = maybe_state
+                out[dict_state.num_qubits - i - 1] = maybe_state
         return out

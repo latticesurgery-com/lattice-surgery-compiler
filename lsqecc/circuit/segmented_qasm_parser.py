@@ -1,10 +1,9 @@
 import functools
-import re
-from typing import List, Union, cast
-
 import qiskit.qasm
 import qiskit.qasm.node
 import qiskit.qasm.node.node
+import re
+from typing import List, Union, cast
 
 from . import Circuit, Measurement, PauliOperator
 
@@ -21,14 +20,13 @@ def parse_str(qasm_str: str) -> Circuit:
 
 
 class _SegmentedQASMParser:
-
     # Certain nodes constitute a single segment, others can be in the same one as long as they are
     # Reversible
     Segment = Union[List[qiskit.qasm.node.node.Node],
                     qiskit.qasm.node.If,
                     qiskit.qasm.node.Measure,
                     qiskit.qasm.node.Barrier]
-    individual_segment_node_types = {'if','measure'}
+    individual_segment_node_types = {'if', 'measure'}
     measurement_operator = PauliOperator.Z
 
     def __init__(self, qasm_circuit: str):
@@ -64,10 +62,10 @@ class _SegmentedQASMParser:
 
     def reversible_segment_to_circuit(self, segment: List[qiskit.qasm.node.node.Node]) -> Circuit:
         program_wrapper_node = qiskit.qasm.node.Program(segment)
-        text_qasm_program_wrapper =\
-            'OPENQASM 2.0;\n' +\
-            'include "qelib1.inc";\n' +\
-            self.qreg.qasm()+"\n" +\
+        text_qasm_program_wrapper = \
+            'OPENQASM 2.0;\n' + \
+            'include "qelib1.inc";\n' + \
+            self.qreg.qasm() + "\n" + \
             program_wrapper_node.qasm()
 
         return Circuit.load_reversible_from_qasm_string(text_qasm_program_wrapper)
@@ -75,7 +73,7 @@ class _SegmentedQASMParser:
     def if_node_to_circuit(self, node: qiskit.qasm.node.if_.If):
         raise NotImplementedError  # TODO
 
-    def measure_node_to_circuit(self, measurement_node: qiskit.qasm.node.Measure)\
+    def measure_node_to_circuit(self, measurement_node: qiskit.qasm.node.Measure) \
             -> Circuit:
         c = Circuit(self.num_qubits())
 
@@ -90,7 +88,7 @@ class _SegmentedQASMParser:
         return _SegmentedQASMParser.extract_qreg_size(self.qreg)
 
     @staticmethod
-    def extract_top_lvl_node(program_node: qiskit.qasm.node.program.Program, node_type: str)\
+    def extract_top_lvl_node(program_node: qiskit.qasm.node.program.Program, node_type: str) \
             -> List[qiskit.qasm.node.node.Node]:
         condition = lambda n: n.type == node_type
         take = [x for x in program_node.children if condition(x)]
@@ -132,7 +130,7 @@ class _QASMASTSegmenter:
                 gate_segments.append(segment_accumulate)
                 gate_segments.append(n)
                 segment_accumulate = []
-            elif isinstance(n,qiskit.qasm.node.CustomUnitary):
+            elif isinstance(n, qiskit.qasm.node.CustomUnitary):
                 segment_accumulate.append(n)
             else:
                 print("Ignoring unexpected node of type: " + n.type)

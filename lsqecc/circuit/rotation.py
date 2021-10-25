@@ -1,9 +1,9 @@
 from enum import Enum
 from fractions import Fraction
+from simulation import ConditionalOperation
 from typing import Dict, List
 
 from lsqecc.utils import phase_frac_to_latex
-from simulation import ConditionalOperation
 
 
 class PauliOperator(Enum):
@@ -34,7 +34,7 @@ class PauliOperator(Enum):
         if not isinstance(a, PauliOperator) or not isinstance(b, PauliOperator):
             raise Exception("Only supports PauliOperator")
 
-        if (a,b) in PauliOperator._anticommute_tbl:
+        if (a, b) in PauliOperator._anticommute_tbl:
             return False
 
         else:
@@ -54,7 +54,7 @@ class PauliOperator(Enum):
             raise Exception("Only supports PauliOperator")
 
         if (a, b) in PauliOperator._anticommute_tbl:
-            return PauliOperator._anticommute_tbl[(a,b)]
+            return PauliOperator._anticommute_tbl[(a, b)]
 
         if a == b:
             return (1, PauliOperator.I)
@@ -64,19 +64,18 @@ class PauliOperator(Enum):
 
 
 PauliOperator._anticommute_tbl = {
-    (PauliOperator.Z, PauliOperator.X):     (1j, PauliOperator.Y),
-    (PauliOperator.X, PauliOperator.Z):     (-1j, PauliOperator.Y),
-    (PauliOperator.Z, PauliOperator.Y):     (1j, PauliOperator.X),
-    (PauliOperator.Y, PauliOperator.Z):     (-1j, PauliOperator.X),
-    (PauliOperator.Y, PauliOperator.X):     (1j, PauliOperator.Z),
-    (PauliOperator.X, PauliOperator.Y):     (-1j, PauliOperator.Z)
+    (PauliOperator.Z, PauliOperator.X): (1j, PauliOperator.Y),
+    (PauliOperator.X, PauliOperator.Z): (-1j, PauliOperator.Y),
+    (PauliOperator.Z, PauliOperator.Y): (1j, PauliOperator.X),
+    (PauliOperator.Y, PauliOperator.Z): (-1j, PauliOperator.X),
+    (PauliOperator.Y, PauliOperator.X): (1j, PauliOperator.Z),
+    (PauliOperator.X, PauliOperator.Y): (-1j, PauliOperator.Z)
 }
 
 
 class PauliProductOperation(ConditionalOperation):
-
-    qubit_num:  int = None
-    ops_list:   List[PauliOperator] = None
+    qubit_num: int = None
+    ops_list: List[PauliOperator] = None
 
     def __str__(self) -> str:
         pass
@@ -130,6 +129,7 @@ class Rotation(PauliProductOperation):
     Class for representing a Pauli Product Rotation Block.
 
     """
+
     def __init__(self, no_of_qubit: int, rotation_amount: Fraction) -> None:
         """
         Creating a Pauli Product Rotation Block. All operators are set to I (Identity).
@@ -140,9 +140,9 @@ class Rotation(PauliProductOperation):
             rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8). Implicitly multiplied by pi.
         """
 
-        self.qubit_num:         int = no_of_qubit
-        self.rotation_amount:   Fraction = rotation_amount
-        self.ops_list:          List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
+        self.qubit_num: int = no_of_qubit
+        self.rotation_amount: Fraction = rotation_amount
+        self.ops_list: List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
 
     def __str__(self) -> str:
         return '{}: {}'.format(self.rotation_amount, self.ops_list)
@@ -156,10 +156,9 @@ class Rotation(PauliProductOperation):
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> 'Rotation':
         r = Rotation(len(pauli_ops), rotation)
-        for i,op in enumerate(pauli_ops):
-            r.change_single_op(i,op)
+        for i, op in enumerate(pauli_ops):
+            r.change_single_op(i, op)
         return r
-
 
 
 class Measurement(PauliProductOperation):
@@ -167,6 +166,7 @@ class Measurement(PauliProductOperation):
     Representing a Pauli Product Measurement Block
 
     """
+
     def __init__(self, no_of_qubit: int, isNegative: bool = False) -> None:
         """
         Generate a Pauli Product Measurement Block. All operators are set to I (Identity).
@@ -176,9 +176,9 @@ class Measurement(PauliProductOperation):
             no_of_qubit (int): Number of qubits in the circuit
             isNegative (bool, optional): Set to negative. Defaults to False.
         """
-        self.qubit_num:     int = no_of_qubit
-        self.isNegative:    bool = isNegative
-        self.ops_list:      List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
+        self.qubit_num: int = no_of_qubit
+        self.isNegative: bool = isNegative
+        self.ops_list: List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
 
     def __str__(self) -> str:
         return '{}M: {}'.format('-' if self.isNegative else '', self.ops_list)

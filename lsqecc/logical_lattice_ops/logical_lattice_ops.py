@@ -6,8 +6,8 @@ from typing import Deque, Dict, List, Optional, Union
 from lsqecc.circuit import (Circuit, Measurement, PauliOperator,
                             PauliProductOperation, Rotation)
 from lsqecc.simulation import (ConditionalOperation, DefaultSymbolicStates,
-                                EvaluationCondition, HasPauliEigenvalueOutcome,
-                                QubitState)
+                               EvaluationCondition, HasPauliEigenvalueOutcome,
+                               QubitState)
 
 # TODO give a uuid to all patches
 
@@ -20,8 +20,7 @@ class LogicalLatticeOperation(ConditionalOperation):
         raise NotImplemented()
 
 
-
-class SinglePatchMeasurement(LogicalLatticeOperation,HasPauliEigenvalueOutcome):
+class SinglePatchMeasurement(LogicalLatticeOperation, HasPauliEigenvalueOutcome):
     def __init__(self, qubit_uuid: uuid.UUID, op: PauliOperator):
         self.qubit_uuid = qubit_uuid
         self.op = op
@@ -30,7 +29,7 @@ class SinglePatchMeasurement(LogicalLatticeOperation,HasPauliEigenvalueOutcome):
         return [self.qubit_uuid]
 
 
-class MultiBodyMeasurement(LogicalLatticeOperation,HasPauliEigenvalueOutcome):
+class MultiBodyMeasurement(LogicalLatticeOperation, HasPauliEigenvalueOutcome):
     def __init__(self, patch_pauli_operator_map: Dict[uuid.UUID, PauliOperator]):
         self.patch_pauli_operator_map = patch_pauli_operator_map
 
@@ -39,7 +38,7 @@ class MultiBodyMeasurement(LogicalLatticeOperation,HasPauliEigenvalueOutcome):
 
 
 class AncillaQubitPatchInitialization(LogicalLatticeOperation):
-    def __init__(self, qubit_state: QubitState, qubit_uuid : uuid.UUID):
+    def __init__(self, qubit_state: QubitState, qubit_uuid: uuid.UUID):
         self.qubit_state = qubit_state
         self.qubit_uuid = qubit_uuid
 
@@ -48,7 +47,7 @@ class AncillaQubitPatchInitialization(LogicalLatticeOperation):
 
 
 class LogicalPauli(LogicalLatticeOperation):
-    def __init__(self,qubit_uuid: uuid.UUID, pauli_matrix: PauliOperator):
+    def __init__(self, qubit_uuid: uuid.UUID, pauli_matrix: PauliOperator):
         self.qubit_uuid = qubit_uuid
         self.pauli_matrix = pauli_matrix
 
@@ -57,24 +56,21 @@ class LogicalPauli(LogicalLatticeOperation):
 
 
 class MagicStateRequest(LogicalLatticeOperation):
-    def __init__(self, qubit_uuid: uuid.UUID,):
+    def __init__(self, qubit_uuid: uuid.UUID, ):
         self.qubit_uuid = qubit_uuid
 
     def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]
 
 
-
-
 class LogicalLatticeComputation:
 
     def __init__(self, circuit: Circuit):
         self.circuit = circuit
-        self.logical_qubit_uuid_map = dict([(j,uuid.uuid4()) for j in range(circuit.qubit_num)])
-        self.ops : List[LogicalLatticeOperation] = []
+        self.logical_qubit_uuid_map = dict([(j, uuid.uuid4()) for j in range(circuit.qubit_num)])
+        self.ops: List[LogicalLatticeOperation] = []
 
         self._load_circuit()
-
 
     def _load_circuit(self):
 
@@ -94,7 +90,7 @@ class LogicalLatticeComputation:
             else:
                 self.ops.append(current_op)
 
-    def circuit_to_patch_measurement(self,m: Measurement) -> Union[SinglePatchMeasurement, MultiBodyMeasurement]:
+    def circuit_to_patch_measurement(self, m: Measurement) -> Union[SinglePatchMeasurement, MultiBodyMeasurement]:
 
         ret: Dict[uuid.UUID, PauliOperator] = dict()
         for qubit_idx in range(m.qubit_num):
@@ -105,14 +101,13 @@ class LogicalLatticeComputation:
             return SinglePatchMeasurement(next(iter(ret)), ret[next(iter(ret))])
         return MultiBodyMeasurement(ret)
 
-
     def num_logical_qubits(self) -> int:
         return len(self.logical_qubit_uuid_map)
 
     def count_magic_states(self) -> int:
-        c=0
+        c = 0
         for op in self.ops:
-            if isinstance(op,MagicStateRequest):
+            if isinstance(op, MagicStateRequest):
                 c += 1
         return c
 
@@ -137,18 +132,19 @@ class RotationsComposer:
             raise Exception("Unsupported pauli rotation angle pi*%d/%d"
                             % (r.rotation_amount.numerator, r.rotation_amount.denominator))
 
-    def pi_over_two(self, ops_map :  Dict[int, PauliOperator], condition:Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
+    def pi_over_two(self, ops_map: Dict[int, PauliOperator], condition: Optional[EvaluationCondition]) -> List[
+        LogicalLatticeOperation]:
 
         paulis = []
         for qubit_id, op in ops_map.items():
-            logical_pauli = LogicalPauli(self.computation.logical_qubit_uuid_map[qubit_id],op)
+            logical_pauli = LogicalPauli(self.computation.logical_qubit_uuid_map[qubit_id], op)
             logical_pauli.set_condition(condition)
             paulis.append(logical_pauli)
         return paulis
 
     def add_pi_over_four(self, ops_map: Dict[int, PauliOperator],
-                         invert_correction:bool,
-                         condition:Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
+                         invert_correction: bool,
+                         condition: Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
         """See Figure 11 of Litinski's GoSC
         """
         ancilla_uuid = uuid.uuid4()
@@ -177,9 +173,9 @@ class RotationsComposer:
     def logical_qubit_num(self):
         return len(self.computation.logical_qubit_uuid_map)
 
-    def add_pi_over_eight(self, ops_map :  Dict[int, PauliOperator],
-                          invert_correction:bool,
-                          condition:Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
+    def add_pi_over_eight(self, ops_map: Dict[int, PauliOperator],
+                          invert_correction: bool,
+                          condition: Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
         """Returns the correction terms. See Figure 11 of Litinski's GoSC"""
         magic_state_uuid = uuid.uuid4()
 
@@ -187,18 +183,18 @@ class RotationsComposer:
         multi_body_measurement.set_condition(condition)
         multi_body_measurement.patch_pauli_operator_map[magic_state_uuid] = PauliOperator.Z
 
-        first_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1,4))
+        first_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1, 4))
         first_corrective_rotation.set_condition(PiOverEightCorrectionConditionPiOverFour(multi_body_measurement,
                                                                                          invert_correction))
 
         ancilla_measurement = SinglePatchMeasurement(magic_state_uuid, PauliOperator.X)
 
-        second_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1,2))
+        second_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1, 2))
         second_corrective_rotation.set_condition(PiOverEightCorrectionConditionPiOverTwo(ancilla_measurement))
 
         for qubit_idx, op in ops_map.items():
             cell = self.computation.logical_qubit_uuid_map[qubit_idx]
-            multi_body_measurement.patch_pauli_operator_map[cell]=op
+            multi_body_measurement.patch_pauli_operator_map[cell] = op
             first_corrective_rotation.change_single_op(qubit_idx, op)
             second_corrective_rotation.change_single_op(qubit_idx, op)
 
@@ -210,7 +206,8 @@ class RotationsComposer:
 
 
 class PiOverFourCorrectionCondition(EvaluationCondition):
-    def __init__(self,multi_body_measurement : MultiBodyMeasurement,ancilla_measurement:SinglePatchMeasurement, invert: bool):
+    def __init__(self, multi_body_measurement: MultiBodyMeasurement, ancilla_measurement: SinglePatchMeasurement,
+                 invert: bool):
         self.multi_body_measurement = multi_body_measurement
         self.ancilla_measurement = ancilla_measurement
         self.invert = invert
@@ -219,14 +216,14 @@ class PiOverFourCorrectionCondition(EvaluationCondition):
         if not self.multi_body_measurement.does_evaluate():
             return False
 
-        out = self.multi_body_measurement.get_outcome()*self.ancilla_measurement.get_outcome() == -1
+        out = self.multi_body_measurement.get_outcome() * self.ancilla_measurement.get_outcome() == -1
         if self.invert:
             out = not out
         return out
 
 
 class PiOverEightCorrectionConditionPiOverFour(EvaluationCondition):
-    def __init__(self,multi_body_measurement : MultiBodyMeasurement, invert : bool):
+    def __init__(self, multi_body_measurement: MultiBodyMeasurement, invert: bool):
         self.multi_body_measurement = multi_body_measurement
         self.invert = invert
 
@@ -238,6 +235,7 @@ class PiOverEightCorrectionConditionPiOverFour(EvaluationCondition):
         if self.invert:
             out = not out
         return out
+
 
 class PiOverEightCorrectionConditionPiOverTwo(EvaluationCondition):
     def __init__(self, ancilla_measurement: SinglePatchMeasurement):

@@ -1,13 +1,11 @@
 import copy
-from typing import List, TypeVar
-
 from circuit import Circuit
+from typing import List, TypeVar
 
 T = TypeVar('T')
 
 
 class DependencyGraph:
-
     class Node:
         def __init__(self, op: T):
             self.op = op
@@ -15,7 +13,8 @@ class DependencyGraph:
             self.children: List['DependencyGraph.Node'] = list()
 
         def __str__(self) -> str:
-            return '({}: Parent: {}, Children: {})'.format(self.op, [a.op for a in self.parents], [b.op for b in self.children]) 
+            return '({}: Parent: {}, Children: {})'.format(self.op, [a.op for a in self.parents],
+                                                           [b.op for b in self.children])
 
         def __repr__(self) -> str:
             return str(self)
@@ -35,12 +34,12 @@ class DependencyGraph:
         Build a dependency tree from a Pauli circuit based on commutation.
 
         """
+
         # This because new dependency is added between non-commuting operations
         def func(arg1, arg2):
             return not Circuit.are_commuting(arg1, arg2)
 
         return DependencyGraph.from_list(circuit.ops, func)
-
 
     @staticmethod
     def from_list(input_list: list(), comparing_function) -> 'DependencyGraph':
@@ -60,7 +59,7 @@ class DependencyGraph:
         while current > 0:
             current -= 1
             new_node = DependencyGraph.Node(input_list[current])
-            is_added = False    # Check to avoid adding a node twice or momre
+            is_added = False  # Check to avoid adding a node twice or momre
 
             # First node
             if current == len(input_list) - 1:

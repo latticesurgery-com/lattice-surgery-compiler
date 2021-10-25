@@ -1,27 +1,27 @@
+import qiskit.visualization as qkvis
+from logical_lattice_ops import LogicalLatticeComputation, VisualArrayCell
+from patches import LatticeSurgeryComputation, LayoutType
+from qiskit import circuit as qkcirc
 from typing import List, Optional, Tuple
 
 import lsqecc.circuit as circuit
 import lsqecc.circuit.segmented_qasm_parser as segmented_qasm_parser
-import qiskit.visualization as qkvis
-from logical_lattice_ops import LogicalLatticeComputation, VisualArrayCell
 from lsqecc.lattice_array import sparse_lattice_to_array
-from patches import LatticeSurgeryComputation, LayoutType
-from qiskit import circuit as qkcirc
 
-GUISlice = List[List[Optional[VisualArrayCell]]] # 2D array of cells
+GUISlice = List[List[Optional[VisualArrayCell]]]  # 2D array of cells
 
-__all__ = ['compile_file','VisualArrayCell','GUISlice']
+__all__ = ['compile_file', 'VisualArrayCell', 'GUISlice']
 
 
-def compile_file(circuit_file_name : str ,
-                 apply_litinski_transform:bool=True)  -> Tuple[List[GUISlice], str]:
+def compile_file(circuit_file_name: str,
+                 apply_litinski_transform: bool = True) -> Tuple[List[GUISlice], str]:
     """DEPRECATED. compile_str"""
     with open(circuit_file_name) as input_file:
-        return compile_str(input_file.read(),apply_litinski_transform)
+        return compile_str(input_file.read(), apply_litinski_transform)
 
 
-def compile_str(qasm_circuit : str,
-                apply_litinski_transform:bool=True) -> Tuple[List[GUISlice], str]:
+def compile_str(qasm_circuit: str,
+                apply_litinski_transform: bool = True) -> Tuple[List[GUISlice], str]:
     """Returns gui slices and the text of the circuit as processed in various stages"""
     composer_class = LatticeSurgeryComputation
     layout_types = LayoutType
@@ -43,6 +43,5 @@ def compile_str(qasm_circuit : str,
 
     logical_computation = LogicalLatticeComputation(input_circuit)
     lsc = composer_class.make_computation_with_simulation(logical_computation, layout_types.SimplePreDistilledStates)
-
 
     return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text

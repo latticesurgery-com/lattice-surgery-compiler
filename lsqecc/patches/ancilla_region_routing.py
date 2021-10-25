@@ -1,32 +1,31 @@
+import igraph
 from ast import literal_eval as make_tuple
 from typing import Dict, List, Tuple
 
-import igraph
 import lsqecc.patches as patches
 
 
 class AncillaRegionRoutingException(Exception):
     pass
 
+
 # TODO reference to paper explaining this part of the algorithm
 
 def get_pauli_op_listing(
-        cell: Tuple[int ,int],
+        cell: Tuple[int, int],
         lattice: patches.Lattice,
         patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
-
     # TODO check overlapping with representative and document
     l = list(filter(
         lambda cell: cell in patch_pauli_operator_map,
         lattice.getPatchOfCell(cell).cells))
 
     if len(l) == 0: return None
-    r=lattice.getPatchRepresentative(cell)
+    r = lattice.getPatchRepresentative(cell)
     if l[0] != r:
         raise Exception(
             "Non patch repr cell associated with operator: " + str(l[0]) + ". Repr is " + str(r))
     return l[0] if len(l) > 0 else None
-
 
 
 def make_graph_of_free_cells(lattice: patches.Lattice) -> igraph.Graph:
@@ -49,14 +48,14 @@ def make_graph_of_free_cells(lattice: patches.Lattice) -> igraph.Graph:
 
     return g
 
+
 def add_directed_edges(
         ancilla_search_graph: igraph.Graph,
         lattice: patches.Lattice,
         patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator],
         source_patch_vertex: str,
         tagret_patch_vertex: List[str]
-    ):
-
+):
     for j, patch in enumerate(lattice.patches):
         patch_representative = str(patch.getRepresentative())
 
@@ -80,12 +79,10 @@ def add_directed_edges(
                     ancilla_search_graph.add_edge(in_patch_neighbour, patch_representative)
 
 
-
 def add_ancilla_region_to_lattice_from_paths(
         lattice: patches,
-        paths: List[List[Tuple[int ,int]]] # Lists of cells
+        paths: List[List[Tuple[int, int]]]  # Lists of cells
 ) -> None:
-
     for path in paths:
 
         # Shrink the path to the last cells that belong to a qubit patch
@@ -104,10 +101,10 @@ def add_ancilla_region_to_lattice_from_paths(
             if edge.getNeighbouringCell() == path[-2]:
                 edge.border_type = edge.border_type.stitched_type()
 
-        if len(path)>2:
-            for prev_cell, curr_cell, next_cell in zip(path[:-2],path[1:-1],path[2:]):
+        if len(path) > 2:
+            for prev_cell, curr_cell, next_cell in zip(path[:-2], path[1:-1], path[2:]):
                 if lattice.cellIsFree(curr_cell):
-                    lattice.patches.append(patches.Patch(patches.PatchType.Ancilla, None, [curr_cell] ,[]))
+                    lattice.patches.append(patches.Patch(patches.PatchType.Ancilla, None, [curr_cell], []))
 
                 if lattice.getPatchOfCell(curr_cell).patch_type == patches.PatchType.Ancilla:
                     curr_patch = lattice.getPatchOfCell(curr_cell)
@@ -115,7 +112,7 @@ def add_ancilla_region_to_lattice_from_paths(
                         patches.Edge(
                             patches.EdgeType.AncillaJoin,
                             curr_cell,
-                            patches.get_border_orientation(curr_cell,next_cell)
+                            patches.get_border_orientation(curr_cell, next_cell)
                         ))
                     curr_patch = lattice.getPatchOfCell(curr_cell)
                     curr_patch.edges.append(
@@ -126,8 +123,6 @@ def add_ancilla_region_to_lattice_from_paths(
                         ))
 
 
-
-
 def compute_ancilla_region_cells(
         lattice: patches.Lattice,
         patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]
@@ -136,7 +131,7 @@ def compute_ancilla_region_cells(
         specified by the dict of operators.
     """
 
-    assert(all(map(lambda cell: lattice.getPatchRepresentative(cell) == cell, patch_pauli_operator_map.keys())))
+    assert (all(map(lambda cell: lattice.getPatchRepresentative(cell) == cell, patch_pauli_operator_map.keys())))
 
     # Join all neighbouring free cells with bi directional edges along the lattice
     g = make_graph_of_free_cells(lattice)
@@ -144,8 +139,8 @@ def compute_ancilla_region_cells(
     active_qubits = list(map(str, patch_pauli_operator_map.keys()))
 
     # For path finding purposes separate take one qubit to be the source and the others to be the targets
-    source_qubit : str = active_qubits[0]
-    target_qubits : List[str] = active_qubits[1:]
+    source_qubit: str = active_qubits[0]
+    target_qubits: List[str] = active_qubits[1:]
 
     # Connect the active patches each with a single directed edge along the border of the desired operator
     add_directed_edges(
@@ -159,9 +154,7 @@ def compute_ancilla_region_cells(
     shortest_paths_raw = g.get_shortest_paths(source_qubit, target_qubits, mode='all', output='vpath')
     shortest_paths = [[make_tuple(g.vs[v_idx]["name"]) for v_idx in path] for path in shortest_paths_raw]
 
-    if len(shortest_paths)<1 or len(shortest_paths)==1 and len(shortest_paths[0])==0:
+    if len(shortest_paths) < 1 or len(shortest_paths) == 1 and len(shortest_paths[0]) == 0:
         raise AncillaRegionRoutingException
 
     add_ancilla_region_to_lattice_from_paths(lattice, shortest_paths)
-
-
