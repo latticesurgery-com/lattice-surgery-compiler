@@ -5,12 +5,12 @@ from typing import *
 
 import lsqecc.patches as patches
 import lsqecc.patches.ancilla_region_routing as ancilla_region_routing
-from lsqecc.logic_lattice_ops import (AncillaQubitPatchInitialization,
+from lsqecc.logical_lattice_ops import (AncillaQubitPatchInitialization,
                                       LogicalLatticeComputation,
                                       LogicalLatticeOperation, LogicalPauli,
                                       MagicStateRequest, MultiBodyMeasurement,
                                       SinglePatchMeasurement)
-from lsqecc.stimulation import (ActiveState, ActivityType,
+from lsqecc.simulation import (ActiveState, ActivityType,
                                 DefaultSymbolicStates, EntangledState,
                                 PatchSimulator, StateSeparator)
 

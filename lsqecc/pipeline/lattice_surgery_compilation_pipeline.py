@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 import lsqecc.circuit as circuit
 import lsqecc.circuit.segmented_qasm_parser as segmented_qasm_parser
 import qiskit.visualization as qkvis
-from logic_lattice_ops import LogicalLatticeComputation, VisualArrayCell
+from logical_lattice_ops import LogicalLatticeComputation, VisualArrayCell
 from lsqecc.lattice_array import sparse_lattice_to_array
 from patches import LatticeSurgeryComputation, LayoutType
 from qiskit import circuit as qkcirc

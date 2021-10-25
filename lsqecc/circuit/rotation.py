@@ -3,7 +3,7 @@ from fractions import Fraction
 from typing import Dict, List
 
 from lsqecc.utils import phase_frac_to_latex
-from stimulation import ConditionalOperation
+from simulation import ConditionalOperation
 
 
 class PauliOperator(Enum):

@@ -6,8 +6,8 @@ from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
 import qiskit
 import qiskit.aqua.operators as qk
 from circuit import PauliOperator
-from lsqecc.logic_lattice_ops import *
-from lsqecc.stimulation import DefaultSymbolicStates, SymbolicState
+from lsqecc.logical_lattice_ops import *
+from lsqecc.simulation import DefaultSymbolicStates, SymbolicState
 
 
 class ConvertersToQiskit:

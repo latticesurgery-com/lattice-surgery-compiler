@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 from lsqecc.patches import EdgeType, Orientation, PatchType
-from stimulation import QubitActivity
+from simulation import QubitActivity
 
 
 class VisualArrayCell:

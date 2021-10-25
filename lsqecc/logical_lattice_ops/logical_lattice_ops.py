@@ -5,7 +5,7 @@ from typing import Deque, Dict, List, Optional, Union
 
 from lsqecc.circuit import (Circuit, Measurement, PauliOperator,
                             PauliProductOperation, Rotation)
-from lsqecc.stimulation import (ConditionalOperation, DefaultSymbolicStates,
+from lsqecc.simulation import (ConditionalOperation, DefaultSymbolicStates,
                                 EvaluationCondition, HasPauliEigenvalueOutcome,
                                 QubitState)
 

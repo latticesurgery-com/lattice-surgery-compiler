@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 import lsqecc.patches as patches
-from lsqecc.logic_lattice_ops import VisualArrayCell
-from lsqecc.stimulation import ActiveState
+from lsqecc.logical_lattice_ops import VisualArrayCell
+from lsqecc.simulation import ActiveState
 
 
 def sparse_lattice_to_array(lattice: patches.Lattice) -> List[List[Optional[VisualArrayCell]]]:

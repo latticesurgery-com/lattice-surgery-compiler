@@ -1,7 +1,7 @@
 import enum
 import json
 
-from logic_lattice_ops import VisualArrayCell
+from logical_lattice_ops import VisualArrayCell
 
 import lattice_surgery_compilation_pipeline
 
