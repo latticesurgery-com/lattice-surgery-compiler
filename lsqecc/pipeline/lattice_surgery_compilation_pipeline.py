@@ -1,14 +1,12 @@
+from typing import List, Optional, Tuple
 
-import segmented_qasm_parser
-import lattice_surgery_computation_composer
-import logical_lattice_ops
-import sparse_lattice_to_array
-import circuit
-from visual_array_cell import *
-
-from qiskit import circuit as qkcirc
+import lsqecc.circuit as circuit
+import lsqecc.circuit.segmented_qasm_parser as segmented_qasm_parser
 import qiskit.visualization as qkvis
-
+from logic_lattice_ops import LogicalLatticeComputation, VisualArrayCell
+from lsqecc.lattice_array import sparse_lattice_to_array
+from patches import LatticeSurgeryComputation, LayoutType
+from qiskit import circuit as qkcirc
 
 GUISlice = List[List[Optional[VisualArrayCell]]] # 2D array of cells
 
@@ -25,8 +23,8 @@ def compile_file(circuit_file_name : str ,
 def compile_str(qasm_circuit : str,
                 apply_litinski_transform:bool=True) -> Tuple[List[GUISlice], str]:
     """Returns gui slices and the text of the circuit as processed in various stages"""
-    composer_class = lattice_surgery_computation_composer.LatticeSurgeryComputation
-    layout_types = lattice_surgery_computation_composer.LayoutType
+    composer_class = LatticeSurgeryComputation
+    layout_types = LayoutType
 
     input_circuit = segmented_qasm_parser.parse_str(qasm_circuit)
 
@@ -43,8 +41,8 @@ def compile_str(qasm_circuit : str,
         compilation_text += "\nCircuit after the Litinski Transform:\n"
         compilation_text += input_circuit.render_ascii()
 
-    logical_computation = logical_lattice_ops.LogicalLatticeComputation(input_circuit)
+    logical_computation = LogicalLatticeComputation(input_circuit)
     lsc = composer_class.make_computation_with_simulation(logical_computation, layout_types.SimplePreDistilledStates)
 
 
-    return list(map(sparse_lattice_to_array.sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text
+    return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text

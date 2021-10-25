@@ -7,3 +7,5 @@ webgui/server_pid
 index.html
 Pipfile
 Pipfile.lock
+venv
+.vscode

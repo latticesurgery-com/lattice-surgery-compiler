@@ -1,10 +1,13 @@
-from typing import *
-from rotation import *
 import uuid
 from collections import deque
-from qubit_state import *
-from circuit import Circuit
+from fractions import Fraction
+from typing import Deque, Dict, List, Optional, Union
 
+from lsqecc.circuit import (Circuit, Measurement, PauliOperator,
+                            PauliProductOperation, Rotation)
+from lsqecc.stimulation import (ConditionalOperation, DefaultSymbolicStates,
+                                EvaluationCondition, HasPauliEigenvalueOutcome,
+                                QubitState)
 
 # TODO give a uuid to all patches
 
@@ -64,7 +67,7 @@ class MagicStateRequest(LogicalLatticeOperation):
 
 
 class LogicalLatticeComputation:
-    
+
     def __init__(self, circuit: Circuit):
         self.circuit = circuit
         self.logical_qubit_uuid_map = dict([(j,uuid.uuid4()) for j in range(circuit.qubit_num)])

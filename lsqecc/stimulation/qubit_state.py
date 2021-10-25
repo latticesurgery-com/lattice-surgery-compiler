@@ -1,7 +1,8 @@
 import cmath
 import enum
-from rotation import *
-from typing import *
+from typing import Tuple
+
+from lsqecc.circuit import PauliOperator
 
 
 class ActivityType(enum.Enum):

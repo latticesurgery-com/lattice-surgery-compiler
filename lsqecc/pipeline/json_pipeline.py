@@ -1,8 +1,10 @@
-import lattice_surgery_compilation_pipeline
-import json
-from typing import *
-import visual_array_cell
 import enum
+import json
+
+from logic_lattice_ops import VisualArrayCell
+
+import lattice_surgery_compilation_pipeline
+
 
 class JsonResponse:
     def __init__(self, status: int, body: str):
@@ -20,7 +22,7 @@ class _SliceArrayJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, enum.Enum):
             return obj.value
-        elif isinstance(obj, visual_array_cell.VisualArrayCell):
+        elif isinstance(obj, VisualArrayCell):
             obj_with_good_keys =  obj.__dict__
             obj_with_good_keys['edges'] = dict([(k.value, v) for k, v in obj.edges.items()])
             print(obj_with_good_keys)

@@ -1,14 +1,13 @@
-import random
-
-from patches import *
-
-import qiskit.aqua.operators as qk
-
-
-from typing import *
 import math
-import cmath
+import random
 import uuid
+from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
+
+import qiskit
+import qiskit.aqua.operators as qk
+from circuit import PauliOperator
+from lsqecc.logic_lattice_ops import *
+from lsqecc.stimulation import DefaultSymbolicStates, SymbolicState
 
 
 class ConvertersToQiskit:

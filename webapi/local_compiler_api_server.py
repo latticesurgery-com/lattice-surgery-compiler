@@ -5,7 +5,7 @@ import http.client
 import json
 import enum
 import traceback
-from typing import *
+from typing import Optional, Dict
 
 
 class Routes(enum.Enum):

@@ -1,9 +1,8 @@
-import qiskit.aqua.operators as qk
-import qiskit.quantum_info as qkinfo
-import qiskit.exceptions as qkexcept
-import numpy.linalg
+from typing import Dict, List, Optional
 
-from typing import *
+import qiskit.aqua.operators as qk
+import qiskit.exceptions as qkexcept
+import qiskit.quantum_info as qkinfo
 
 
 class StateSeparator:

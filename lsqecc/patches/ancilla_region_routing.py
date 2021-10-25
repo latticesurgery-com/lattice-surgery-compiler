@@ -1,10 +1,8 @@
-import patches
+from ast import literal_eval as make_tuple
+from typing import Dict, List, Tuple
 
 import igraph
-
-from typing import *
-from functools import reduce
-from ast import literal_eval as make_tuple
+import lsqecc.patches as patches
 
 
 class AncillaRegionRoutingException(Exception):
