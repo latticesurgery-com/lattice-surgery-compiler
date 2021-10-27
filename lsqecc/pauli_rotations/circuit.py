@@ -5,10 +5,10 @@ from typing import List, cast
 
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
 from .rotation import (Measurement, PauliOperator, PauliProductOperation,
-                       Rotation)
+                       PauliRotation)
 
 
-class Circuit(object):
+class PauliRotationCircuit(object):
     """
     Class for representing quantum circuit.
 
@@ -27,7 +27,7 @@ class Circuit(object):
         self.name: str = name
 
     def __str__(self) -> str:
-        return f'Circuit {self.name}: {self.qubit_num} qubit(s), {len(self)} rotations(s)'
+        return f'PauliRotationCircuit {self.name}: {self.qubit_num} qubit(s), {len(self)} rotations(s)'
 
     def __repr__(self) -> str:
         return str(self)
@@ -35,7 +35,7 @@ class Circuit(object):
     def __len__(self) -> int:
         return len(self.ops)
 
-    def copy(self) -> 'Circuit':
+    def copy(self) -> 'PauliRotationCircuit':
         return copy.deepcopy(self)
 
     def add_pauli_block(self, new_block: PauliProductOperation,
@@ -44,7 +44,7 @@ class Circuit(object):
         Add a rotation to the circuit
 
         Args:
-            rotation (Rotation): Targeted rotation
+            rotation (PauliRotation): Targeted rotation
             index (int, optional): Index location. Default: End of the circuit
         """
 
@@ -71,7 +71,7 @@ class Circuit(object):
         if index is None:
             index = len(self)
 
-        new_rotation = Rotation(self.qubit_num, rotation_amount)
+        new_rotation = PauliRotation(self.qubit_num, rotation_amount)
         new_rotation.change_single_op(qubit, operator_type)
 
         self.add_pauli_block(new_rotation, index)
@@ -87,7 +87,7 @@ class Circuit(object):
         # Build a stack of pi/4 rotations
 
         for i in range(start_index, len(self)):
-            if isinstance(self.ops[i], Rotation) and self.ops[i].rotation_amount in {Fraction(1, 4), Fraction(-1, 4)}:
+            if isinstance(self.ops[i], PauliRotation) and self.ops[i].rotation_amount in {Fraction(1, 4), Fraction(-1, 4)}:
                 quarter_rotation.append(i)
 
         # Moving all pi/4 rotations towards the end of the circuit
@@ -138,8 +138,8 @@ class Circuit(object):
                     # Add 2 pi/4 rotations on each side of the Pauli block
                     new_block = [PauliOperator.Z if i in y_op_indices else PauliOperator.I for i in
                                  range(self.qubit_num)]
-                    self.add_pauli_block(Rotation.from_list(new_block, Fraction(1, 4)), i)
-                    self.add_pauli_block(Rotation.from_list(new_block, Fraction(-1, 4)), i + 2)
+                    self.add_pauli_block(PauliRotation.from_list(new_block, Fraction(1, 4)), i)
+                    self.add_pauli_block(PauliRotation.from_list(new_block, Fraction(-1, 4)), i + 2)
                     right_block_indices.append(i + 2)
                     i += 1
 
@@ -150,7 +150,7 @@ class Circuit(object):
                             right_block_index += 1
                         self.ops.pop()
             else:
-                # This is assuming pi/4 rotations (not including ones from this operation) 
+                # This is assuming pi/4 rotations (not including ones from this operation)
                 # have been commuted to the end of the circuit.
                 break
 
@@ -161,7 +161,7 @@ class Circuit(object):
         Commute a rotation block pass its neighbor block.
 
         Args:
-            index (int): Index of the targeted block in the current circuit. 
+            index (int): Index of the targeted block in the current circuit.
 
         """
         next_block = index + 1
@@ -169,11 +169,11 @@ class Circuit(object):
         if next_block >= len(self.ops):
             raise Exception("No operation to commute past")
 
-        if not cast(Rotation, self.ops[index]).rotation_amount in {Fraction(1, 4), Fraction(-1, 4)}:
+        if not cast(PauliRotation, self.ops[index]).rotation_amount in {Fraction(1, 4), Fraction(-1, 4)}:
             raise Exception("First operand must be +-pi/4 Pauli rotation")
 
         # Need to calculate iPP' when PP' = -P'P (anti-commute)
-        if not Circuit.are_commuting(self.ops[index], self.ops[next_block]):
+        if not PauliRotationCircuit.are_commuting(self.ops[index], self.ops[next_block]):
             product_of_coefficients = 1
 
             for i in range(self.qubit_num):
@@ -230,7 +230,7 @@ class Circuit(object):
         return (ret_val > 0)
 
     @staticmethod
-    def load_from_pyzx(circuit) -> 'Circuit':
+    def load_from_pyzx(circuit) -> 'PauliRotationCircuit':
         """
         Generate circuit from PyZX Circuit
 
@@ -242,7 +242,7 @@ class Circuit(object):
         Z = PauliOperator.Z
 
         basic_circ = circuit.to_basic_gates()
-        ret_circ = Circuit(basic_circ.qubits, circuit.name)
+        ret_circ = PauliRotationCircuit(basic_circ.qubits, circuit.name)
 
         gate_missed = 0
 
@@ -267,7 +267,7 @@ class Circuit(object):
                 ret_circ.add_single_operator(gate.target, X, Fraction(1, 4))
 
             elif isinstance(gate, zx.circuit.CNOT):
-                temp = Rotation(ret_circ.qubit_num, Fraction(1, 4))
+                temp = PauliRotation(ret_circ.qubit_num, Fraction(1, 4))
                 temp.change_single_op(gate.control, Z)
                 temp.change_single_op(gate.target, X)
                 ret_circ.add_pauli_block(temp)
@@ -276,7 +276,7 @@ class Circuit(object):
                 ret_circ.add_single_operator(gate.target, X, Fraction(-1, 4))
 
             elif isinstance(gate, zx.circuit.CZ):
-                temp = Rotation(ret_circ.qubit_num, Fraction(1, 4))
+                temp = PauliRotation(ret_circ.qubit_num, Fraction(1, 4))
                 temp.change_single_op(gate.control, Z)
                 temp.change_single_op(gate.target, Z)
                 ret_circ.add_pauli_block(temp)
@@ -293,29 +293,29 @@ class Circuit(object):
         return ret_circ
 
     @staticmethod
-    def load_reversible_from_qasm_string(quasm_string: str) -> 'Circuit':
+    def load_reversible_from_qasm_string(quasm_string: str) -> 'PauliRotationCircuit':
         """
         Load a string as if it were a QASM circuit. Only supports reversible circuits.
         """
 
         pyzx_circ = zx.Circuit.from_qasm(quasm_string)
-        ret_circ = Circuit.load_from_pyzx(pyzx_circ)
+        ret_circ = PauliRotationCircuit.load_from_pyzx(pyzx_circ)
 
         return ret_circ
 
     @staticmethod
-    def join(lhs: 'Circuit', rhs: 'Circuit') -> 'Circuit':
+    def join(lhs: 'PauliRotationCircuit', rhs: 'PauliRotationCircuit') -> 'PauliRotationCircuit':
         assert lhs.qubit_num == rhs.qubit_num
         c = lhs.copy()
         c.ops.extend(rhs.ops)
         return c
 
     def count_rotations_by(self, rotation_amount: Fraction) -> int:
-        return len(list(filter(lambda r: isinstance(r, Rotation) and r.rotation_amount == rotation_amount, self.ops)))
+        return len(list(filter(lambda r: isinstance(r, PauliRotation) and r.rotation_amount == rotation_amount, self.ops)))
 
     def render_latex(self) -> str:
         """
-        Generate latex render output of the current circuit. 
+        Generate latex render output of the current circuit.
 
         """
 
@@ -329,7 +329,7 @@ class Circuit(object):
                 operator_list += str(operator)
 
                 # Latex format for phase label (I didnt want to do this in the template file)
-            if isinstance(operation, Rotation):
+            if isinstance(operation, PauliRotation):
                 operator_str = '$' + phase_frac_to_latex(operation.rotation_amount) + '$'
 
             elif isinstance(operation, Measurement):
@@ -359,7 +359,7 @@ class Circuit(object):
         cols.append(first_col)
 
         for op in self.ops:
-            if isinstance(op, Rotation):
+            if isinstance(op, PauliRotation):
                 operator_str = " " if op.rotation_amount.numerator > 0 else ""
                 operator_str += str(op.rotation_amount.numerator) + "/" + str(op.rotation_amount.denominator)
             elif isinstance(op, Measurement):

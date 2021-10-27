@@ -2,7 +2,7 @@ from lattice_surgery_computation_composer import *
 from webgui import lattice_view
 
 if __name__ == "__main__":
-    c = Circuit(1)
+    c = PauliRotationCircuit(1)
     I = PauliOperator.I
     X = PauliOperator.X
     Y = PauliOperator.Y
@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
 
 
-    c.add_pauli_block(Rotation.from_list([X],Fraction(1,8)))
+    c.add_pauli_block(PauliRotation.from_list([X],Fraction(1,8)))
 
 
     print(c.render_ascii())

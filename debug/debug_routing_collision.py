@@ -8,12 +8,12 @@ if __name__ == "__main__":
     Y = ls.PauliOperator.Y
     Z = ls.PauliOperator.Z
 
-    c = ls.Circuit(4)
-    c.add_pauli_block(ls.Rotation.from_list([X, I, I, I], Fraction(1, 2)))
-    c.add_pauli_block(ls.Rotation.from_list([I, X, I, I], Fraction(1, 2)))
-    c.add_pauli_block(ls.Rotation.from_list([I, I, X, I], Fraction(1, 2)))
-    c.add_pauli_block(ls.Rotation.from_list([I, I, I, X], Fraction(1, 2)))
-    c.add_pauli_block(ls.Rotation.from_list([Z, I, I, I], Fraction(1, 2)))
+    c = ls.PauliRotationCircuit(4)
+    c.add_pauli_block(ls.PauliRotation.from_list([X, I, I, I], Fraction(1, 2)))
+    c.add_pauli_block(ls.PauliRotation.from_list([I, X, I, I], Fraction(1, 2)))
+    c.add_pauli_block(ls.PauliRotation.from_list([I, I, X, I], Fraction(1, 2)))
+    c.add_pauli_block(ls.PauliRotation.from_list([I, I, I, X], Fraction(1, 2)))
+    c.add_pauli_block(ls.PauliRotation.from_list([Z, I, I, I], Fraction(1, 2)))
 
     print(c.render_ascii())
 

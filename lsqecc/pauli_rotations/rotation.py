@@ -124,7 +124,7 @@ class PauliProductOperation(ConditionalOperation):
         return dict([(qn, self.ops_list[qn]) for qn in range(self.qubit_num) if self.ops_list[qn] != PauliOperator.I])
 
 
-class Rotation(PauliProductOperation):
+class PauliRotation(PauliProductOperation):
     """
     Class for representing a Pauli Product Rotation Block.
 
@@ -154,8 +154,8 @@ class Rotation(PauliProductOperation):
         return return_str
 
     @staticmethod
-    def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> 'Rotation':
-        r = Rotation(len(pauli_ops), rotation)
+    def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> 'PauliRotation':
+        r = PauliRotation(len(pauli_ops), rotation)
         for i, op in enumerate(pauli_ops):
             r.change_single_op(i, op)
         return r

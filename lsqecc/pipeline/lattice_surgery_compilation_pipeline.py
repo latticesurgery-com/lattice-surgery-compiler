@@ -4,7 +4,7 @@ from patches import LatticeSurgeryComputation, LayoutType
 from qiskit import circuit as qkcirc
 from typing import List, Optional, Tuple
 
-from lsqecc.pauli_rotations import Circuit
+from lsqecc.pauli_rotations import PauliRotationCircuit
 import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 from lsqecc.lattice_array import sparse_lattice_to_array
 

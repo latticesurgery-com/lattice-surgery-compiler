@@ -5,10 +5,10 @@ import qiskit.qasm.node.node
 import re
 from typing import List, Union, cast
 
-from . import Circuit, Measurement, PauliOperator
+from . import PauliRotationCircuit, Measurement, PauliOperator
 
 
-def parse_str(qasm_str: str) -> Circuit:
+def parse_str(qasm_str: str) -> PauliRotationCircuit:
     """
     Read a string containing QASM (currently supports only OPENQASM 2.0) into a circuit.
 
@@ -45,9 +45,9 @@ class _SegmentedQASMParser:
 
         segments = _QASMASTSegmenter.ast_to_segments(ast)
         sub_circuits = map(self.segment_to_circuit, segments)
-        self.circuit = functools.reduce(Circuit.join, sub_circuits)
+        self.circuit = functools.reduce(PauliRotationCircuit.join, sub_circuits)
 
-    def get_circuit(self) -> Circuit:
+    def get_circuit(self) -> PauliRotationCircuit:
         return self.circuit
 
     def segment_to_circuit(self, segment: Segment):
@@ -60,7 +60,7 @@ class _SegmentedQASMParser:
         else:
             raise Exception('Unsupported QASM node type ' + segment.type)
 
-    def reversible_segment_to_circuit(self, segment: List[qiskit.qasm.node.node.Node]) -> Circuit:
+    def reversible_segment_to_circuit(self, segment: List[qiskit.qasm.node.node.Node]) -> PauliRotationCircuit:
         program_wrapper_node = qiskit.qasm.node.Program(segment)
         text_qasm_program_wrapper = \
             'OPENQASM 2.0;\n' + \
@@ -68,14 +68,14 @@ class _SegmentedQASMParser:
             self.qreg.qasm() + "\n" + \
             program_wrapper_node.qasm()
 
-        return Circuit.load_reversible_from_qasm_string(text_qasm_program_wrapper)
+        return PauliRotationCircuit.load_reversible_from_qasm_string(text_qasm_program_wrapper)
 
     def if_node_to_circuit(self, node: qiskit.qasm.node.if_.If):
         raise NotImplementedError  # TODO
 
     def measure_node_to_circuit(self, measurement_node: qiskit.qasm.node.Measure) \
-            -> Circuit:
-        c = Circuit(self.num_qubits())
+            -> PauliRotationCircuit:
+        c = PauliRotationCircuit(self.num_qubits())
 
         op_list = [PauliOperator.I] * self.num_qubits()
         measure_idx: int = _SegmentedQASMParser.extract_measurement_idx(measurement_node)

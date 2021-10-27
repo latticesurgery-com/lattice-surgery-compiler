@@ -1,5 +1,5 @@
 import copy
-from lsqecc.pauli_rotations import Circuit
+from lsqecc.pauli_rotations import PauliRotationCircuit
 from typing import List, TypeVar
 
 T = TypeVar('T')
@@ -29,7 +29,7 @@ class DependencyGraph:
         self.terminal_node = list()
 
     @staticmethod
-    def from_circuit_by_commutation(circuit: Circuit) -> 'DependencyGraph':
+    def from_circuit_by_commutation(circuit: PauliRotationCircuit) -> 'DependencyGraph':
         """
         Build a dependency tree from a Pauli rotation circuit based on commutation.
 
@@ -37,7 +37,7 @@ class DependencyGraph:
 
         # This because new dependency is added between non-commuting operations
         def func(arg1, arg2):
-            return not Circuit.are_commuting(arg1, arg2)
+            return not PauliRotationCircuit.are_commuting(arg1, arg2)
 
         return DependencyGraph.from_list(circuit.ops, func)
 

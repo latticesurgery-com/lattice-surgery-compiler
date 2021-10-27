@@ -3,8 +3,8 @@ from collections import deque
 from fractions import Fraction
 from typing import Deque, Dict, List, Optional, Union
 
-from lsqecc.pauli_rotations import (Circuit, Measurement, PauliOperator,
-                                    PauliProductOperation, Rotation)
+from lsqecc.pauli_rotations import (PauliRotationCircuit, Measurement, PauliOperator,
+                                    PauliProductOperation, PauliRotation)
 from lsqecc.simulation import (ConditionalOperation, DefaultSymbolicStates,
                                EvaluationCondition, HasPauliEigenvalueOutcome,
                                QubitState)
@@ -65,7 +65,7 @@ class MagicStateRequest(LogicalLatticeOperation):
 
 class LogicalLatticeComputation:
 
-    def __init__(self, circuit: Circuit):
+    def __init__(self, circuit: PauliRotationCircuit):
         self.circuit = circuit
         self.logical_qubit_uuid_map = dict([(j, uuid.uuid4()) for j in range(circuit.qubit_num)])
         self.ops: List[LogicalLatticeOperation] = []
@@ -74,17 +74,17 @@ class LogicalLatticeComputation:
 
     def _load_circuit(self):
 
-        def to_lattice_operation(op: PauliProductOperation) -> Union[LogicalLatticeOperation, Rotation]:
-            if isinstance(op, Rotation): return op
+        def to_lattice_operation(op: PauliProductOperation) -> Union[LogicalLatticeOperation, PauliRotation]:
+            if isinstance(op, PauliRotation): return op
             if isinstance(op, Measurement): return self.circuit_to_patch_measurement(op)
             raise Exception("Unsupported PauliProductOperation " + repr(op))
 
-        operations_queue: Deque[Union[Rotation, LogicalLatticeOperation]] \
+        operations_queue: Deque[Union[PauliRotation, LogicalLatticeOperation]] \
             = deque(map(to_lattice_operation, self.circuit.ops))
 
         while len(operations_queue) > 0:
             current_op = operations_queue.popleft()
-            if isinstance(current_op, Rotation):
+            if isinstance(current_op, PauliRotation):
                 rotations_composer = RotationsComposer(self)
                 operations_queue.extendleft(reversed(rotations_composer.expand_rotation(current_op)))
             else:
@@ -117,7 +117,7 @@ class RotationsComposer:
     def __init__(self, computation: LogicalLatticeComputation):
         self.computation = computation
 
-    def expand_rotation(self, r: Rotation) -> List[LogicalLatticeOperation]:
+    def expand_rotation(self, r: PauliRotation) -> List[LogicalLatticeOperation]:
         if r.rotation_amount == Fraction(1, 2):
             return self.pi_over_two(r.get_ops_map(), r.get_condition())
         elif r.rotation_amount == Fraction(1, 4):
@@ -155,7 +155,7 @@ class RotationsComposer:
 
         ancilla_measurement = SinglePatchMeasurement(ancilla_uuid, PauliOperator.X)
 
-        corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1, 2))
+        corrective_rotation = PauliRotation(self.logical_qubit_num(), Fraction(1, 2))
         corrective_rotation.set_condition(PiOverFourCorrectionCondition(multi_body_measurement,
                                                                         ancilla_measurement,
                                                                         invert_correction))
@@ -182,13 +182,13 @@ class RotationsComposer:
         multi_body_measurement.set_condition(condition)
         multi_body_measurement.patch_pauli_operator_map[magic_state_uuid] = PauliOperator.Z
 
-        first_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1, 4))
+        first_corrective_rotation = PauliRotation(self.logical_qubit_num(), Fraction(1, 4))
         first_corrective_rotation.set_condition(PiOverEightCorrectionConditionPiOverFour(multi_body_measurement,
                                                                                          invert_correction))
 
         ancilla_measurement = SinglePatchMeasurement(magic_state_uuid, PauliOperator.X)
 
-        second_corrective_rotation = Rotation(self.logical_qubit_num(), Fraction(1, 2))
+        second_corrective_rotation = PauliRotation(self.logical_qubit_num(), Fraction(1, 2))
         second_corrective_rotation.set_condition(PiOverEightCorrectionConditionPiOverTwo(ancilla_measurement))
 
         for qubit_idx, op in ops_map.items():
