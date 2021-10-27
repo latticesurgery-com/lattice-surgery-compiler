@@ -1,7 +1,8 @@
+from typing import Dict, List, Optional
+
 import qiskit.aqua.operators as qk
 import qiskit.exceptions as qkexcept
 import qiskit.quantum_info as qkinfo
-from typing import Dict, List, Optional
 
 
 class StateSeparator:

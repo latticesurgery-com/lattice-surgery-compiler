@@ -1,1 +1,1 @@
-from sparse_lattice_to_array import *
+from .sparse_lattice_to_array import *

@@ -1,11 +1,12 @@
 import functools
-import qiskit.qasm
-import qiskit.qasm.node
-import qiskit.qasm.node.node
 import re
 from typing import List, Union, cast
 
-from . import PauliRotationCircuit, Measurement, PauliOperator
+import qiskit.qasm
+import qiskit.qasm.node
+import qiskit.qasm.node.node
+
+from . import Measurement, PauliOperator, PauliRotationCircuit
 
 
 def parse_str(qasm_str: str) -> PauliRotationCircuit:

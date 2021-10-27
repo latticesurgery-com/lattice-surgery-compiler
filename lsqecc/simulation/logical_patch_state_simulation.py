@@ -1,12 +1,12 @@
 import math
-import qiskit
-import qiskit.aqua.operators as qk
 import random
 import uuid
-from lsqecc.pauli_rotations import PauliOperator
 from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
 
+import qiskit
+import qiskit.aqua.operators as qk
 from lsqecc.logical_lattice_ops import *
+from lsqecc.pauli_rotations import PauliOperator
 from lsqecc.simulation import DefaultSymbolicStates, SymbolicState
 
 

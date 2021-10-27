@@ -3,8 +3,9 @@ from collections import deque
 from fractions import Fraction
 from typing import Deque, Dict, List, Optional, Union
 
-from lsqecc.pauli_rotations import (PauliRotationCircuit, Measurement, PauliOperator,
-                                    PauliProductOperation, PauliRotation)
+from lsqecc.pauli_rotations import (Measurement, PauliOperator,
+                                    PauliProductOperation, PauliRotation,
+                                    PauliRotationCircuit)
 from lsqecc.simulation import (ConditionalOperation, DefaultSymbolicStates,
                                EvaluationCondition, HasPauliEigenvalueOutcome,
                                QubitState)

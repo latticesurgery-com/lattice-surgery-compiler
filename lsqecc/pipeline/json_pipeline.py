@@ -1,6 +1,6 @@
 import enum
 import json
-from logical_lattice_ops import VisualArrayCell
+from lsqecc.logical_lattice_ops import VisualArrayCell
 
 import lattice_surgery_compilation_pipeline
 

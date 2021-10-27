@@ -1,8 +1,8 @@
 from enum import Enum
 from fractions import Fraction
-from simulation import ConditionalOperation
 from typing import Dict, List
 
+from lsqecc.simulation import ConditionalOperation
 from lsqecc.utils import phase_frac_to_latex
 
 
