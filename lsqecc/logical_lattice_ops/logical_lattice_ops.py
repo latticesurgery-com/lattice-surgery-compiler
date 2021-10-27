@@ -3,8 +3,8 @@ from collections import deque
 from fractions import Fraction
 from typing import Deque, Dict, List, Optional, Union
 
-from lsqecc.circuit import (Circuit, Measurement, PauliOperator,
-                            PauliProductOperation, Rotation)
+from lsqecc.pauli_rotations import (Circuit, Measurement, PauliOperator,
+                                    PauliProductOperation, Rotation)
 from lsqecc.simulation import (ConditionalOperation, DefaultSymbolicStates,
                                EvaluationCondition, HasPauliEigenvalueOutcome,
                                QubitState)
@@ -132,9 +132,8 @@ class RotationsComposer:
             raise Exception("Unsupported pauli rotation angle pi*%d/%d"
                             % (r.rotation_amount.numerator, r.rotation_amount.denominator))
 
-    def pi_over_two(self, ops_map: Dict[int, PauliOperator], condition: Optional[EvaluationCondition]) -> List[
-        LogicalLatticeOperation]:
-
+    def pi_over_two(self, ops_map: Dict[int, PauliOperator],
+                    condition: Optional[EvaluationCondition]) -> List[LogicalLatticeOperation]:
         paulis = []
         for qubit_id, op in ops_map.items():
             logical_pauli = LogicalPauli(self.computation.logical_qubit_uuid_map[qubit_id], op)

@@ -3,7 +3,7 @@ import qiskit
 import qiskit.aqua.operators as qk
 import random
 import uuid
-from circuit import PauliOperator
+from lsqecc.pauli_rotations import PauliOperator
 from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
 
 from lsqecc.logical_lattice_ops import *

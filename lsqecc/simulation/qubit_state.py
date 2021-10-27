@@ -2,7 +2,7 @@ import cmath
 import enum
 from typing import Tuple
 
-from lsqecc.circuit import PauliOperator
+from lsqecc.pauli_rotations import PauliOperator
 
 
 class ActivityType(enum.Enum):
@@ -72,7 +72,7 @@ class EntangledState(SymbolicState):
         return "Entangled"
 
 
-class DefaultSymbolicStates():
+class DefaultSymbolicStates:
     Zero = SymbolicState('|0>')
     One = SymbolicState('|1>')
     Plus = SymbolicState('|+>')
@@ -96,23 +96,29 @@ class DefaultSymbolicStates():
 
         close = lambda a, b: cmath.isclose(a, b, rel_tol=10 ** (-6))
 
-        if close(zero_ampl, 0): return DefaultSymbolicStates.One
-        if close(one_ampl, 0):  return DefaultSymbolicStates.Zero
+        if close(zero_ampl, 0):
+            return DefaultSymbolicStates.One
+        if close(one_ampl, 0):
+            return DefaultSymbolicStates.Zero
         if close(zero_ampl, cmath.sqrt(2) / 2):
-            if close(one_ampl, cmath.sqrt(2) / 2):                            return DefaultSymbolicStates.Plus
-            if close(one_ampl, -cmath.sqrt(2) / 2):                            return DefaultSymbolicStates.Minus
-            if close(one_ampl,
-                     cmath.sqrt(2) / 2 * 1j):                         return DefaultSymbolicStates.YPosEigenState
-            if close(one_ampl,
-                     -cmath.sqrt(2) / 2 * 1j):                         return DefaultSymbolicStates.YNegEigenState
-            if close(one_ampl, cmath.sqrt(2) / 2 * cmath.exp(1j * cmath.pi / 4)):   return DefaultSymbolicStates.Magic
+            if close(one_ampl, cmath.sqrt(2) / 2):
+                return DefaultSymbolicStates.Plus
+            if close(one_ampl, -cmath.sqrt(2) / 2):
+                return DefaultSymbolicStates.Minus
+            if close(one_ampl, cmath.sqrt(2) / 2 * 1j):
+                return DefaultSymbolicStates.YPosEigenState
+            if close(one_ampl, -cmath.sqrt(2) / 2 * 1j):
+                return DefaultSymbolicStates.YNegEigenState
+            if close(one_ampl, cmath.sqrt(2) / 2 * cmath.exp(1j * cmath.pi / 4)):
+                return DefaultSymbolicStates.Magic
 
         return SymbolicState("{:.2f}|0>\n{:+.2f}|1>".format(zero_ampl, one_ampl))
 
     @staticmethod
     def get_amplitudes(s: SymbolicState) -> Tuple[complex, complex]:
         """Returns in order the zero amplitude and the one amplitude"""
-        if s == DefaultSymbolicStates.Zero:             return 1, 0
+        if s == DefaultSymbolicStates.Zero:
+            return 1, 0
         if s == DefaultSymbolicStates.One:
             return 0, 1
         elif s == DefaultSymbolicStates.Plus:

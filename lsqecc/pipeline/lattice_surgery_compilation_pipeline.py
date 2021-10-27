@@ -4,8 +4,8 @@ from patches import LatticeSurgeryComputation, LayoutType
 from qiskit import circuit as qkcirc
 from typing import List, Optional, Tuple
 
-import lsqecc.circuit as circuit
-import lsqecc.circuit.segmented_qasm_parser as segmented_qasm_parser
+from lsqecc.pauli_rotations import Circuit
+import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 from lsqecc.lattice_array import sparse_lattice_to_array
 
 GUISlice = List[List[Optional[VisualArrayCell]]]  # 2D array of cells

@@ -1,5 +1,5 @@
 import copy
-from circuit import Circuit
+from lsqecc.pauli_rotations import Circuit
 from typing import List, TypeVar
 
 T = TypeVar('T')
@@ -31,7 +31,7 @@ class DependencyGraph:
     @staticmethod
     def from_circuit_by_commutation(circuit: Circuit) -> 'DependencyGraph':
         """
-        Build a dependency tree from a Pauli circuit based on commutation.
+        Build a dependency tree from a Pauli rotation circuit based on commutation.
 
         """
 
