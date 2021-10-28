@@ -13,12 +13,12 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE","lattice_surgery_web.settings_ren
 django.setup()
 
 sys.path.append("../../")
-import patches # TODO remove the dependency on this import
-import lattice_surgery_compilation_pipeline
+import lsqecc.patches.patches as patches # TODO remove the dependency on this import
+import lsqecc.pipeline.lattice_surgery_compilation_pipeline as lscp
 
 def render_to_file(circuit_file_name: str, output_file_name: str, apply_litinski_transform: bool=True) -> str:
     """ input"""
-    slices, compilation_text = lattice_surgery_compilation_pipeline.compile_file(circuit_file_name,apply_litinski_transform)
+    slices, compilation_text = lscp.compile_file(circuit_file_name,apply_litinski_transform)
     context = {
         'slices': slices,
         'patches': patches,

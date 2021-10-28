@@ -1,5 +1,5 @@
-import patches
-from qubit_state import ActivityType
+import lsqecc.patches.patches as patches
+import lsqecc.simulation.qubit_state as qs
 
 styles_map = {patches.PatchType.Qubit : "darkkhaki",
               patches.PatchType.DistillationQubit : "orchid",
@@ -22,7 +22,7 @@ styles_map = {patches.PatchType.Qubit : "darkkhaki",
               },
               'activity_color':
                   {
-                      ActivityType.Unitary : "#00baff",
-                      ActivityType.Measurement : "#ff0000",
+                      qs.ActivityType.Unitary : "#00baff",
+                      qs.ActivityType.Measurement : "#ff0000",
                   }
 }

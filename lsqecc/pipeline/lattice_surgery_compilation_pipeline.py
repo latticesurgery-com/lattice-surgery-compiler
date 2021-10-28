@@ -1,17 +1,14 @@
-from __future__ import annotations
-from typing import List, Optional, Tuple, TYPE_CHECKING
+from typing import List, Optional, Tuple
 
+import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
+import lsqecc.logical_lattice_ops.visual_array_cell as vac
+import lsqecc.patches.lattice_surgery_computation_composer as lscc
 import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 import qiskit.visualization as qkvis
 from lsqecc.lattice_array import sparse_lattice_to_array
-import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
-import lsqecc.patches.lattice_surgery_computation_composer as lscc
 from qiskit import circuit as qkcirc
 
-if TYPE_CHECKING:
-    from lsqecc.logical_lattice_ops.visual_array_cell import VisualArrayCell
-
-GUISlice = List[List[Optional[VisualArrayCell]]]  # 2D array of cells
+GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells
 
 __all__ = ['compile_file', 'VisualArrayCell', 'GUISlice']
 
