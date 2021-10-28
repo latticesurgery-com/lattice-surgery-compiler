@@ -1,8 +1,8 @@
 import enum
 import json
-from lsqecc.logical_lattice_ops import VisualArrayCell
 
-import lattice_surgery_compilation_pipeline
+import lsqecc.logical_lattice_ops.visual_array_cell as vac
+from .lattice_surgery_compilation_pipeline import compile_str
 
 
 class JsonResponse:
@@ -23,7 +23,7 @@ class _SliceArrayJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, enum.Enum):
             return obj.value
-        elif isinstance(obj, VisualArrayCell):
+        elif isinstance(obj, vac.VisualArrayCell):
             obj_with_good_keys = obj.__dict__
             obj_with_good_keys['edges'] = dict([(k.value, v) for k, v in obj.edges.items()])
             print(obj_with_good_keys)
@@ -56,7 +56,7 @@ def handle(json_request: str) -> JsonResponse:
         apply_litinski_transform = request_data[
             'apply_litinski_transform'] if 'apply_litinski_transform' in request_data else True
 
-        slices, compilation_text = lattice_surgery_compilation_pipeline.compile_str(
+        slices, compilation_text = compile_str(
             request_data['circuit'], apply_litinski_transform)
         respnse_body = {'slices': slices, 'compilation_text': compilation_text}
 

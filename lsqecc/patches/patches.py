@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import itertools
 import uuid
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
-from lsqecc.pauli_rotations.rotation import *
-from lsqecc.logical_lattice_ops import LogicalLatticeOperation
-from lsqecc.simulation import QubitState
+from lsqecc.pauli_rotations import PauliOperator
+
+if TYPE_CHECKING:
+    from lsqecc.logical_lattice_ops.logical_lattice_ops import LogicalLatticeOperation
+    from lsqecc.simulation.qubit_state import QubitState
 
 
 class Orientation(Enum):

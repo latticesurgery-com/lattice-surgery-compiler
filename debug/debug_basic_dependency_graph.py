@@ -1,6 +1,6 @@
-from circuit import *
-from rotation import *
-from dependency_graph import *
+from fractions import Fraction
+from lsqecc.pauli_rotations import PauliRotation, PauliRotationCircuit, PauliOperator
+from lsqecc.logical_lattice_ops import dependency_graph as dg
 
 I = PauliOperator.I
 X = PauliOperator.X
@@ -17,7 +17,7 @@ c.add_pauli_block(PauliRotation.from_list([Z, I],Fraction(-1,4)))
 c.add_pauli_block(PauliRotation.from_list([I, Z],Fraction(-1,4)))
 
 print(c.render_ascii())
-a = DependencyGraph.from_circuit_by_commutation(c)
+a = dg.DependencyGraph.from_circuit_by_commutation(c)
 
 print("Returned terminal nodes:")
 print(a.terminal_node)

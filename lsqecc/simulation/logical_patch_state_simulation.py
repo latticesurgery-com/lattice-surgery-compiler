@@ -5,9 +5,10 @@ from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
 
 import qiskit
 import qiskit.aqua.operators as qk
-from lsqecc.logical_lattice_ops import *
+import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 from lsqecc.pauli_rotations import PauliOperator
-from lsqecc.simulation import DefaultSymbolicStates, SymbolicState
+
+from .qubit_state import DefaultSymbolicStates, SymbolicState
 
 
 class ConvertersToQiskit:
@@ -90,7 +91,7 @@ def proportional_choice(assoc_data_prob: List[Tuple[T, float]]) -> T:
 
 
 class PatchToQubitMapper:
-    def __init__(self, logical_computation: LogicalLatticeComputation):
+    def __init__(self, logical_computation: llops.LogicalLatticeComputation):
         self.patch_location_to_logical_idx: Dict[uuid.UUID, int] = dict()
         for p in PatchToQubitMapper._get_all_operating_patches(logical_computation):
             if self.patch_location_to_logical_idx.get(p) is None:
@@ -112,7 +113,7 @@ class PatchToQubitMapper:
             yield (idx, self.get_uuid(idx))
 
     @staticmethod
-    def _get_all_operating_patches(logical_computation: LogicalLatticeComputation) -> List[uuid.UUID]:
+    def _get_all_operating_patches(logical_computation: llops.LogicalLatticeComputation) -> List[uuid.UUID]:
         patch_set = set()
         patch_set.update(logical_computation.logical_qubit_uuid_map.values())
 
@@ -130,7 +131,7 @@ def tensor_list(l):
 
 
 class PatchSimulator:
-    def __init__(self, logical_computation: LogicalLatticeComputation):
+    def __init__(self, logical_computation: llops.LogicalLatticeComputation):
         self.logical_computation = logical_computation
         self.mapper = PatchToQubitMapper(logical_computation)
         self.logical_state: qk.DictStateFn = self._make_initial_logical_state()
@@ -149,21 +150,21 @@ class PatchSimulator:
             return ConvertersToQiskit.symbolic_state(initial_ancilla_states.get(quuid, DefaultSymbolicStates.Zero))
 
         for op in self.logical_computation.ops:
-            if isinstance(op, AncillaQubitPatchInitialization):
+            if isinstance(op, llops.AncillaQubitPatchInitialization):
                 add_initial_ancilla_state(op.qubit_uuid, op.qubit_state)
-            elif isinstance(op, MagicStateRequest):
+            elif isinstance(op, llops.MagicStateRequest):
                 add_initial_ancilla_state(op.qubit_uuid, DefaultSymbolicStates.Magic)
 
         all_init_states = [get_init_state(quuid) for idx, quuid in self.mapper.enumerate_patches_by_index()]
         return tensor_list(all_init_states)
 
-    def apply_logical_operation(self, logical_op: LogicalLatticeOperation):
+    def apply_logical_operation(self, logical_op: llops.LogicalLatticeOperation):
         """Update the logical state"""
 
         if not logical_op.does_evaluate():
             raise Exception("apply_logical_operation called with non evaluating operation :" + repr(logical_op))
 
-        if isinstance(logical_op, SinglePatchMeasurement):
+        if isinstance(logical_op, llops.SinglePatchMeasurement):
             measure_idx = self.mapper.get_idx(logical_op.qubit_uuid)
             local_observable = ConvertersToQiskit.pauli_op(logical_op.op)
             global_observable = (qk.I ^ measure_idx) ^ local_observable ^ (
@@ -174,13 +175,13 @@ class PatchSimulator:
             self.logical_state = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
 
-        elif isinstance(logical_op, LogicalPauli):
+        elif isinstance(logical_op, llops.LogicalPauli):
             symbolic_state = circuit_add_op_to_qubit(self.logical_state,
                                                      ConvertersToQiskit.pauli_op(logical_op.pauli_matrix),
                                                      self.mapper.get_idx(logical_op.qubit_uuid))
             self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
 
-        elif isinstance(logical_op, MultiBodyMeasurement):
+        elif isinstance(logical_op, llops.MultiBodyMeasurement):
             pauli_op_list: List[qk.PrimitiveOp] = []
 
             for j, quuid in self.mapper.enumerate_patches_by_index():

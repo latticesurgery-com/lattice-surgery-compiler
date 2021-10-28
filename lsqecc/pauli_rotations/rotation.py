@@ -2,7 +2,7 @@ from enum import Enum
 from fractions import Fraction
 from typing import Dict, List
 
-from lsqecc.simulation import ConditionalOperation
+import lsqecc.simulation.conditional_operation_control as coc
 from lsqecc.utils import phase_frac_to_latex
 
 
@@ -73,7 +73,7 @@ PauliOperator._anticommute_tbl = {
 }
 
 
-class PauliProductOperation(ConditionalOperation):
+class PauliProductOperation(coc.ConditionalOperation):
     qubit_num: int = None
     ops_list: List[PauliOperator] = None
 

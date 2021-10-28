@@ -1,8 +1,10 @@
+from __future__ import annotations
 import cmath
 import enum
-from typing import Tuple
+from typing import Tuple, TYPE_CHECKING
 
-from lsqecc.pauli_rotations import PauliOperator
+if TYPE_CHECKING:
+    from lsqecc.pauli_rotations import PauliOperator
 
 
 class ActivityType(enum.Enum):

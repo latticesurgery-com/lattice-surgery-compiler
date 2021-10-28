@@ -1,7 +1,9 @@
-from simulation import QubitActivity
-from typing import Dict, Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, Optional
 
-from lsqecc.patches import EdgeType, Orientation, PatchType
+if TYPE_CHECKING:
+    from lsqecc.patches.patches import EdgeType, Orientation, PatchType
+    from simulation.qubit_state import QubitActivity
 
 
 class VisualArrayCell:

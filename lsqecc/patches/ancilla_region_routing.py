@@ -1,9 +1,13 @@
-import igraph
+from __future__ import annotations
+
 from ast import literal_eval as make_tuple
-from typing import Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple
 
-import lsqecc.patches as patches
+import igraph
+import lsqecc.patches.patches as patches
 
+if TYPE_CHECKING:
+    from lsqecc.pauli_rotations import PauliOperator
 
 class AncillaRegionRoutingException(Exception):
     pass
@@ -14,7 +18,7 @@ class AncillaRegionRoutingException(Exception):
 def get_pauli_op_listing(
         cell: Tuple[int, int],
         lattice: patches.Lattice,
-        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
+        patch_pauli_operator_map: Dict[Tuple[int, int], PauliOperator]):
     # TODO check overlapping with representative and document
     l = list(filter(
         lambda cell: cell in patch_pauli_operator_map,
@@ -52,7 +56,7 @@ def make_graph_of_free_cells(lattice: patches.Lattice) -> igraph.Graph:
 def add_directed_edges(
         ancilla_search_graph: igraph.Graph,
         lattice: patches.Lattice,
-        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator],
+        patch_pauli_operator_map: Dict[Tuple[int, int], PauliOperator],
         source_patch_vertex: str,
         tagret_patch_vertex: List[str]
 ):
@@ -125,7 +129,7 @@ def add_ancilla_region_to_lattice_from_paths(
 
 def compute_ancilla_region_cells(
         lattice: patches.Lattice,
-        patch_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]
+        patch_pauli_operator_map: Dict[Tuple[int, int], PauliOperator]
 ) -> None:
     """ Compute which cells of the lattice are occupied by the ancilla region to perform the multibody measurement
         specified by the dict of operators.

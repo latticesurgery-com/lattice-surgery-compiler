@@ -1,5 +1,8 @@
-from lattice_surgery_computation_composer import *
-from webgui import lattice_view
+from lsqecc.patches import lattice_surgery_computation_composer as lscc 
+from lsqecc.logical_lattice_ops import logical_lattice_ops as llops
+from lsqecc.pauli_rotations import PauliRotationCircuit, PauliOperator, PauliRotation
+from fractions import Fraction
+# from webgui import lattice_view
 
 if __name__ == "__main__":
     c = PauliRotationCircuit(4)
@@ -16,6 +19,6 @@ if __name__ == "__main__":
 
     print(c.render_ascii())
 
-    logical_comp = LogicalLatticeComputation(c)
-    lsc = LatticeSurgeryComputation.make_computation_with_simulation(logical_comp, LayoutType.SimplePreDistilledStates)
-    lattice_view.render_to_file(lsc.composer.getSlices(), "index.html", template="/home/george/courses/CMPT415_498/code/lattice-surgery-compiler/webgui/templates/lattice_view.mak")
+    logical_comp = llops.LogicalLatticeComputation(c)
+    lsc = lscc.LatticeSurgeryComputation.make_computation_with_simulation(logical_comp, lscc.LayoutType.SimplePreDistilledStates)
+    # lattice_view.render_to_file(lsc.composer.getSlices(), "index.html", template="/home/george/courses/CMPT415_498/code/lattice-surgery-compiler/webgui/templates/lattice_view.mak")
