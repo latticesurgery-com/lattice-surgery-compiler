@@ -25,7 +25,7 @@ class _SliceArrayJSONEncoder(json.JSONEncoder):
             return obj.value
         elif isinstance(obj, vac.VisualArrayCell):
             obj_with_good_keys = obj.__dict__
-            obj_with_good_keys['edges'] = dict([(k.value, v) for k, v in obj.edges.items()])
+            obj_with_good_keys["edges"] = dict([(k.value, v) for k, v in obj.edges.items()])
             print(obj_with_good_keys)
             return obj_with_good_keys
         elif isinstance(obj, object):
@@ -52,15 +52,20 @@ def handle(json_request: str) -> JsonResponse:
     """
     request_data = json.loads(json_request)
 
-    if 'circuit' in request_data and request_data['circuit_source'] == 'str':
-        apply_litinski_transform = request_data[
-            'apply_litinski_transform'] if 'apply_litinski_transform' in request_data else True
+    if "circuit" in request_data and request_data["circuit_source"] == "str":
+        apply_litinski_transform = (
+            request_data["apply_litinski_transform"]
+            if "apply_litinski_transform" in request_data
+            else True
+        )
 
-        slices, compilation_text = compile_str(
-            request_data['circuit'], apply_litinski_transform)
-        respnse_body = {'slices': slices, 'compilation_text': compilation_text}
+        slices, compilation_text = compile_str(request_data["circuit"], apply_litinski_transform)
+        respnse_body = {"slices": slices, "compilation_text": compilation_text}
 
         return JsonResponse(200, _SliceArrayJSONEncoder().encode(respnse_body))
     else:
-        return JsonResponse(501, "Not implemented.\n Request was:\n%s\n" % json.dumps(request_data, indent=4,
-                                                                                      sort_keys=True))
+        return JsonResponse(
+            501,
+            "Not implemented.\n Request was:\n%s\n"
+            % json.dumps(request_data, indent=4, sort_keys=True),
+        )

@@ -7,6 +7,7 @@ import lsqecc.simulation.qubit_state as qs
 if TYPE_CHECKING:
     from lsqecc.patches.patches import Lattice
 
+
 def sparse_lattice_to_array(lattice: Lattice) -> List[List[Optional[vac.VisualArrayCell]]]:
     array = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
 

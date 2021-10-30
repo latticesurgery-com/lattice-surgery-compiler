@@ -10,12 +10,12 @@ import lsqecc.simulation.qubit_state as qs
 import lsqecc.simulation.logical_patch_state_simulation as lps
 import lsqecc.simulation.qiskit_opflow_utils as qo_utils
 
+
 class LayoutType(enum.Enum):
     SimplePreDistilledStates = "Simple"
 
 
 class LayoutInitializer:
-
     def get_layout(self) -> patches.Lattice:
         raise NotImplemented()
 
@@ -23,61 +23,89 @@ class LayoutInitializer:
         raise NotImplemented()
 
     @staticmethod
-    def singleSquarePatch(cell: Tuple[int, int],
-                          patch_type: patches.PatchType = patches.PatchType.Qubit,
-                          patch_state: qs.QubitState = qs.DefaultSymbolicStates.Zero):
-        return patches.Patch(patch_type, patch_state, [cell], [
-            patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Top),
-            patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Bottom),
-            patches.Edge(patches.EdgeType.Solid, cell, patches.Orientation.Left),
-            patches.Edge(patches.EdgeType.Solid, cell, patches.Orientation.Right)
-        ])
+    def singleSquarePatch(
+        cell: Tuple[int, int],
+        patch_type: patches.PatchType = patches.PatchType.Qubit,
+        patch_state: qs.QubitState = qs.DefaultSymbolicStates.Zero,
+    ):
+        return patches.Patch(
+            patch_type,
+            patch_state,
+            [cell],
+            [
+                patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Top),
+                patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Bottom),
+                patches.Edge(patches.EdgeType.Solid, cell, patches.Orientation.Left),
+                patches.Edge(patches.EdgeType.Solid, cell, patches.Orientation.Right),
+            ],
+        )
 
     @staticmethod
-    def rotatedSingleSquarePatch(cell: Tuple[int, int],
-                                 patch_type: patches.PatchType = patches.PatchType.Qubit,
-                                 patch_state: qs.QubitState = qs.DefaultSymbolicStates.Zero):
-        return patches.Patch(patch_type, patch_state, [cell], [
-            patches.Edge(patches.EdgeType.Solid, cell, patches.Orientation.Top),
-            patches.Edge(patches.EdgeType.Solid, cell, patches.Orientation.Bottom),
-            patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Left),
-            patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Right)
-        ])
+    def rotatedSingleSquarePatch(
+        cell: Tuple[int, int],
+        patch_type: patches.PatchType = patches.PatchType.Qubit,
+        patch_state: qs.QubitState = qs.DefaultSymbolicStates.Zero,
+    ):
+        return patches.Patch(
+            patch_type,
+            patch_state,
+            [cell],
+            [
+                patches.Edge(patches.EdgeType.Solid, cell, patches.Orientation.Top),
+                patches.Edge(patches.EdgeType.Solid, cell, patches.Orientation.Bottom),
+                patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Left),
+                patches.Edge(patches.EdgeType.Dashed, cell, patches.Orientation.Right),
+            ],
+        )
 
     @staticmethod
     def simpleRightFacingDistillery(top_left_corner: Tuple[int, int]) -> List[patches.Patch]:
         # Requires
         x, y = top_left_corner
         return [
-            LayoutInitializer.singleSquarePatch((x + 2, y), patches.PatchType.DistillationQubit,
-                                                qs.DefaultSymbolicStates.Magic),
-            LayoutInitializer.singleSquarePatch((x + 3, y), patches.PatchType.DistillationQubit,
-                                                qs.DefaultSymbolicStates.Magic),
-            LayoutInitializer.singleSquarePatch((x + 4, y + 1), patches.PatchType.DistillationQubit,
-                                                qs.DefaultSymbolicStates.Plus),
-            LayoutInitializer.singleSquarePatch((x + 3, y + 2), patches.PatchType.DistillationQubit,
-                                                qs.DefaultSymbolicStates.Magic),
-            LayoutInitializer.singleSquarePatch((x + 2, y + 2), patches.PatchType.DistillationQubit,
-                                                qs.DefaultSymbolicStates.Magic),
-            patches.Patch(patches.PatchType.DistillationQubit, qs.DefaultSymbolicStates.Zero, [(x, y), (x, y + 1)],
-                          [
-                              patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Top),
-                              patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Left),
-                              patches.Edge(patches.EdgeType.Dashed, (x, y), patches.Orientation.Right),
-                              patches.Edge(patches.EdgeType.Dashed, (x, y + 1), patches.Orientation.Left),
-                              patches.Edge(patches.EdgeType.Dashed, (x, y + 1), patches.Orientation.Bottom),
-                              patches.Edge(patches.EdgeType.Solid, (x, y + 1), patches.Orientation.Right),
-                          ]),
-            patches.Patch(patches.PatchType.DistillationQubit, qs.DefaultSymbolicStates.Magic,
-                          [(x + 1, y), (x + 1, y + 1)],
-                          [
-                              patches.Edge(patches.EdgeType.Dashed, (x + 1, y), patches.Orientation.Top),
-                              patches.Edge(patches.EdgeType.Solid, (x + 1, y), patches.Orientation.Left),
-                              patches.Edge(patches.EdgeType.Dashed, (x + 1, y), patches.Orientation.Right),
-                              patches.Edge(patches.EdgeType.Solid, (x + 1, y + 1), patches.Orientation.Left),
-                              patches.Edge(patches.EdgeType.Dashed, (x + 1, y + 1), patches.Orientation.Bottom),
-                              patches.Edge(patches.EdgeType.Solid, (x + 1, y + 1), patches.Orientation.Right),
-                          ]),
+            LayoutInitializer.singleSquarePatch(
+                (x + 2, y), patches.PatchType.DistillationQubit, qs.DefaultSymbolicStates.Magic
+            ),
+            LayoutInitializer.singleSquarePatch(
+                (x + 3, y), patches.PatchType.DistillationQubit, qs.DefaultSymbolicStates.Magic
+            ),
+            LayoutInitializer.singleSquarePatch(
+                (x + 4, y + 1), patches.PatchType.DistillationQubit, qs.DefaultSymbolicStates.Plus
+            ),
+            LayoutInitializer.singleSquarePatch(
+                (x + 3, y + 2), patches.PatchType.DistillationQubit, qs.DefaultSymbolicStates.Magic
+            ),
+            LayoutInitializer.singleSquarePatch(
+                (x + 2, y + 2), patches.PatchType.DistillationQubit, qs.DefaultSymbolicStates.Magic
+            ),
+            patches.Patch(
+                patches.PatchType.DistillationQubit,
+                qs.DefaultSymbolicStates.Zero,
+                [(x, y), (x, y + 1)],
+                [
+                    patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Top),
+                    patches.Edge(patches.EdgeType.Solid, (x, y), patches.Orientation.Left),
+                    patches.Edge(patches.EdgeType.Dashed, (x, y), patches.Orientation.Right),
+                    patches.Edge(patches.EdgeType.Dashed, (x, y + 1), patches.Orientation.Left),
+                    patches.Edge(patches.EdgeType.Dashed, (x, y + 1), patches.Orientation.Bottom),
+                    patches.Edge(patches.EdgeType.Solid, (x, y + 1), patches.Orientation.Right),
+                ],
+            ),
+            patches.Patch(
+                patches.PatchType.DistillationQubit,
+                qs.DefaultSymbolicStates.Magic,
+                [(x + 1, y), (x + 1, y + 1)],
+                [
+                    patches.Edge(patches.EdgeType.Dashed, (x + 1, y), patches.Orientation.Top),
+                    patches.Edge(patches.EdgeType.Solid, (x + 1, y), patches.Orientation.Left),
+                    patches.Edge(patches.EdgeType.Dashed, (x + 1, y), patches.Orientation.Right),
+                    patches.Edge(patches.EdgeType.Solid, (x + 1, y + 1), patches.Orientation.Left),
+                    patches.Edge(
+                        patches.EdgeType.Dashed, (x + 1, y + 1), patches.Orientation.Bottom
+                    ),
+                    patches.Edge(patches.EdgeType.Solid, (x + 1, y + 1), patches.Orientation.Right),
+                ],
+            ),
         ]
 
 
@@ -87,9 +115,14 @@ class SimplePreDistilledStatesLayoutInitializer(LayoutInitializer):
     def __init__(self, num_logical_qubits: int):
         """a linear array of one spaced square patches with a distillery on one side"""
         # TODO distillery
-        self.lattice = patches.Lattice([
-            LayoutInitializer.singleSquarePatch(self.map_qubit_to_cell(j)) for j in range(num_logical_qubits)
-        ], 2, 0)
+        self.lattice = patches.Lattice(
+            [
+                LayoutInitializer.singleSquarePatch(self.map_qubit_to_cell(j))
+                for j in range(num_logical_qubits)
+            ],
+            2,
+            0,
+        )
 
     def map_qubit_to_cell(self, qubit_n: int):
         return (qubit_n * 2, 0)
@@ -99,12 +132,14 @@ class SimplePreDistilledStatesLayoutInitializer(LayoutInitializer):
 
     def addRightDistillery(self):
         self.lattice.patches.append(
-            LayoutInitializer.simpleRightFacingDistillery((self.lattice.getCols(), 0)))
+            LayoutInitializer.simpleRightFacingDistillery((self.lattice.getCols(), 0))
+        )
 
 
 class LatticeSurgeryComputation:
-
-    def __init__(self, logical_computation: llops.LogicalLatticeComputation, layout_type: LayoutType):
+    def __init__(
+        self, logical_computation: llops.LogicalLatticeComputation, layout_type: LayoutType
+    ):
         """
         Layout arguments:
             - Simple: n_logical_qubits: int
@@ -125,7 +160,9 @@ class LatticeSurgeryComputation:
         self._init_simple_magic_state_array(self.logical_computation.count_magic_states())
 
     @staticmethod
-    def make_computation_with_simulation(logical_computation: llops.LogicalLatticeComputation, layout_type: LayoutType):
+    def make_computation_with_simulation(
+        logical_computation: llops.LogicalLatticeComputation, layout_type: LayoutType
+    ):
         comp = LatticeSurgeryComputation(logical_computation, layout_type)
         sim = lps.PatchSimulator(logical_computation)
 
@@ -153,15 +190,20 @@ class LatticeSurgeryComputation:
             self.logical_qubits.append(cell)
             self.composer.lattice().getPatchOfCell(cell).set_uuid(quuid)
 
-    def _init_simple_magic_state_array(self, num_magic_states: int):  # TODO move this to layout initializer
+    def _init_simple_magic_state_array(
+        self, num_magic_states: int
+    ):  # TODO move this to layout initializer
         start_magic_state_array = self.composer.lattice().getCols()
         self.magic_state_queue: List[Tuple[int, int]] = []
         for j in range(start_magic_state_array, start_magic_state_array + num_magic_states):
             magic_state_pos = (j + 1, 0)
-            self.composer.lattice().patches.append(LayoutInitializer.rotatedSingleSquarePatch(
-                magic_state_pos,
-                patches.PatchType.DistillationQubit,
-                qs.DefaultSymbolicStates.Magic))
+            self.composer.lattice().patches.append(
+                LayoutInitializer.rotatedSingleSquarePatch(
+                    magic_state_pos,
+                    patches.PatchType.DistillationQubit,
+                    qs.DefaultSymbolicStates.Magic,
+                )
+            )
             self.magic_state_queue.append(magic_state_pos)
 
         self.composer.lattice().min_cols = self.composer.lattice().getCols()
@@ -196,7 +238,8 @@ class LatticeSurgeryComputation:
         del self.magic_state_queue[0]
 
         patch = self.composer.lattice().getPatchOfCell(cell)
-        if patch is None: raise RuntimeError("Invalid cell in magic state queue " + str(cell))
+        if patch is None:
+            raise RuntimeError("Invalid cell in magic state queue " + str(cell))
         patch.set_uuid(patch_uuid)
         return patch
 
@@ -212,10 +255,12 @@ class LatticeSurgeryComputationComposer:
     def addPatch(self, patch: patches.Patch):
         self.lattice().patches.append(patch)
 
-    def addSquareAncilla(self, patch_state: qs.QubitState, patch_uuid: Optional[uuid.UUID] = None) \
-            -> Optional[Tuple[int, int]]:
+    def addSquareAncilla(
+        self, patch_state: qs.QubitState, patch_uuid: Optional[uuid.UUID] = None
+    ) -> Optional[Tuple[int, int]]:
         cell = self.getAncillaLocation()
-        if cell is None: return None
+        if cell is None:
+            return None
         new_patch = LayoutInitializer.singleSquarePatch(cell, patches.PatchType.Qubit, patch_state)
         new_patch.set_uuid(patch_uuid)
         self.addPatch(new_patch)
@@ -238,19 +283,23 @@ class LatticeSurgeryComputationComposer:
         self.qubit_patch_slices.append(copy.deepcopy(self.lattice()))
         self.qubit_patch_slices[-1].logical_ops = []
 
-    def multiBodyMeasurePatches(self, cell_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]):
+    def multiBodyMeasurePatches(
+        self, cell_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]
+    ):
         """
         Corresponds to a lattice surgery merge followed by a split.
         """
         for v in cell_pauli_operator_map.values():
             if v not in {patches.PauliOperator.X, patches.PauliOperator.Z}:
-                raise Exception("Only X and Y operators are supported in multibody mesurement, got " + repr(v))
+                raise Exception(
+                    "Only X and Y operators are supported in multibody mesurement, got " + repr(v)
+                )
 
-        ancilla_region_routing.compute_ancilla_region_cells(self.qubit_patch_slices[-1], cell_pauli_operator_map)
+        ancilla_region_routing.compute_ancilla_region_cells(
+            self.qubit_patch_slices[-1], cell_pauli_operator_map
+        )
 
-    def applyPauliOperator(self,
-                           cell_of_patch: Tuple[int, int],
-                           operator: patches.PauliOperator):
+    def applyPauliOperator(self, cell_of_patch: Tuple[int, int], operator: patches.PauliOperator):
 
         for patch in self.lattice().patches:
             if patch.getRepresentative() == cell_of_patch and patch.state is not None:
@@ -262,7 +311,9 @@ class LatticeSurgeryComputationComposer:
                 if edge.isStiched():
                     edge.border_type = edge.border_type.unstitched_type()
                     # After measurement we are not ready to track state yet
-                    self.lattice().getPatchOfCell(edge.cell).state = qs.DefaultSymbolicStates.UnknownState
+                    self.lattice().getPatchOfCell(
+                        edge.cell
+                    ).state = qs.DefaultSymbolicStates.UnknownState
 
         is_not_ancilla = lambda patch: patch.patch_type != patches.PatchType.Ancilla
         self.qubit_patch_slices[-1].patches = list(filter(is_not_ancilla, self.lattice().patches))
@@ -270,10 +321,12 @@ class LatticeSurgeryComputationComposer:
     def clearActiveStates(self):
         # Make measured patches disappear
         def patch_stays(patch: patches.Patch) -> bool:
-            if patch.state is not None \
-                    and isinstance(patch.state, qs.ActiveState) \
-                    and patch.state.activity.activity_type == qs.ActivityType.Measurement \
-                    and self.computation.is_ancilla_location(patch.getRepresentative()):
+            if (
+                patch.state is not None
+                and isinstance(patch.state, qs.ActiveState)
+                and patch.state.activity.activity_type == qs.ActivityType.Measurement
+                and self.computation.is_ancilla_location(patch.getRepresentative())
+            ):
                 return False
             return True
 
@@ -311,15 +364,24 @@ class LatticeSurgeryComputationComposer:
             self.measurePatch(self.get_patch_representative(current_op.qubit_uuid), current_op.op)
 
         elif isinstance(current_op, llops.AncillaQubitPatchInitialization):
-            maybe_cell_location = self.addSquareAncilla(current_op.qubit_state, current_op.qubit_uuid)
-            if maybe_cell_location is None: raise Exception("Could not allocate ancilla")
+            maybe_cell_location = self.addSquareAncilla(
+                current_op.qubit_state, current_op.qubit_uuid
+            )
+            if maybe_cell_location is None:
+                raise Exception("Could not allocate ancilla")
 
         elif isinstance(current_op, llops.LogicalPauli):
-            self.applyPauliOperator(self.get_patch_representative(current_op.qubit_uuid), current_op.pauli_matrix)
+            self.applyPauliOperator(
+                self.get_patch_representative(current_op.qubit_uuid), current_op.pauli_matrix
+            )
 
         elif isinstance(current_op, llops.MultiBodyMeasurement):
             patch_pauli_operator_map = dict(
-                [(self.get_patch_representative(uuid), op) for uuid, op in current_op.patch_pauli_operator_map.items()])
+                [
+                    (self.get_patch_representative(uuid), op)
+                    for uuid, op in current_op.patch_pauli_operator_map.items()
+                ]
+            )
             self.multiBodyMeasurePatches(patch_pauli_operator_map)
 
         elif isinstance(current_op, llops.MagicStateRequest):

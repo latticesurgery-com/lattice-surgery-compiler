@@ -10,7 +10,7 @@ from fractions import Fraction
 
 if __name__ == "__main__":
 
-    c = ls.PauliRotationCircuit(2)
+    c = ls.PauliOpCircuit(2)
     ls_I = ls.PauliOperator.I
     ls_X = ls.PauliOperator.X
     ls_Y = ls.PauliOperator.Y

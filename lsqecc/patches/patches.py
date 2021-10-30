@@ -20,12 +20,14 @@ class Orientation(Enum):
 
     def get_graph_edge(edge) -> Optional[Tuple[int, int]]:
         col, row = edge.cell
-        return ({
-            Orientation.Top: ((col, row), (col, row - 1)),
-            Orientation.Bottom: ((col, row), (col, row + 1)),
-            Orientation.Left: ((col, row), (col - 1, row)),
-            Orientation.Right: ((col, row), (col + 1, row))
-        }).get(edge.orientation)
+        return (
+            {
+                Orientation.Top: ((col, row), (col, row - 1)),
+                Orientation.Bottom: ((col, row), (col, row + 1)),
+                Orientation.Left: ((col, row), (col - 1, row)),
+                Orientation.Right: ((col, row), (col + 1, row)),
+            }
+        ).get(edge.orientation)
 
 
 class EdgeType(Enum):
@@ -36,19 +38,23 @@ class EdgeType(Enum):
     AncillaJoin = "AncillaJoin"
 
     def stitched_type(self):
-        if self == EdgeType.Solid: return EdgeType.SolidStiched
-        if self == EdgeType.Dashed: return EdgeType.DashedStiched
+        if self == EdgeType.Solid:
+            return EdgeType.SolidStiched
+        if self == EdgeType.Dashed:
+            return EdgeType.DashedStiched
         return self
 
     def unstitched_type(self):
-        if self == EdgeType.SolidStiched: return EdgeType.Solid
-        if self == EdgeType.DashedStiched: return EdgeType.Dashed
+        if self == EdgeType.SolidStiched:
+            return EdgeType.Solid
+        if self == EdgeType.DashedStiched:
+            return EdgeType.Dashed
         return self
 
 
 PAULI_OPERATOR_TO_EDGE_MAP: Dict[PauliOperator, EdgeType] = {
     PauliOperator.X: EdgeType.Dashed,
-    PauliOperator.Z: EdgeType.Solid
+    PauliOperator.Z: EdgeType.Solid,
 }
 
 
@@ -66,12 +72,14 @@ class Edge:
 
     def getNeighbouringCell(self) -> Optional[Tuple[int, int]]:
         col, row = self.cell
-        return ({
-            Orientation.Top: (col, row - 1),
-            Orientation.Bottom: (col, row + 1),
-            Orientation.Left: (col - 1, row),
-            Orientation.Right: (col + 1, row)
-        }).get(self.orientation)
+        return (
+            {
+                Orientation.Top: (col, row - 1),
+                Orientation.Bottom: (col, row + 1),
+                Orientation.Left: (col - 1, row),
+                Orientation.Right: (col + 1, row),
+            }
+        ).get(self.orientation)
 
     def isStiched(self):
         return self.border_type in [EdgeType.SolidStiched, EdgeType.DashedStiched]
@@ -83,13 +91,14 @@ class CoordType(Enum):
 
 
 class Patch:
-    def __init__(self,
-                 patch_type: PatchType,
-                 state: Union[None, QubitState],
-                 cells: List[Tuple[int, int]],
-                 edges: List[Edge],
-                 qubit_uuid: Optional[uuid.UUID] = None
-                 ):
+    def __init__(
+        self,
+        patch_type: PatchType,
+        state: Union[None, QubitState],
+        cells: List[Tuple[int, int]],
+        edges: List[Edge],
+        qubit_uuid: Optional[uuid.UUID] = None,
+    ):
         self.patch_type = patch_type
         self.cells = cells
         self.edges = edges
@@ -105,7 +114,9 @@ class Patch:
         edges_between = list()
         for from_cell in self.cells:
             for edge in self.edges:
-                if edge.cell == from_cell and edge.orientation == get_border_orientation(from_cell, to_cell):
+                if edge.cell == from_cell and edge.orientation == get_border_orientation(
+                    from_cell, to_cell
+                ):
                     edges_between.append(edge)
         return edges_between
 
@@ -125,7 +136,10 @@ class Lattice:
 
     def getMaxCoord(self, coord_type: CoordType) -> int:
         all_coords = list(
-            itertools.chain.from_iterable(map(lambda patch: patch.getCoordList(coord_type), self.patches)))
+            itertools.chain.from_iterable(
+                map(lambda patch: patch.getCoordList(coord_type), self.patches)
+            )
+        )
         lower_bound = self.min_rows if coord_type == CoordType.Row else self.min_cols
 
         max_coords = max(all_coords) if len(all_coords) else 0
@@ -166,9 +180,11 @@ class Lattice:
 
 
 def get_border_orientation(subject: Tuple[int, int], neighbour: Tuple[int, int]):
-    return ({
-        (0, -1): Orientation.Top,
-        (0, +1): Orientation.Bottom,
-        (-1, 0): Orientation.Left,
-        (+1, 0): Orientation.Right
-    })[(neighbour[0] - subject[0], neighbour[1] - subject[1])]
+    return (
+        {
+            (0, -1): Orientation.Top,
+            (0, +1): Orientation.Bottom,
+            (-1, 0): Orientation.Left,
+            (+1, 0): Orientation.Right,
+        }
+    )[(neighbour[0] - subject[0], neighbour[1] - subject[1])]

@@ -1,4 +1,4 @@
-# Test case for PauliRotationCircuit.render_latex()
+# Test case for PauliOpCircuit.render_latex()
 
 from circuit import *
 from rotation import *
@@ -9,7 +9,7 @@ Z = PauliOperator.Z
 Y = PauliOperator.Y
 
 # Random example
-c = PauliRotationCircuit(4)
+c = PauliOpCircuit(4)
 c.add_pauli_block(PauliRotation.from_list([Z, I, I, I],Fraction(1,8)))
 c.add_pauli_block(PauliRotation.from_list([I, X, Z, I],Fraction(1,4)))
 c.add_pauli_block(PauliRotation.from_list([I, I, I, X],Fraction(-1,4)))

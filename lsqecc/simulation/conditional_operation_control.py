@@ -1,11 +1,11 @@
 from typing import Optional
 
 
-class HasPauliEigenvalueOutcome():
+class HasPauliEigenvalueOutcome:
     """Mixin class to be implmented by things that have a +1 or -1 outcome, like measurements of pauli products"""
 
     def get_outcome(self) -> Optional[int]:
-        if hasattr(self, 'outcome'):
+        if hasattr(self, "outcome"):
             return self.outcome
 
     def set_outcome(self, v: int):
@@ -23,7 +23,7 @@ class EvaluationCondition:
 
 
 class ConditionalOperation:
-    """ Mixin for objects representing operations conditional on outcomes. Uses instances EvaluationCondition
+    """Mixin for objects representing operations conditional on outcomes. Uses instances EvaluationCondition
     as functors to be called when checking if a condtional operation needs to execute or not"""
 
     def set_condition(self, condition: EvaluationCondition):
@@ -41,4 +41,4 @@ class ConditionalOperation:
         return self.condition.does_evaluate()
 
     def is_conditional(self):
-        return hasattr(self, 'condition') and self.condition is not None
+        return hasattr(self, "condition") and self.condition is not None

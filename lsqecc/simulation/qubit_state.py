@@ -39,12 +39,14 @@ class SymbolicState(QubitState):
         return self.name
 
     def compose_operator(self, op: PauliOperator):
-        return ActiveState(self, DefaultSymbolicStates.UnknownState, QubitActivity(op, ActivityType.Unitary))
+        return ActiveState(
+            self, DefaultSymbolicStates.UnknownState, QubitActivity(op, ActivityType.Unitary)
+        )
 
     def apply_measurement(self, basis: PauliOperator):
-        return ActiveState(self,
-                           DefaultSymbolicStates.UnknownState,
-                           QubitActivity(basis, ActivityType.Measurement))
+        return ActiveState(
+            self, DefaultSymbolicStates.UnknownState, QubitActivity(basis, ActivityType.Measurement)
+        )
 
 
 class ActiveState(QubitState):
@@ -63,7 +65,9 @@ class ActiveState(QubitState):
                 # Compact printing
                 return str(self.activity.op) + self.prev.ket_repr() + " = " + self.next.ket_repr()
             else:
-                return "{:s}({:s})\n={:s}".format(str(self.activity.op), self.prev.ket_repr(), self.next.ket_repr())
+                return "{:s}({:s})\n={:s}".format(
+                    str(self.activity.op), self.prev.ket_repr(), self.next.ket_repr()
+                )
 
 
 class EntangledState(SymbolicState):
@@ -75,14 +79,14 @@ class EntangledState(SymbolicState):
 
 
 class DefaultSymbolicStates:
-    Zero = SymbolicState('|0>')
-    One = SymbolicState('|1>')
-    Plus = SymbolicState('|+>')
-    Minus = SymbolicState('|->')
-    YPosEigenState = SymbolicState('|(Y+)>')
-    YNegEigenState = SymbolicState('|(Y-)>')
-    Magic = SymbolicState('|m>')
-    UnknownState = SymbolicState('|?>')
+    Zero = SymbolicState("|0>")
+    One = SymbolicState("|1>")
+    Plus = SymbolicState("|+>")
+    Minus = SymbolicState("|->")
+    YPosEigenState = SymbolicState("|(Y+)>")
+    YNegEigenState = SymbolicState("|(Y-)>")
+    Magic = SymbolicState("|m>")
+    UnknownState = SymbolicState("|?>")
 
     @staticmethod
     def from_amplitudes(zero_ampl: complex, one_ampl: complex) -> SymbolicState:

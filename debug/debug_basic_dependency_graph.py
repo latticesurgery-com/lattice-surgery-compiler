@@ -1,5 +1,5 @@
 from fractions import Fraction
-from lsqecc.pauli_rotations import PauliRotation, PauliRotationCircuit, PauliOperator
+from lsqecc.pauli_rotations import PauliRotation, PauliOpCircuit, PauliOperator
 from lsqecc.logical_lattice_ops import dependency_graph as dg
 
 I = PauliOperator.I
@@ -8,7 +8,7 @@ Z = PauliOperator.Z
 Y = PauliOperator.Y
 
 # Example from #71 as the base test case
-c = PauliRotationCircuit(2)
+c = PauliOpCircuit(2)
 c.add_pauli_block(PauliRotation.from_list([X, X],Fraction(1,8)))
 c.add_pauli_block(PauliRotation.from_list([Z, Z],Fraction(1,4)))
 c.add_pauli_block(PauliRotation.from_list([X, Z],Fraction(-1,4)))

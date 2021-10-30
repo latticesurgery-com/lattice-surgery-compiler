@@ -13,7 +13,7 @@ class StateSeparator:
         """
         Take a state comprised on n qubits and get the trace of the system over the subsystems
         specified by a list of indices.
-        
+
         Assumes state is separable as a DictStateFn can only represent pure states.
         """
         input_statevector = qkinfo.Statevector(state.to_matrix())
@@ -25,7 +25,7 @@ class StateSeparator:
         """
         Take a state comprised on n qubits and get the trace of the system over the subsystems
         specified by a list of indices.
-        
+
         Makes no assumption about the separability of the traced subsystems and gives a density
         matrix as a result.
         """
@@ -45,14 +45,19 @@ class StateSeparator:
         remaing_qubits = list(range(dict_state.num_qubits))
         remaing_qubits.remove(qnum)
 
-        selected_qubit_maybe_mixed_state = StateSeparator.trace_to_density_op(dict_state, remaing_qubits)
+        selected_qubit_maybe_mixed_state = StateSeparator.trace_to_density_op(
+            dict_state, remaing_qubits
+        )
 
         try:
-            selected_qubit_pure_state = selected_qubit_maybe_mixed_state.to_statevector(rtol=10 ** (-10))
+            selected_qubit_pure_state = selected_qubit_maybe_mixed_state.to_statevector(
+                rtol=10 ** (-10)
+            )
             return qk.DictStateFn(selected_qubit_pure_state.to_dict())
 
         except qkexcept.QiskitError as e:
-            if e.message != 'Density matrix is not a pure state':  raise e
+            if e.message != "Density matrix is not a pure state":
+                raise e
             return None
 
     @staticmethod
@@ -61,7 +66,7 @@ class StateSeparator:
         For each qubit, numerically detect if it's seprabale or not. If it is, add to
         the result dict, indexed by subsystem, the state traced over the remaining qubits.
 
-        I.e. if a qubit is not entangled with the rest, its state shows up in the result. 
+        I.e. if a qubit is not entangled with the rest, its state shows up in the result.
         """
         out = {}
         for i in range(dict_state.num_qubits):

@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print(qiskit_circ.qasm())
     # Here is where the circuit of pauli rotations is initialized
     # Note: There is no load_from_quasm_string function here?
-    input_circuit = ls.PauliRotationCircuit.load_from_quasm_string(qiskit_circ.qasm())
+    input_circuit = ls.PauliOpCircuit.load_from_quasm_string(qiskit_circ.qasm())
 
     # measure q[0] -> c[0];
     qiskit_circ.measure(0, crz)

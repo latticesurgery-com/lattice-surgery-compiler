@@ -1,11 +1,11 @@
-from lsqecc.patches import lattice_surgery_computation_composer as lscc 
+from lsqecc.patches import lattice_surgery_computation_composer as lscc
 from lsqecc.logical_lattice_ops import logical_lattice_ops as llops
-from lsqecc.pauli_rotations import PauliRotationCircuit, PauliOperator, PauliRotation
+from lsqecc.pauli_rotations import PauliOpCircuit, PauliOperator, PauliRotation
 from fractions import Fraction
 # from webgui import lattice_view
 
 if __name__ == "__main__":
-    c = PauliRotationCircuit(4)
+    c = PauliOpCircuit(4)
     I = PauliOperator.I
     X = PauliOperator.X
     Y = PauliOperator.Y

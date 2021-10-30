@@ -8,7 +8,7 @@ if __name__ == "__main__":
     Y = ls.PauliOperator.Y
     Z = ls.PauliOperator.Z
 
-    c = ls.PauliRotationCircuit(4)
+    c = ls.PauliOpCircuit(4)
     c.add_pauli_block(ls.PauliRotation.from_list([X, I, I, I], Fraction(1, 2)))
     c.add_pauli_block(ls.PauliRotation.from_list([I, X, I, I], Fraction(1, 2)))
     c.add_pauli_block(ls.PauliRotation.from_list([I, I, X, I], Fraction(1, 2)))

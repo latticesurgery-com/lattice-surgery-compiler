@@ -1,3 +1,2 @@
-from .circuit import PauliRotationCircuit
-from .rotation import (Measurement, PauliOperator, PauliProductOperation,
-                       PauliRotation)
+from .circuit import PauliOpCircuit
+from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation

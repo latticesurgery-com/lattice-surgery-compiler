@@ -11,7 +11,7 @@ def decompose_pi_fraction(f: Fraction):
     """
 
     # Check that f's denominator is a power of two
-    assert (f.denominator & (f.denominator - 1) == 0)
+    assert f.denominator & (f.denominator - 1) == 0
 
     # Adjust to the the (2*pi,0] range
     f = Fraction(f.numerator % (2 * f.denominator), f.denominator)
@@ -23,13 +23,15 @@ def decompose_pi_fraction(f: Fraction):
     else:
         p = int(math.log(f.numerator, 2))
         largest_pow_of_2 = int(pow(2, p))
-        return [Fraction(largest_pow_of_2, f.denominator)] \
-               + decompose_pi_fraction(Fraction(f.numerator - largest_pow_of_2, f.denominator))
+        return [Fraction(largest_pow_of_2, f.denominator)] + decompose_pi_fraction(
+            Fraction(f.numerator - largest_pow_of_2, f.denominator)
+        )
 
 
 def phase_frac_to_latex(phi: Fraction):
     """Assumes phi is multiplied by pi"""
-    if phi.numerator == 0: return "0"
+    if phi.numerator == 0:
+        return "0"
 
     sign = "" if phi.numerator > 0 else "-"
     num = "" if abs(phi.numerator) == 1 else str(abs(phi.numerator))

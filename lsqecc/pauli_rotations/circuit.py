@@ -4,17 +4,16 @@ from fractions import Fraction
 from typing import List, cast
 
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
-from .rotation import (Measurement, PauliOperator, PauliProductOperation,
-                       PauliRotation)
+from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
 
 
-class PauliRotationCircuit(object):
+class PauliOpCircuit(object):
     """
     Class for representing quantum circuit.
 
     """
 
-    def __init__(self, no_of_qubit: int, name: str = '') -> None:
+    def __init__(self, no_of_qubit: int, name: str = "") -> None:
         """
         Generating a circuit
 
@@ -27,7 +26,7 @@ class PauliRotationCircuit(object):
         self.name: str = name
 
     def __str__(self) -> str:
-        return f'PauliRotationCircuit {self.name}: {self.qubit_num} qubit(s), {len(self)} rotations(s)'
+        return f"PauliOpCircuit {self.name}: {self.qubit_num} qubit(s), {len(self)} rotations(s)"
 
     def __repr__(self) -> str:
         return str(self)
@@ -35,11 +34,10 @@ class PauliRotationCircuit(object):
     def __len__(self) -> int:
         return len(self.ops)
 
-    def copy(self) -> 'PauliRotationCircuit':
+    def copy(self) -> "PauliOpCircuit":
         return copy.deepcopy(self)
 
-    def add_pauli_block(self, new_block: PauliProductOperation,
-                        index: int = None) -> None:
+    def add_pauli_block(self, new_block: PauliProductOperation, index: int = None) -> None:
         """
         Add a rotation to the circuit
 
@@ -57,8 +55,9 @@ class PauliRotationCircuit(object):
         # print(rotation)
         self.ops.insert(index, new_block)
 
-    def add_single_operator(self, qubit: int, operator_type: PauliOperator,
-                            rotation_amount: Fraction, index: int = None) -> None:
+    def add_single_operator(
+        self, qubit: int, operator_type: PauliOperator, rotation_amount: Fraction, index: int = None
+    ) -> None:
         """
         Add a single Pauli operator (I, X, Z, Y) to the circuit.
 
@@ -76,8 +75,7 @@ class PauliRotationCircuit(object):
 
         self.add_pauli_block(new_rotation, index)
 
-    def apply_transformation(self, start_index: int = 0,
-                             remove_y_operators: bool = True) -> None:
+    def apply_transformation(self, start_index: int = 0, remove_y_operators: bool = True) -> None:
         """
         Apply Litinski's Transformation
 
@@ -87,7 +85,10 @@ class PauliRotationCircuit(object):
         # Build a stack of pi/4 rotations
 
         for i in range(start_index, len(self)):
-            if isinstance(self.ops[i], PauliRotation) and self.ops[i].rotation_amount in {Fraction(1, 4), Fraction(-1, 4)}:
+            if isinstance(self.ops[i], PauliRotation) and self.ops[i].rotation_amount in {
+                Fraction(1, 4),
+                Fraction(-1, 4),
+            }:
                 quarter_rotation.append(i)
 
         # Moving all pi/4 rotations towards the end of the circuit
@@ -114,7 +115,8 @@ class PauliRotationCircuit(object):
             pauli_block = self.ops[i]
 
             if isinstance(pauli_block, Measurement) or (
-                    pauli_block.rotation_amount in {Fraction(1, 8), Fraction(-1, 8)}):
+                pauli_block.rotation_amount in {Fraction(1, 8), Fraction(-1, 8)}
+            ):
                 y_op_indices = list()
 
                 # Find Y operators and modify them into X operators
@@ -131,13 +133,17 @@ class PauliRotationCircuit(object):
                     if len(y_op_indices) % 2 == 0:
                         first_operator = y_op_indices.pop(0)
                         self.add_single_operator(first_operator, PauliOperator.Z, Fraction(1, 4), i)
-                        self.add_single_operator(first_operator, PauliOperator.Z, Fraction(-1, 4), i + 2)
+                        self.add_single_operator(
+                            first_operator, PauliOperator.Z, Fraction(-1, 4), i + 2
+                        )
                         right_block_indices.append(i + 4)
                         i += 1
 
                     # Add 2 pi/4 rotations on each side of the Pauli block
-                    new_block = [PauliOperator.Z if i in y_op_indices else PauliOperator.I for i in
-                                 range(self.qubit_num)]
+                    new_block = [
+                        PauliOperator.Z if i in y_op_indices else PauliOperator.I
+                        for i in range(self.qubit_num)
+                    ]
                     self.add_pauli_block(PauliRotation.from_list(new_block, Fraction(1, 4)), i)
                     self.add_pauli_block(PauliRotation.from_list(new_block, Fraction(-1, 4)), i + 2)
                     right_block_indices.append(i + 2)
@@ -169,15 +175,20 @@ class PauliRotationCircuit(object):
         if next_block >= len(self.ops):
             raise Exception("No operation to commute past")
 
-        if not cast(PauliRotation, self.ops[index]).rotation_amount in {Fraction(1, 4), Fraction(-1, 4)}:
+        if not cast(PauliRotation, self.ops[index]).rotation_amount in {
+            Fraction(1, 4),
+            Fraction(-1, 4),
+        }:
             raise Exception("First operand must be +-pi/4 Pauli rotation")
 
         # Need to calculate iPP' when PP' = -P'P (anti-commute)
-        if not PauliRotationCircuit.are_commuting(self.ops[index], self.ops[next_block]):
+        if not PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
             product_of_coefficients = 1
 
             for i in range(self.qubit_num):
-                new_op = PauliOperator.multiply_operators(self.ops[index].get_op(i), self.ops[next_block].get_op(i))
+                new_op = PauliOperator.multiply_operators(
+                    self.ops[index].get_op(i), self.ops[next_block].get_op(i)
+                )
 
                 self.ops[next_block].change_single_op(i, new_op[1])
                 product_of_coefficients *= new_op[0]
@@ -190,7 +201,9 @@ class PauliRotationCircuit(object):
                     self.ops[next_block].isNegative = not self.ops[next_block].isNegative
 
             else:
-                self.ops[next_block].rotation_amount *= -1 if product_of_coefficients.real < 0 else 1
+                self.ops[next_block].rotation_amount *= (
+                    -1 if product_of_coefficients.real < 0 else 1
+                )
 
         temp = self.ops[index]
         self.ops[index] = self.ops[next_block]
@@ -227,10 +240,10 @@ class PauliRotationCircuit(object):
         for i in range(block1.qubit_num):
             ret_val *= 1 if PauliOperator.are_commuting(block1.get_op(i), block2.get_op(i)) else -1
 
-        return (ret_val > 0)
+        return ret_val > 0
 
     @staticmethod
-    def load_from_pyzx(circuit) -> 'PauliRotationCircuit':
+    def load_from_pyzx(circuit) -> "PauliOpCircuit":
         """
         Generate circuit from PyZX Circuit
 
@@ -242,7 +255,7 @@ class PauliRotationCircuit(object):
         Z = PauliOperator.Z
 
         basic_circ = circuit.to_basic_gates()
-        ret_circ = PauliRotationCircuit(basic_circ.qubits, circuit.name)
+        ret_circ = PauliOpCircuit(basic_circ.qubits, circuit.name)
 
         gate_missed = 0
 
@@ -293,25 +306,32 @@ class PauliRotationCircuit(object):
         return ret_circ
 
     @staticmethod
-    def load_reversible_from_qasm_string(quasm_string: str) -> 'PauliRotationCircuit':
+    def load_reversible_from_qasm_string(quasm_string: str) -> "PauliOpCircuit":
         """
         Load a string as if it were a QASM circuit. Only supports reversible circuits.
         """
 
         pyzx_circ = zx.Circuit.from_qasm(quasm_string)
-        ret_circ = PauliRotationCircuit.load_from_pyzx(pyzx_circ)
+        ret_circ = PauliOpCircuit.load_from_pyzx(pyzx_circ)
 
         return ret_circ
 
     @staticmethod
-    def join(lhs: 'PauliRotationCircuit', rhs: 'PauliRotationCircuit') -> 'PauliRotationCircuit':
+    def join(lhs: "PauliOpCircuit", rhs: "PauliOpCircuit") -> "PauliOpCircuit":
         assert lhs.qubit_num == rhs.qubit_num
         c = lhs.copy()
         c.ops.extend(rhs.ops)
         return c
 
     def count_rotations_by(self, rotation_amount: Fraction) -> int:
-        return len(list(filter(lambda r: isinstance(r, PauliRotation) and r.rotation_amount == rotation_amount, self.ops)))
+        return len(
+            list(
+                filter(
+                    lambda r: isinstance(r, PauliRotation) and r.rotation_amount == rotation_amount,
+                    self.ops,
+                )
+            )
+        )
 
     def render_latex(self) -> str:
         """
@@ -320,7 +340,8 @@ class PauliRotationCircuit(object):
         """
 
         from mako.template import Template
-        latex_template = Template(filename='assets\circuit_latex_render.mak')
+
+        latex_template = Template(filename="assets\circuit_latex_render.mak")
 
         operator_list = list()
         phase_list = list()
@@ -330,10 +351,10 @@ class PauliRotationCircuit(object):
 
                 # Latex format for phase label (I didnt want to do this in the template file)
             if isinstance(operation, PauliRotation):
-                operator_str = '$' + phase_frac_to_latex(operation.rotation_amount) + '$'
+                operator_str = "$" + phase_frac_to_latex(operation.rotation_amount) + "$"
 
             elif isinstance(operation, Measurement):
-                operator_str = '-M' if operation.isNegative else 'M'
+                operator_str = "-M" if operation.isNegative else "M"
 
             phase_list.append(operator_str)
 
@@ -352,20 +373,22 @@ class PauliRotationCircuit(object):
 
         cols: List[List[str]] = []
 
-        first_col = list(map(lambda n: 'q' + str(n), range(self.qubit_num))) + ["pi*"]
+        first_col = list(map(lambda n: "q" + str(n), range(self.qubit_num))) + ["pi*"]
         max_len = max(map(len, first_col))
         # Space padding
-        first_col = list(map(lambda s: ' ' * (max_len - len(s)) + s, first_col))
+        first_col = list(map(lambda s: " " * (max_len - len(s)) + s, first_col))
         cols.append(first_col)
 
         for op in self.ops:
             if isinstance(op, PauliRotation):
                 operator_str = " " if op.rotation_amount.numerator > 0 else ""
-                operator_str += str(op.rotation_amount.numerator) + "/" + str(op.rotation_amount.denominator)
+                operator_str += (
+                    str(op.rotation_amount.numerator) + "/" + str(op.rotation_amount.denominator)
+                )
             elif isinstance(op, Measurement):
-                operator_str = ' -M ' if op.isNegative else '  M '
+                operator_str = " -M " if op.isNegative else "  M "
 
-            qubit_line_separator = '-' * (len(operator_str) - 2)
+            qubit_line_separator = "-" * (len(operator_str) - 2)
 
             cols.append([qubit_line_separator] * (self.qubit_num) + [" "])
             cols.append(list(map(lambda op: "|" + op.value + "|", op.ops_list)) + [operator_str])

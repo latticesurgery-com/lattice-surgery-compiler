@@ -11,7 +11,8 @@ class PauliOperator(Enum):
     Representation of a Pauli operator inside of a rotation block
 
     """
-    _ignore_ = ['_anticommute_tbl']
+
+    _ignore_ = ["_anticommute_tbl"]
     _anticommute_tbl = {}
 
     I = "I"
@@ -26,7 +27,7 @@ class PauliOperator(Enum):
         return str(self)
 
     @staticmethod
-    def are_commuting(a: 'PauliOperator', b: 'PauliOperator') -> bool:
+    def are_commuting(a: "PauliOperator", b: "PauliOperator") -> bool:
         """
         Returns True if a and b are commute and False if anti-commute.
 
@@ -41,7 +42,7 @@ class PauliOperator(Enum):
             return True
 
     @staticmethod
-    def multiply_operators(a: 'PauliOperator', b: 'PauliOperator'):
+    def multiply_operators(a: "PauliOperator", b: "PauliOperator"):
         """
         Given 2 Pauli operators A and B, return the nearest Pauli operator as the product of A and B and
         the coefficient required for such product.
@@ -69,7 +70,7 @@ PauliOperator._anticommute_tbl = {
     (PauliOperator.Z, PauliOperator.Y): (1j, PauliOperator.X),
     (PauliOperator.Y, PauliOperator.Z): (-1j, PauliOperator.X),
     (PauliOperator.Y, PauliOperator.X): (1j, PauliOperator.Z),
-    (PauliOperator.X, PauliOperator.Y): (-1j, PauliOperator.Z)
+    (PauliOperator.X, PauliOperator.Y): (-1j, PauliOperator.Z),
 }
 
 
@@ -84,11 +85,11 @@ class PauliProductOperation(coc.ConditionalOperation):
         return str(self)
 
     def to_latex(self) -> str:
-        return_str = '(' + str(self.ops_list[0])
+        return_str = "(" + str(self.ops_list[0])
         if self.qubit_num > 1:
             for i in range(1, len(self.ops_list)):
-                return_str += ' \otimes' + ' ' + str(self.ops_list[i])
-        return_str += ')'
+                return_str += " \otimes" + " " + str(self.ops_list[i])
+        return_str += ")"
         return return_str
 
     def change_single_op(self, qubit: int, new_op: PauliOperator) -> None:
@@ -118,10 +119,16 @@ class PauliProductOperation(coc.ConditionalOperation):
         return self.ops_list[qubit]
 
     def get_ops_map(self) -> Dict[int, PauliOperator]:
-        """"
+        """ "
         Return a map of qubit_n -> operator
         """
-        return dict([(qn, self.ops_list[qn]) for qn in range(self.qubit_num) if self.ops_list[qn] != PauliOperator.I])
+        return dict(
+            [
+                (qn, self.ops_list[qn])
+                for qn in range(self.qubit_num)
+                if self.ops_list[qn] != PauliOperator.I
+            ]
+        )
 
 
 class PauliRotation(PauliProductOperation):
@@ -145,16 +152,16 @@ class PauliRotation(PauliProductOperation):
         self.ops_list: List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
 
     def __str__(self) -> str:
-        return '{}: {}'.format(self.rotation_amount, self.ops_list)
+        return "{}: {}".format(self.rotation_amount, self.ops_list)
 
     def to_latex(self) -> str:
         return_str = super().to_latex()
-        return_str += '_' + phase_frac_to_latex(self.rotation_amount)
+        return_str += "_" + phase_frac_to_latex(self.rotation_amount)
 
         return return_str
 
     @staticmethod
-    def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> 'PauliRotation':
+    def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> "PauliRotation":
         r = PauliRotation(len(pauli_ops), rotation)
         for i, op in enumerate(pauli_ops):
             r.change_single_op(i, op)
@@ -181,15 +188,15 @@ class Measurement(PauliProductOperation):
         self.ops_list: List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
 
     def __str__(self) -> str:
-        return '{}M: {}'.format('-' if self.isNegative else '', self.ops_list)
+        return "{}M: {}".format("-" if self.isNegative else "", self.ops_list)
 
     def to_latex(self) -> str:
         return_str = super().to_latex()
-        return_str += '_{-M}' if self.isNegative else '_M'
+        return_str += "_{-M}" if self.isNegative else "_M"
         return return_str
 
     @staticmethod
-    def from_list(pauli_ops: List[PauliOperator], isNegative: bool = False) -> 'Measurement':
+    def from_list(pauli_ops: List[PauliOperator], isNegative: bool = False) -> "Measurement":
         m = Measurement(len(pauli_ops), isNegative)
 
         for i, op in enumerate(pauli_ops):

@@ -6,7 +6,7 @@ X = PauliOperator.X
 Z = PauliOperator.Z
 Y = PauliOperator.Y
 
-c = PauliRotationCircuit(4)
+c = PauliOpCircuit(4)
 
 c.add_pauli_block(PauliRotation.from_list([Z, I, I, I],Fraction(1,8)))
 c.add_pauli_block(PauliRotation.from_list([I, X, Z, I],Fraction(1,4)))
