@@ -3,17 +3,17 @@ from webgui import lattice_view
 from debug.util import *
 
 if __name__ == "__main__":
-    c = Circuit(4)
+    c = PauliOpCircuit(4)
     I = PauliOperator.I
     X = PauliOperator.X
     Y = PauliOperator.Y
     Z = PauliOperator.Z
 
-    c.add_pauli_block(Rotation.from_list([X, I, I, I], Fraction(1, 2)))
-    c.add_pauli_block(Rotation.from_list([I, X, I, I], Fraction(1, 2)))
-    c.add_pauli_block(Rotation.from_list([I, I, X, I], Fraction(1, 2)))
-    c.add_pauli_block(Rotation.from_list([I, I, I, X], Fraction(1, 2)))
-    c.add_pauli_block(Rotation.from_list([Z, I, I, I], Fraction(1, 2)))
+    c.add_pauli_block(PauliRotation.from_list([X, I, I, I], Fraction(1, 2)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, I, I], Fraction(1, 2)))
+    c.add_pauli_block(PauliRotation.from_list([I, I, X, I], Fraction(1, 2)))
+    c.add_pauli_block(PauliRotation.from_list([I, I, I, X], Fraction(1, 2)))
+    c.add_pauli_block(PauliRotation.from_list([Z, I, I, I], Fraction(1, 2)))
 
     print(c.render_ascii())
 

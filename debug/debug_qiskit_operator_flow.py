@@ -10,7 +10,7 @@ from fractions import Fraction
 
 if __name__ == "__main__":
 
-    c = ls.Circuit(2)
+    c = ls.PauliOpCircuit(2)
     ls_I = ls.PauliOperator.I
     ls_X = ls.PauliOperator.X
     ls_Y = ls.PauliOperator.Y
@@ -19,9 +19,9 @@ if __name__ == "__main__":
 
 
 
-    c.add_pauli_block(ls.Rotation.from_list([ls_I, ls_X], Fraction(1, 2)))
-    c.add_pauli_block(ls.Rotation.from_list([ls_I, ls_X], Fraction(1, 2)))
-    c.add_pauli_block(ls.Rotation.from_list([ls_Z, ls_Z], Fraction(1, 4)))
+    c.add_pauli_block(ls.PauliRotation.from_list([ls_I, ls_X], Fraction(1, 2)))
+    c.add_pauli_block(ls.PauliRotation.from_list([ls_I, ls_X], Fraction(1, 2)))
+    c.add_pauli_block(ls.PauliRotation.from_list([ls_Z, ls_Z], Fraction(1, 4)))
     print(c.render_ascii())
 
     logical_circuit = ls.LogicalLatticeComputation(c)

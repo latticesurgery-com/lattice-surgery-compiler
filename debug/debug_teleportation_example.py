@@ -55,7 +55,8 @@ if __name__ == "__main__":
 
     print(qiskit_circ.qasm())
     # Here is where the circuit of pauli rotations is initialized
-    input_circuit = ls.Circuit.load_from_quasm_string(qiskit_circ.qasm())
+    # Note: There is no load_from_quasm_string function here?
+    input_circuit = ls.PauliOpCircuit.load_from_quasm_string(qiskit_circ.qasm())
 
     # measure q[0] -> c[0];
     qiskit_circ.measure(0, crz)
@@ -78,12 +79,12 @@ if __name__ == "__main__":
     # Bob's recovery of the state with the help of the classical bits
 
     qiskit_circ.x(2).c_if(crx, 1)
-    ls_cx = ls.Rotation.from_list([I, I, X], ls.Fraction(1,2))
+    ls_cx = ls.PauliRotation.from_list([I, I, X], ls.Fraction(1,2))
     ls_cx.set_condition(CondtitionOnMeasurement(m1,1))
     input_circuit.add_pauli_block(ls_cx)
 
     qiskit_circ.z(2).c_if(crz, 1)
-    ls_cz = ls.Rotation.from_list([I, I, Z], ls.Fraction(1,2))
+    ls_cz = ls.PauliRotation.from_list([I, I, Z], ls.Fraction(1,2))
     ls_cz.set_condition(CondtitionOnMeasurement(m2, 1))
     input_circuit.add_pauli_block(ls_cz)
 

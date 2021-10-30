@@ -4,8 +4,8 @@ from django.template.loader import render_to_string
 import os, sys, uuid, shutil, sys
 from typing import *
 
-import lattice_surgery_compilation_pipeline
-import patches # TODO remove the dependency on this import
+import lsqecc.pipeline.lattice_surgery_compilation_pipeline as lattice_surgery_compilation_pipeline
+import lsqecc.patches.patches as patches # TODO remove the dependency on this import
 
 
 PATH_TO_DEMO_CIRCUITS="../assets/demo_circuits"

@@ -1,23 +1,23 @@
-from circuit import *
-from rotation import *
-from dependency_graph import *
+from fractions import Fraction
+from lsqecc.pauli_rotations import PauliRotation, PauliOpCircuit, PauliOperator
+from lsqecc.logical_lattice_ops import dependency_graph as dg
 
-I = PauliOperator.I 
-X = PauliOperator.X 
-Z = PauliOperator.Z 
-Y = PauliOperator.Y  
+I = PauliOperator.I
+X = PauliOperator.X
+Z = PauliOperator.Z
+Y = PauliOperator.Y
 
 # Example from #71 as the base test case
-c = Circuit(2)
-c.add_pauli_block(Rotation.from_list([X, X],Fraction(1,8)))
-c.add_pauli_block(Rotation.from_list([Z, Z],Fraction(1,4)))
-c.add_pauli_block(Rotation.from_list([X, Z],Fraction(-1,4)))
-c.add_pauli_block(Rotation.from_list([I, X],Fraction(-1,4)))
-c.add_pauli_block(Rotation.from_list([Z, I],Fraction(-1,4)))
-c.add_pauli_block(Rotation.from_list([I, Z],Fraction(-1,4)))
+c = PauliOpCircuit(2)
+c.add_pauli_block(PauliRotation.from_list([X, X],Fraction(1,8)))
+c.add_pauli_block(PauliRotation.from_list([Z, Z],Fraction(1,4)))
+c.add_pauli_block(PauliRotation.from_list([X, Z],Fraction(-1,4)))
+c.add_pauli_block(PauliRotation.from_list([I, X],Fraction(-1,4)))
+c.add_pauli_block(PauliRotation.from_list([Z, I],Fraction(-1,4)))
+c.add_pauli_block(PauliRotation.from_list([I, Z],Fraction(-1,4)))
 
 print(c.render_ascii())
-a = DependencyGraph.from_circuit_by_commutation(c)
+a = dg.DependencyGraph.from_circuit_by_commutation(c)
 
 print("Returned terminal nodes:")
 print(a.terminal_node)
