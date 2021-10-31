@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 
-from lsqecc.logical_lattice_ops import visual_array_cell as vac
+from lsqecc.lattice_array import visual_array_cell as vac
 import lsqecc.simulation.qubit_state as qs
 
 if TYPE_CHECKING:
