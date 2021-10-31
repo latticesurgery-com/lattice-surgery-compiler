@@ -1,7 +1,7 @@
 import enum
 import json
 
-import lsqecc.logical_lattice_ops.visual_array_cell as vac
+import lsqecc.lattice_array.visual_array_cell as vac
 from .lattice_surgery_compilation_pipeline import compile_str
 
 

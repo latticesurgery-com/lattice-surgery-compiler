@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
-import lsqecc.logical_lattice_ops.visual_array_cell as vac
+import lsqecc.lattice_array.visual_array_cell as vac
 import lsqecc.patches.lattice_surgery_computation_composer as lscc
 import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 import qiskit.visualization as qkvis

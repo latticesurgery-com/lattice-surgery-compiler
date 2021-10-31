@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Dict, Optional
 
 if TYPE_CHECKING:
     from lsqecc.patches.patches import EdgeType, Orientation, PatchType
-    from simulation.qubit_state import QubitActivity
+    from lsqecc.simulation.qubit_state import QubitActivity
 
 
 class VisualArrayCell:
