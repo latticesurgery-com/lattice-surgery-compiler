@@ -1,6 +1,6 @@
 from enum import Enum
 from fractions import Fraction
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
 from lsqecc.utils import phase_frac_to_latex
@@ -13,7 +13,9 @@ class PauliOperator(Enum):
     """
 
     _ignore_ = ["_anticommute_tbl"]
-    _anticommute_tbl = {}
+    _anticommute_tbl: Dict[
+        Tuple["PauliOperator", "PauliOperator"], Tuple[complex, "PauliOperator"]
+    ] = {}
 
     I = "I"
     X = "X"
@@ -75,8 +77,8 @@ PauliOperator._anticommute_tbl = {
 
 
 class PauliProductOperation(coc.ConditionalOperation):
-    qubit_num: int = None
-    ops_list: List[PauliOperator] = None
+    qubit_num: int
+    ops_list: List[PauliOperator]
 
     def __str__(self) -> str:
         pass

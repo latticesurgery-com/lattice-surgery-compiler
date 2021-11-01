@@ -7,6 +7,8 @@ class HasPauliEigenvalueOutcome:
     def get_outcome(self) -> Optional[int]:
         if hasattr(self, "outcome"):
             return self.outcome
+        else:
+            return None
 
     def set_outcome(self, v: int):
         if v not in {-1, 1}:
@@ -29,9 +31,11 @@ class ConditionalOperation:
     def set_condition(self, condition: EvaluationCondition):
         self.condition = condition
 
-    def get_condition(self) -> EvaluationCondition:
+    def get_condition(self) -> Optional[EvaluationCondition]:
         if self.is_conditional():
             return self.condition
+        else:
+            return None
 
     def does_evaluate(self) -> bool:
         """Note: Operations conditioned on outcomes that diddn't execute also won't execute"""

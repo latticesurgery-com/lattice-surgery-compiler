@@ -1,7 +1,7 @@
 import copy
 import pyzx as zx
 from fractions import Fraction
-from typing import List, cast
+from typing import List, cast, Type
 
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
@@ -89,11 +89,13 @@ class PauliOpCircuit(object):
         # Build a stack of pi/4 rotations
 
         for i in range(start_index, len(self)):
-            if isinstance(self.ops[i], PauliRotation) and self.ops[i].rotation_amount in {
-                Fraction(1, 4),
-                Fraction(-1, 4),
-            }:
-                quarter_rotation.append(i)
+            if isinstance(self.ops[i], PauliRotation):
+                temp = cast(PauliRotation, self.ops[i])
+                if temp.rotation_amount in {
+                    Fraction(1, 4),
+                    Fraction(-1, 4),
+                }:
+                    quarter_rotation.append(i)
 
         # Moving all pi/4 rotations towards the end of the circuit
         # and removing them afterwards
@@ -186,7 +188,7 @@ class PauliOpCircuit(object):
 
         # Need to calculate iPP' when PP' = -P'P (anti-commute)
         if not PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
-            product_of_coefficients = 1
+            product_of_coefficients = complex(1)
 
             for i in range(self.qubit_num):
                 new_op = PauliOperator.multiply_operators(
@@ -359,8 +361,8 @@ class PauliOpCircuit(object):
 
         latex_template = Template(filename="assets\circuit_latex_render.mak")
 
-        operator_list = list()
-        phase_list = list()
+        operator_list: List[str] = list()
+        phase_list: List[str] = list()
         for operation in self.ops:
             for operator in operation.ops_list:
                 operator_list += str(operator)
