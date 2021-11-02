@@ -28,7 +28,7 @@ class ConditionalOperation:
     """Mixin for objects representing operations conditional on outcomes. Uses instances EvaluationCondition
     as functors to be called when checking if a condtional operation needs to execute or not"""
 
-    def set_condition(self, condition: EvaluationCondition):
+    def set_condition(self, condition: Optional[EvaluationCondition]):
         self.condition = condition
 
     def get_condition(self) -> Optional[EvaluationCondition]:
@@ -38,7 +38,7 @@ class ConditionalOperation:
             return None
 
     def does_evaluate(self) -> bool:
-        """Note: Operations conditioned on outcomes that diddn't execute also won't execute"""
+        """Note: Operations conditioned on outcomes that didn't execute also won't execute"""
         if not self.is_conditional():
             return True
 

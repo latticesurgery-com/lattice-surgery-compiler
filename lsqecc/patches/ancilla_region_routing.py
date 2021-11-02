@@ -107,7 +107,7 @@ def add_directed_edges(
 
 
 def add_ancilla_region_to_lattice_from_paths(
-    lattice: patches, paths: List[List[Tuple[int, int]]]  # Lists of cells
+    lattice: patches.Lattice, paths: List[List[Tuple[int, int]]]  # Lists of cells
 ) -> None:
     for path in paths:
 

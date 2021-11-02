@@ -18,7 +18,8 @@ class Orientation(Enum):
     Left = "Left"
     Right = "Right"
 
-    def get_graph_edge(edge) -> Optional[Tuple[int, int]]:
+    @staticmethod
+    def get_graph_edge(edge: Edge) -> Optional[Tuple[int, int]]:
         col, row = edge.cell
         return (
             {
