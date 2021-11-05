@@ -85,7 +85,7 @@ class PauliOpCircuit(object):
 
         """
         quarter_rotation = list()
-
+        circuit_has_measurements = self.circuit_has_measurements()
         # Build a stack of pi/4 rotations
 
         for i in range(start_index, len(self)):
@@ -102,7 +102,7 @@ class PauliOpCircuit(object):
             while index + 1 < len(self):
                 self.commute_pi_over_four_rotation(index)
                 index += 1
-            if self.circuit_has_measurements():
+            if circuit_has_measurements:
                 self.ops.pop()
 
     def remove_y_operators_from_circuit(self, start_index: int = 0) -> None:
@@ -112,7 +112,7 @@ class PauliOpCircuit(object):
 
         """
         i = start_index
-
+        circuit_has_measurements = self.circuit_has_measurements()
         while i < len(self.ops):
             pauli_block = self.ops[i]
             if isinstance(pauli_block, Measurement) or (
@@ -155,7 +155,7 @@ class PauliOpCircuit(object):
                         while right_block_index + 1 < len(self.ops):
                             self.commute_pi_over_four_rotation(right_block_index)
                             right_block_index += 1
-                        if self.circuit_has_measurements():
+                        if circuit_has_measurements():
                             self.ops.pop()
             else:
                 # This is assuming pi/4 rotations (not including ones from this operation)
