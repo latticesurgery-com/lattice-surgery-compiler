@@ -56,7 +56,11 @@ class PauliOpCircuit(object):
         self.ops.insert(index, new_block)
 
     def add_single_operator(
-        self, qubit: int, operator_type: PauliOperator, rotation_amount: Fraction, index: int = None
+        self,
+        qubit: int,
+        operator_type: PauliOperator,
+        rotation_amount: Fraction,
+        index: int = None,
     ) -> None:
         """
         Add a single Pauli operator (I, X, Z, Y) to the circuit.
@@ -75,13 +79,13 @@ class PauliOpCircuit(object):
 
         self.add_pauli_block(new_rotation, index)
 
-    def apply_transformation(self, start_index: int = 0, remove_y_operators: bool = True) -> None:
+    def apply_transformation(self, start_index: int = 0) -> None:
         """
         Apply Litinski's Transformation
 
         """
         quarter_rotation = list()
-
+        circuit_has_measurements: bool = self.circuit_has_measurements()
         # Build a stack of pi/4 rotations
 
         for i in range(start_index, len(self)):
@@ -98,10 +102,8 @@ class PauliOpCircuit(object):
             while index + 1 < len(self):
                 self.commute_pi_over_four_rotation(index)
                 index += 1
-            self.ops.pop()
-
-        if remove_y_operators:
-            self.remove_y_operators_from_circuit()
+            if circuit_has_measurements:
+                self.ops.pop()
 
     def remove_y_operators_from_circuit(self, start_index: int = 0) -> None:
         """
@@ -110,10 +112,10 @@ class PauliOpCircuit(object):
 
         """
         i = start_index
+        circuit_has_measurements: bool = self.circuit_has_measurements()
 
         while i < len(self.ops):
             pauli_block = self.ops[i]
-
             if isinstance(pauli_block, Measurement) or (
                 pauli_block.rotation_amount in {Fraction(1, 8), Fraction(-1, 8)}
             ):
@@ -154,7 +156,8 @@ class PauliOpCircuit(object):
                         while right_block_index + 1 < len(self.ops):
                             self.commute_pi_over_four_rotation(right_block_index)
                             right_block_index += 1
-                        self.ops.pop()
+                        if circuit_has_measurements:
+                            self.ops.pop()
             else:
                 # This is assuming pi/4 rotations (not including ones from this operation)
                 # have been commuted to the end of the circuit.
@@ -209,6 +212,19 @@ class PauliOpCircuit(object):
         self.ops[index] = self.ops[next_block]
         self.ops[next_block] = temp
         # print(self.render_ascii())
+
+    def circuit_has_measurements(self) -> bool:
+        """
+        Check if circuit has any Measurement blocks.
+
+        Returns:
+            bool: True if measurements block are present, False if not present
+        """
+
+        for block in self.ops:
+            if isinstance(block, Measurement):
+                return True
+        return False
 
     @staticmethod
     def are_commuting(block1: PauliProductOperation, block2: PauliProductOperation) -> bool:
