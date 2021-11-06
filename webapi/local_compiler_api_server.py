@@ -1,4 +1,4 @@
-import lsqecc.pipeline.json_pipeline as json_pipeline
+from lsqecc.pipeline import json_pipeline
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import http.client

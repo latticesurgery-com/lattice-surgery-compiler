@@ -118,7 +118,7 @@ class DefaultSymbolicStates:
             if close(one_ampl, cmath.sqrt(2) / 2 * cmath.exp(1j * cmath.pi / 4)):
                 return DefaultSymbolicStates.Magic
 
-        return SymbolicState("{:.2f}|0>\n{:+.2f}|1>".format(zero_ampl, one_ampl))
+        return SymbolicState("{:.2f}|0>\n{:+.2f}|1>".format(zero_ampl.real, one_ampl.real))
 
     @staticmethod
     def get_amplitudes(s: SymbolicState) -> Tuple[complex, complex]:
@@ -137,3 +137,4 @@ class DefaultSymbolicStates:
             return cmath.sqrt(2) / 2, -cmath.sqrt(2) / 2 * 1j
         elif s == DefaultSymbolicStates.Magic:
             return cmath.sqrt(2) / 2, cmath.exp(1j * cmath.pi / 4) / cmath.sqrt(2)
+        raise NotImplementedError

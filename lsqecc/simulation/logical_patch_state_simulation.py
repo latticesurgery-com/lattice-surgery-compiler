@@ -1,7 +1,7 @@
 import math
 import random
 import uuid
-from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
+from typing import Dict, Iterable, List, Optional, Tuple, TypeVar, Set
 
 import qiskit
 import qiskit.aqua.operators as qk
@@ -72,7 +72,7 @@ class ProjectiveMeasurement:
     @staticmethod
     def pauli_product_measurement_distribution(
         pauli_observable: qk.OperatorBase, state: qk.OperatorBase
-    ) -> Iterable[Tuple[BinaryMeasurementOutcome, float]]:
+    ) -> List[Tuple[BinaryMeasurementOutcome, float]]:
         p_plus, p_minus = ProjectiveMeasurement.get_projectors_from_pauli_observable(
             pauli_observable
         )
@@ -117,6 +117,7 @@ class PatchToQubitMapper:
         for quiid, idx in self.patch_location_to_logical_idx.items():
             if idx == target_idx:
                 return quiid
+        raise Exception(f"Patch with idx {target_idx} not found")
 
     def enumerate_patches_by_index(self) -> Iterable[Tuple[int, uuid.UUID]]:
         for idx in range(self.max_num_patches()):
@@ -126,7 +127,7 @@ class PatchToQubitMapper:
     def _get_all_operating_patches(
         logical_computation: llops.LogicalLatticeComputation,
     ) -> List[uuid.UUID]:
-        patch_set = set()
+        patch_set: Set[uuid.UUID] = set()
         patch_set.update(logical_computation.logical_qubit_uuid_map.values())
 
         for op in logical_computation.ops:
@@ -193,7 +194,7 @@ class PatchSimulator:
             distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(
                 global_observable, self.logical_state
             )
-            outcome = proportional_choice(distribution)
+            outcome: ProjectiveMeasurement.BinaryMeasurementOutcome = proportional_choice(distribution)
             self.logical_state = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
 

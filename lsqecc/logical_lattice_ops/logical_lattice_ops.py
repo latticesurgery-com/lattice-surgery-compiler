@@ -1,7 +1,7 @@
 import uuid
 from collections import deque
 from fractions import Fraction
-from typing import Deque, Dict, List, Optional, Union
+from typing import Deque, Dict, List, Optional, Union, Sequence
 
 from lsqecc.pauli_rotations import (
     Measurement,
@@ -20,7 +20,7 @@ import lsqecc.simulation.conditional_operation_control as coc
 
 class LogicalLatticeOperation(coc.ConditionalOperation):
     def get_operating_patches(self) -> List[uuid.UUID]:
-        raise NotImplemented()
+        raise NotImplementedError
 
 
 class SinglePatchMeasurement(LogicalLatticeOperation, coc.HasPauliEigenvalueOutcome):
@@ -69,7 +69,7 @@ class MagicStateRequest(LogicalLatticeOperation):
 class LogicalLatticeComputation:
     def __init__(self, circuit: PauliOpCircuit):
         self.circuit = circuit
-        self.logical_qubit_uuid_map = dict([(j, uuid.uuid4()) for j in range(circuit.qubit_num)])
+        self.logical_qubit_uuid_map: Dict[int,uuid.UUID] = dict([(j, uuid.uuid4()) for j in range(circuit.qubit_num)])
         self.ops: List[LogicalLatticeOperation] = []
 
         self._load_circuit()
@@ -126,7 +126,7 @@ class RotationsComposer:
     def __init__(self, computation: LogicalLatticeComputation):
         self.computation = computation
 
-    def expand_rotation(self, r: PauliRotation) -> List[LogicalLatticeOperation]:
+    def expand_rotation(self, r: PauliRotation) -> Sequence[Union[LogicalLatticeOperation, PauliProductOperation]]:
         if r.rotation_amount == Fraction(1, 2):
             return self.pi_over_two(r.get_ops_map(), r.get_condition())
         elif r.rotation_amount == Fraction(1, 4):
@@ -145,7 +145,7 @@ class RotationsComposer:
 
     def pi_over_two(
         self, ops_map: Dict[int, PauliOperator], condition: Optional[coc.EvaluationCondition]
-    ) -> List[LogicalLatticeOperation]:
+    ) -> Sequence[LogicalLatticeOperation]:
         paulis = []
         for qubit_id, op in ops_map.items():
             logical_pauli = LogicalPauli(self.computation.logical_qubit_uuid_map[qubit_id], op)
@@ -158,7 +158,7 @@ class RotationsComposer:
         ops_map: Dict[int, PauliOperator],
         invert_correction: bool,
         condition: Optional[coc.EvaluationCondition],
-    ) -> List[LogicalLatticeOperation]:
+    ) -> Sequence[Union[LogicalLatticeOperation, PauliProductOperation]]:
         """See Figure 11 of Litinski's GoSC"""
         ancilla_uuid = uuid.uuid4()
         ancilla_initialization = AncillaQubitPatchInitialization(
@@ -197,7 +197,7 @@ class RotationsComposer:
         ops_map: Dict[int, PauliOperator],
         invert_correction: bool,
         condition: Optional[coc.EvaluationCondition],
-    ) -> List[LogicalLatticeOperation]:
+    ) -> Sequence[Union[LogicalLatticeOperation, PauliProductOperation]]:
         """Returns the correction terms. See Figure 11 of Litinski's GoSC"""
         magic_state_uuid = uuid.uuid4()
 

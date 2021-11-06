@@ -22,9 +22,15 @@ def get_pauli_op_listing(
     lattice: patches.Lattice,
     patch_pauli_operator_map: Dict[Tuple[int, int], PauliOperator],
 ):
+    def get_patch_of_cell_from_patch(cell: Tuple[int,int]):
+        patch = lattice.getPatchOfCell(cell)
+        assert patch is not None
+        return patch
+
+
     # TODO check overlapping with representative and document
     l = list(
-        filter(lambda cell: cell in patch_pauli_operator_map, lattice.getPatchOfCell(cell).cells)
+        filter(lambda cell: cell in patch_pauli_operator_map, get_patch_of_cell_from_patch(cell).cells)
     )
 
     if len(l) == 0:
@@ -118,11 +124,13 @@ def add_ancilla_region_to_lattice_from_paths(
             path = path[:-1]
 
         source_patch = lattice.getPatchOfCell(path[0])
+        assert source_patch is not None
         for edge in source_patch.edges:
             if edge.getNeighbouringCell() == path[1]:
                 edge.border_type = edge.border_type.stitched_type()
 
         target_patch = lattice.getPatchOfCell(path[-1])
+        assert target_patch is not None
         for edge in target_patch.edges:
             if edge.getNeighbouringCell() == path[-2]:
                 edge.border_type = edge.border_type.stitched_type()
@@ -134,8 +142,9 @@ def add_ancilla_region_to_lattice_from_paths(
                         patches.Patch(patches.PatchType.Ancilla, None, [curr_cell], [])
                     )
 
-                if lattice.getPatchOfCell(curr_cell).patch_type == patches.PatchType.Ancilla:
-                    curr_patch = lattice.getPatchOfCell(curr_cell)
+                curr_patch = lattice.getPatchOfCell(curr_cell)
+                assert curr_patch is not None
+                if curr_patch.patch_type == patches.PatchType.Ancilla:
                     curr_patch.edges.append(
                         patches.Edge(
                             patches.EdgeType.AncillaJoin,
@@ -144,6 +153,7 @@ def add_ancilla_region_to_lattice_from_paths(
                         )
                     )
                     curr_patch = lattice.getPatchOfCell(curr_cell)
+                    assert curr_patch is not None
                     curr_patch.edges.append(
                         patches.Edge(
                             patches.EdgeType.AncillaJoin,
