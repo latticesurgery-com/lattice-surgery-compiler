@@ -22,15 +22,16 @@ def get_pauli_op_listing(
     lattice: patches.Lattice,
     patch_pauli_operator_map: Dict[Tuple[int, int], PauliOperator],
 ):
-    def get_patch_of_cell_from_patch(cell: Tuple[int,int]):
+    def get_patch_of_cell_from_patch(cell: Tuple[int, int]):
         patch = lattice.getPatchOfCell(cell)
         assert patch is not None
         return patch
 
-
     # TODO check overlapping with representative and document
     l = list(
-        filter(lambda cell: cell in patch_pauli_operator_map, get_patch_of_cell_from_patch(cell).cells)
+        filter(
+            lambda cell: cell in patch_pauli_operator_map, get_patch_of_cell_from_patch(cell).cells
+        )
     )
 
     if len(l) == 0:

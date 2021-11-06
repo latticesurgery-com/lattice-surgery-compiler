@@ -69,7 +69,9 @@ class MagicStateRequest(LogicalLatticeOperation):
 class LogicalLatticeComputation:
     def __init__(self, circuit: PauliOpCircuit):
         self.circuit = circuit
-        self.logical_qubit_uuid_map: Dict[int,uuid.UUID] = dict([(j, uuid.uuid4()) for j in range(circuit.qubit_num)])
+        self.logical_qubit_uuid_map: Dict[int, uuid.UUID] = dict(
+            [(j, uuid.uuid4()) for j in range(circuit.qubit_num)]
+        )
         self.ops: List[LogicalLatticeOperation] = []
 
         self._load_circuit()
@@ -126,7 +128,9 @@ class RotationsComposer:
     def __init__(self, computation: LogicalLatticeComputation):
         self.computation = computation
 
-    def expand_rotation(self, r: PauliRotation) -> Sequence[Union[LogicalLatticeOperation, PauliProductOperation]]:
+    def expand_rotation(
+        self, r: PauliRotation
+    ) -> Sequence[Union[LogicalLatticeOperation, PauliProductOperation]]:
         if r.rotation_amount == Fraction(1, 2):
             return self.pi_over_two(r.get_ops_map(), r.get_condition())
         elif r.rotation_amount == Fraction(1, 4):

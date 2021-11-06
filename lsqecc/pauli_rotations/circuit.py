@@ -119,7 +119,8 @@ class PauliOpCircuit(object):
         while i < len(self.ops):
             pauli_block = self.ops[i]
             if isinstance(pauli_block, Measurement) or (
-                cast(PauliRotation,pauli_block).rotation_amount in {Fraction(1, 8), Fraction(-1, 8)}
+                cast(PauliRotation, pauli_block).rotation_amount
+                in {Fraction(1, 8), Fraction(-1, 8)}
             ):
                 y_op_indices = list()
 
@@ -203,11 +204,11 @@ class PauliOpCircuit(object):
             product_of_coefficients /= 1j
             if isinstance(self.ops[next_block], Measurement):
                 if product_of_coefficients.real < 0:
-                    measurement = cast(Measurement,self.ops[next_block])
+                    measurement = cast(Measurement, self.ops[next_block])
                     measurement.isNegative = not measurement.isNegative
 
             else:
-                cast(PauliRotation,self.ops[next_block]).rotation_amount *= (
+                cast(PauliRotation, self.ops[next_block]).rotation_amount *= (
                     -1 if product_of_coefficients.real < 0 else 1
                 )
 

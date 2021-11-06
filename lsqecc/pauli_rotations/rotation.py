@@ -6,7 +6,6 @@ import lsqecc.simulation.conditional_operation_control as coc
 from lsqecc.utils import phase_frac_to_latex
 
 
-
 class PauliOperator(Enum):
     """
     Representation of a Pauli operator inside of a rotation block
@@ -62,10 +61,9 @@ class PauliOperator(Enum):
             return (1, b if a == PauliOperator.I else a)
 
 
-
-_PauliOperator_anticommute_tbl : Dict[
-        Tuple["PauliOperator", "PauliOperator"], Tuple[complex, "PauliOperator"]
-    ] = {
+_PauliOperator_anticommute_tbl: Dict[
+    Tuple["PauliOperator", "PauliOperator"], Tuple[complex, "PauliOperator"]
+] = {
     (PauliOperator.Z, PauliOperator.X): (1j, PauliOperator.Y),
     (PauliOperator.X, PauliOperator.Z): (-1j, PauliOperator.Y),
     (PauliOperator.Z, PauliOperator.Y): (1j, PauliOperator.X),

@@ -9,8 +9,9 @@ if TYPE_CHECKING:
 
 
 def sparse_lattice_to_array(lattice: Lattice) -> List[List[Optional[vac.VisualArrayCell]]]:
-    array: List[List[Optional[vac.VisualArrayCell]]]\
-        = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
+    array: List[List[Optional[vac.VisualArrayCell]]] = [
+        [None for col in range(lattice.getCols())] for row in range(lattice.getRows())
+    ]
 
     for patch in lattice.patches:
         for cell_idx_in_patch, (x, y) in enumerate(patch.cells):
@@ -25,7 +26,7 @@ def sparse_lattice_to_array(lattice: Lattice) -> List[List[Optional[vac.VisualAr
 
         for edge in patch.edges:
             cell_bounded_by_edge = array[edge.cell[1]][edge.cell[0]]
-            assert cell_bounded_by_edge is not None # Because it would have been set above
+            assert cell_bounded_by_edge is not None  # Because it would have been set above
             cell_bounded_by_edge.edges[edge.orientation] = edge.border_type
 
     return array

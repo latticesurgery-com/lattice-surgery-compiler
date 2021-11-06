@@ -194,7 +194,9 @@ class PatchSimulator:
             distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(
                 global_observable, self.logical_state
             )
-            outcome: ProjectiveMeasurement.BinaryMeasurementOutcome = proportional_choice(distribution)
+            outcome: ProjectiveMeasurement.BinaryMeasurementOutcome = proportional_choice(
+                distribution
+            )
             self.logical_state = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
 

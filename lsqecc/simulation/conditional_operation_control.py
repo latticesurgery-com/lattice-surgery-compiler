@@ -41,7 +41,7 @@ class ConditionalOperation:
         """Note: Operations conditioned on outcomes that didn't execute also won't execute"""
         if not self.is_conditional():
             return True
-        assert self.condition is not None;
+        assert self.condition is not None
         return self.condition.does_evaluate()
 
     def is_conditional(self):
