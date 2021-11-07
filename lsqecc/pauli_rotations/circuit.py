@@ -1,7 +1,7 @@
 import copy
 import pyzx as zx
 from fractions import Fraction
-from typing import List, cast, Type
+from typing import List, cast
 
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
@@ -90,8 +90,7 @@ class PauliOpCircuit(object):
 
         for i in range(start_index, len(self)):
             if isinstance(self.ops[i], PauliRotation):
-                temp = cast(PauliRotation, self.ops[i])
-                if temp.rotation_amount in {
+                if cast(PauliRotation, self.ops[i]).rotation_amount in {
                     Fraction(1, 4),
                     Fraction(-1, 4),
                 }:
