@@ -1,5 +1,5 @@
 import copy
-from lsqecc.pauli_rotations import PauliOpCircuit
+from lsqecc.pauli_rotations import PauliOpCircuit, PauliProductOperation
 from typing import List, TypeVar
 
 T = TypeVar("T")
@@ -42,7 +42,7 @@ class DependencyGraph:
         return DependencyGraph.from_list(circuit.ops, func)
 
     @staticmethod
-    def from_list(input_list: list(), comparing_function) -> "DependencyGraph":
+    def from_list(input_list: List[PauliProductOperation], comparing_function) -> "DependencyGraph":
         """
         Build a DependencyGraph from a list.
 

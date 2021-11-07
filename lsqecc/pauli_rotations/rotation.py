@@ -1,6 +1,6 @@
 from enum import Enum
 from fractions import Fraction
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
 from lsqecc.utils import phase_frac_to_latex
@@ -11,9 +11,6 @@ class PauliOperator(Enum):
     Representation of a Pauli operator inside of a rotation block
 
     """
-
-    _ignore_ = ["_anticommute_tbl"]
-    _anticommute_tbl = {}
 
     I = "I"
     X = "X"
@@ -35,7 +32,7 @@ class PauliOperator(Enum):
         if not isinstance(a, PauliOperator) or not isinstance(b, PauliOperator):
             raise Exception("Only supports PauliOperator")
 
-        if (a, b) in PauliOperator._anticommute_tbl:
+        if (a, b) in _PauliOperator_anticommute_tbl:
             return False
 
         else:
@@ -54,8 +51,8 @@ class PauliOperator(Enum):
         if not isinstance(a, PauliOperator) or not isinstance(b, PauliOperator):
             raise Exception("Only supports PauliOperator")
 
-        if (a, b) in PauliOperator._anticommute_tbl:
-            return PauliOperator._anticommute_tbl[(a, b)]
+        if (a, b) in _PauliOperator_anticommute_tbl:
+            return _PauliOperator_anticommute_tbl[(a, b)]
 
         if a == b:
             return (1, PauliOperator.I)
@@ -64,7 +61,9 @@ class PauliOperator(Enum):
             return (1, b if a == PauliOperator.I else a)
 
 
-PauliOperator._anticommute_tbl = {
+_PauliOperator_anticommute_tbl: Dict[
+    Tuple["PauliOperator", "PauliOperator"], Tuple[complex, "PauliOperator"]
+] = {
     (PauliOperator.Z, PauliOperator.X): (1j, PauliOperator.Y),
     (PauliOperator.X, PauliOperator.Z): (-1j, PauliOperator.Y),
     (PauliOperator.Z, PauliOperator.Y): (1j, PauliOperator.X),
@@ -75,8 +74,8 @@ PauliOperator._anticommute_tbl = {
 
 
 class PauliProductOperation(coc.ConditionalOperation):
-    qubit_num: int = None
-    ops_list: List[PauliOperator] = None
+    qubit_num: int
+    ops_list: List[PauliOperator]
 
     def __str__(self) -> str:
         pass

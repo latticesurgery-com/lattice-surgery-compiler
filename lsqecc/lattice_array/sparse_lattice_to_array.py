@@ -9,18 +9,24 @@ if TYPE_CHECKING:
 
 
 def sparse_lattice_to_array(lattice: Lattice) -> List[List[Optional[vac.VisualArrayCell]]]:
-    array = [[None for col in range(lattice.getCols())] for row in range(lattice.getRows())]
+    array: List[List[Optional[vac.VisualArrayCell]]] = [
+        [None for col in range(lattice.getCols())] for row in range(lattice.getRows())
+    ]
 
     for patch in lattice.patches:
         for cell_idx_in_patch, (x, y) in enumerate(patch.cells):
-            array[y][x] = vac.VisualArrayCell(patch.patch_type, {})
+            new_cell = vac.VisualArrayCell(patch.patch_type, {})
+
             if patch.state is not None:
                 if cell_idx_in_patch == 0:  # Only display the value in the first cell of the patch
-                    array[y][x].text = patch.state.ket_repr()
+                    new_cell.text = patch.state.ket_repr()
                     if isinstance(patch.state, qs.ActiveState):
-                        array[y][x].activity = patch.state.activity
+                        new_cell.activity = patch.state.activity
+            array[y][x] = new_cell
 
         for edge in patch.edges:
-            array[edge.cell[1]][edge.cell[0]].edges[edge.orientation] = edge.border_type
+            cell_bounded_by_edge = array[edge.cell[1]][edge.cell[0]]
+            assert cell_bounded_by_edge is not None  # Because it would have been set above
+            cell_bounded_by_edge.edges[edge.orientation] = edge.border_type
 
     return array

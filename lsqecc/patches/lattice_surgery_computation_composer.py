@@ -17,10 +17,10 @@ class LayoutType(enum.Enum):
 
 class LayoutInitializer:
     def get_layout(self) -> patches.Lattice:
-        raise NotImplemented()
+        raise NotImplementedError
 
     def map_qubit_to_cell(self, qubit_n: int):
-        raise NotImplemented()
+        raise NotImplementedError
 
     @staticmethod
     def singleSquarePatch(
@@ -147,7 +147,7 @@ class LatticeSurgeryComputation:
         self.logical_computation = logical_computation
 
         if layout_type != LayoutType.SimplePreDistilledStates:
-            raise NotImplemented("Layout Type not supported: " + layout_type.value)
+            raise NotImplementedError("Layout Type not supported: " + layout_type.value)
 
         self.num_qubits = logical_computation.num_logical_qubits()
 
@@ -277,6 +277,7 @@ class LatticeSurgeryComputationComposer:
             raise Exception("Can't measure with basis matrix " + basis_matrix.value + " yet")
         for patch in self.qubit_patch_slices[-1].patches:
             if patch.getRepresentative() == cell_of_patch:
+                assert patch.state is not None
                 patch.state = patch.state.apply_measurement(basis_matrix)
 
     def newTimeSlice(self):

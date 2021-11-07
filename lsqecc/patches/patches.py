@@ -18,7 +18,8 @@ class Orientation(Enum):
     Left = "Left"
     Right = "Right"
 
-    def get_graph_edge(edge) -> Optional[Tuple[int, int]]:
+    @staticmethod
+    def get_graph_edge(edge: Edge) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
         col, row = edge.cell
         return (
             {
@@ -94,7 +95,7 @@ class Patch:
     def __init__(
         self,
         patch_type: PatchType,
-        state: Union[None, QubitState],
+        state: Optional[QubitState],
         cells: List[Tuple[int, int]],
         edges: List[Edge],
         qubit_uuid: Optional[uuid.UUID] = None,

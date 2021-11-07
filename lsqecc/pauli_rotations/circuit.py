@@ -89,11 +89,12 @@ class PauliOpCircuit(object):
         # Build a stack of pi/4 rotations
 
         for i in range(start_index, len(self)):
-            if isinstance(self.ops[i], PauliRotation) and self.ops[i].rotation_amount in {
-                Fraction(1, 4),
-                Fraction(-1, 4),
-            }:
-                quarter_rotation.append(i)
+            if isinstance(self.ops[i], PauliRotation):
+                if cast(PauliRotation, self.ops[i]).rotation_amount in {
+                    Fraction(1, 4),
+                    Fraction(-1, 4),
+                }:
+                    quarter_rotation.append(i)
 
         # Moving all pi/4 rotations towards the end of the circuit
         # and removing them afterwards
@@ -117,7 +118,8 @@ class PauliOpCircuit(object):
         while i < len(self.ops):
             pauli_block = self.ops[i]
             if isinstance(pauli_block, Measurement) or (
-                pauli_block.rotation_amount in {Fraction(1, 8), Fraction(-1, 8)}
+                cast(PauliRotation, pauli_block).rotation_amount
+                in {Fraction(1, 8), Fraction(-1, 8)}
             ):
                 y_op_indices = list()
 
@@ -186,7 +188,7 @@ class PauliOpCircuit(object):
 
         # Need to calculate iPP' when PP' = -P'P (anti-commute)
         if not PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
-            product_of_coefficients = 1
+            product_of_coefficients = complex(1)
 
             for i in range(self.qubit_num):
                 new_op = PauliOperator.multiply_operators(
@@ -201,10 +203,11 @@ class PauliOpCircuit(object):
             product_of_coefficients /= 1j
             if isinstance(self.ops[next_block], Measurement):
                 if product_of_coefficients.real < 0:
-                    self.ops[next_block].isNegative = not self.ops[next_block].isNegative
+                    measurement = cast(Measurement, self.ops[next_block])
+                    measurement.isNegative = not measurement.isNegative
 
             else:
-                self.ops[next_block].rotation_amount *= (
+                cast(PauliRotation, self.ops[next_block]).rotation_amount *= (
                     -1 if product_of_coefficients.real < 0 else 1
                 )
 
@@ -359,8 +362,8 @@ class PauliOpCircuit(object):
 
         latex_template = Template(filename="assets\circuit_latex_render.mak")
 
-        operator_list = list()
-        phase_list = list()
+        operator_list: List[str] = list()
+        phase_list: List[str] = list()
         for operation in self.ops:
             for operator in operation.ops_list:
                 operator_list += str(operator)
