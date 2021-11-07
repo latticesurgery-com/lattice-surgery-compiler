@@ -21,7 +21,7 @@ class EvaluationCondition:
     mostly together with EvaluationConditionManager"""
 
     def does_evaluate(self):
-        raise NotImplemented()
+        raise NotImplementedError
 
 
 class ConditionalOperation:
