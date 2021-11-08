@@ -101,7 +101,8 @@ class DefaultSymbolicStates:
         zero_ampl /= cmath.exp(1j * gphase)
         one_ampl /= cmath.exp(1j * gphase)
 
-        close = lambda a, b: cmath.isclose(a, b, rel_tol=10 ** (-6))
+        def close(a, b):
+            return cmath.isclose(a, b, rel_tol=10 ** (-6))
 
         if close(zero_ampl, 0):
             return DefaultSymbolicStates.One

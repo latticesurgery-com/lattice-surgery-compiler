@@ -37,7 +37,8 @@ class _SliceArrayJSONEncoder(json.JSONEncoder):
 def handle(json_request: str) -> JsonResponse:
     """
     @param json_request:
-    Accepts a string containing request for compilation in JSON format. Currently the only supported parameters are:
+    Accepts a string containing request for compilation in JSON format. Currently the only supported
+    parameters are:
     {
        circuit : "A string containing a QASM circuit",
        circuit_source : "str", // in the future this will support "file"

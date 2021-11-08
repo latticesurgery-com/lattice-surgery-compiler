@@ -37,6 +37,7 @@ def get_pauli_op_listing(
 
     if len(l) == 0:
         return None
+
     r = lattice.getPatchRepresentative(cell)
     if l[0] != r:
         raise Exception(
@@ -168,8 +169,8 @@ def add_ancilla_region_to_lattice_from_paths(
 def compute_ancilla_region_cells(
     lattice: patches.Lattice, patch_pauli_operator_map: Dict[Tuple[int, int], PauliOperator]
 ) -> None:
-    """Compute which cells of the lattice are occupied by the ancilla region to perform the multibody measurement
-    specified by the dict of operators.
+    """Compute which cells of the lattice are occupied by the ancilla region to perform
+    the multibody measurement specified by the dict of operators.
     """
 
     assert all(
@@ -184,11 +185,13 @@ def compute_ancilla_region_cells(
 
     active_qubits = list(map(str, patch_pauli_operator_map.keys()))
 
-    # For path finding purposes separate take one qubit to be the source and the others to be the targets
+    # For path finding purposes separate take one qubit to be the source
+    # and the others to be the targets
     source_qubit: str = active_qubits[0]
     target_qubits: List[str] = active_qubits[1:]
 
-    # Connect the active patches each with a single directed edge along the border of the desired operator
+    # Connect the active patches each with a single directed edge
+    # along the border of the desired operator
     add_directed_edges(g, lattice, patch_pauli_operator_map, source_qubit, target_qubits)
 
     # Now find the paths that join al the patches through the desired operators

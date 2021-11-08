@@ -10,8 +10,7 @@ from . import Measurement, PauliOpCircuit, PauliOperator
 
 
 def parse_str(qasm_str: str) -> PauliOpCircuit:
-    """
-    Read a string containing QASM (currently supports only OPENQASM 2.0) into a circuit.
+    """Read a string containing QASM (currently supports only OPENQASM 2.0) into a circuit.
 
     Supports all gates from the standard library also supported by PyZX, measurements and barriers.
     Barriers have the effect of breaking reversible sections to be passed to pyzx.
@@ -97,7 +96,9 @@ class _SegmentedQASMParser:
     def extract_top_lvl_node(
         program_node: qiskit.qasm.node.program.Program, node_type: str
     ) -> List[qiskit.qasm.node.node.Node]:
-        condition = lambda n: n.type == node_type
+        def condition(n):
+            return n.type == node_type
+
         take = [x for x in program_node.children if condition(x)]
         leave = [x for x in program_node.children if not condition(x)]
         program_node.children = leave

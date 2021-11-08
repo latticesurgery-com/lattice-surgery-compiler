@@ -49,7 +49,8 @@ class ProjectiveMeasurement:
     @staticmethod
     def borns_rule(projector: qk.PrimitiveOp, state: qk.OperatorBase) -> float:
         # https://qiskit.org/documentation/tutorials/operators/01_operator_flow.html#listop
-        compute_states = lambda s: s.to_matrix_op().eval()
+        def compute_states(s):
+            return s.to_matrix_op().eval()
 
         return qk.StateFn(projector).adjoint().eval(compute_states(state))
 
@@ -137,9 +138,9 @@ class PatchToQubitMapper:
         return list(patch_set)
 
 
-def tensor_list(l):
-    t = l[0]
-    for s in l[1:]:
+def tensor_list(input_list):
+    t = input_list[0]
+    for s in input_list[1:]:
         t = t ^ s
     return t
 

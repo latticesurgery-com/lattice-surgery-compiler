@@ -9,10 +9,9 @@ from lsqecc.utils import phase_frac_to_latex
 class PauliOperator(Enum):
     """
     Representation of a Pauli operator inside of a rotation block
-
     """
 
-    I = "I"
+    I = "I"  # noqa: E741
     X = "X"
     Y = "Y"
     Z = "Z"
@@ -25,10 +24,7 @@ class PauliOperator(Enum):
 
     @staticmethod
     def are_commuting(a: "PauliOperator", b: "PauliOperator") -> bool:
-        """
-        Returns True if a and b are commute and False if anti-commute.
-
-        """
+        """Returns True if a and b are commute and False if anti-commute."""
         if not isinstance(a, PauliOperator) or not isinstance(b, PauliOperator):
             raise Exception("Only supports PauliOperator")
 
@@ -40,9 +36,8 @@ class PauliOperator(Enum):
 
     @staticmethod
     def multiply_operators(a: "PauliOperator", b: "PauliOperator"):
-        """
-        Given 2 Pauli operators A and B, return the nearest Pauli operator as the product of A and B and
-        the coefficient required for such product.
+        """Given 2 Pauli operators A and B, return the nearest Pauli operator as the product of A
+        and B and the coefficient required for such product.
 
         Returns:
             tuple: (coefficient, resultant Pauli operator). Coefficient is either 1, -i or i.
@@ -87,13 +82,12 @@ class PauliProductOperation(coc.ConditionalOperation):
         return_str = "(" + str(self.ops_list[0])
         if self.qubit_num > 1:
             for i in range(1, len(self.ops_list)):
-                return_str += " \otimes" + " " + str(self.ops_list[i])
+                return_str += r" \otimes" + " " + str(self.ops_list[i])
         return_str += ")"
         return return_str
 
     def change_single_op(self, qubit: int, new_op: PauliOperator) -> None:
-        """
-        Modify a Pauli Operator
+        """Modify a Pauli Operator
 
         Args:
             qubit (int): Targeted qubit
@@ -106,8 +100,7 @@ class PauliProductOperation(coc.ConditionalOperation):
         self.ops_list[qubit] = new_op
 
     def get_op(self, qubit: int) -> PauliOperator:
-        """
-        Return the current operator of qubit i.
+        """Return the current operator of qubit i.
 
         Args:
             qubit (int): Targeted qubit
@@ -131,19 +124,16 @@ class PauliProductOperation(coc.ConditionalOperation):
 
 
 class PauliRotation(PauliProductOperation):
-    """
-    Class for representing a Pauli Product Rotation Block.
-
-    """
+    """Class for representing a Pauli Product Rotation Block."""
 
     def __init__(self, no_of_qubit: int, rotation_amount: Fraction) -> None:
-        """
-        Creating a Pauli Product Rotation Block. All operators are set to I (Identity).
+        """Creating a Pauli Product Rotation Block. All operators are set to I (Identity).
         A Pauli Product Rotation Block MUST span all qubits on the circuit.
 
         Args:
             no_of_qubit (int): Number of qubits on the circuit
-            rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8). Implicitly multiplied by pi.
+            rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8). Implicitly multiplied
+                by pi.
         """
 
         self.qubit_num: int = no_of_qubit
@@ -168,14 +158,10 @@ class PauliRotation(PauliProductOperation):
 
 
 class Measurement(PauliProductOperation):
-    """
-    Representing a Pauli Product Measurement Block
-
-    """
+    """Representing a Pauli Product Measurement Block"""
 
     def __init__(self, no_of_qubit: int, isNegative: bool = False) -> None:
-        """
-        Generate a Pauli Product Measurement Block. All operators are set to I (Identity).
+        """Generate a Pauli Product Measurement Block. All operators are set to I (Identity).
         A Pauli Product Measurement Block MUST span all qubits in the circuit
 
         Args:

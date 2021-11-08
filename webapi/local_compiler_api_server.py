@@ -31,7 +31,7 @@ class _LocalCompilerApiServer(BaseHTTPRequestHandler):
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(jsonpickle.encode(response.body).encode("utf-8"))
-            except Exception as e:
+            except Exception:
                 self.send_response(500)
                 self.send_header("Content-type", "text/html")
                 self.send_header("Access-Control-Allow-Origin", "*")

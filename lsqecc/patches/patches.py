@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import uuid
 from enum import Enum
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from lsqecc.pauli_rotations import PauliOperator
 

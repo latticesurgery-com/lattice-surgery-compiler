@@ -3,8 +3,7 @@ from fractions import Fraction
 
 
 def decompose_pi_fraction(f: Fraction):
-    """
-    Break a fraction that has a power of two as denominator into a sequence of fractions
+    """Break a fraction that has a power of two as denominator into a sequence of fractions
     that add up to it, all of which have 1 for numerator.
 
     Adjusts the fraction to be in the (2,0] range
