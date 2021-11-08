@@ -1,4 +1,4 @@
-# Copyright (C) 2020 - George Watkins and Alex Nguyen
+# Copyright (C) 2020-2021 - George Watkins and Alex Nguyen
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
