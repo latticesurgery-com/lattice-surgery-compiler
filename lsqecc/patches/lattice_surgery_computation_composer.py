@@ -1,7 +1,7 @@
 import copy
 import enum
 import uuid
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, cast
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 import lsqecc.patches.patches as patches
@@ -168,7 +168,7 @@ class LatticeSurgeryComputation:
         sim = lps.PatchSimulator(logical_computation)
 
         with comp.timestep() as blank_slice:
-            pass
+            cast(object, blank_slice)  # no-op
 
         for logical_op in comp.logical_computation.ops:
             if logical_op.does_evaluate():

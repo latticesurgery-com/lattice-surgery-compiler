@@ -29,21 +29,24 @@ def get_pauli_op_listing(
         return patch
 
     # TODO check overlapping with representative and document
-    l = list(
+    operators_of_cells_in_patch = list(
         filter(
             lambda cell: cell in patch_pauli_operator_map, get_patch_of_cell_from_patch(cell).cells
         )
     )
 
-    if len(l) == 0:
+    if len(operators_of_cells_in_patch) == 0:
         return None
 
     r = lattice.getPatchRepresentative(cell)
-    if l[0] != r:
+    if operators_of_cells_in_patch[0] != r:
         raise Exception(
-            "Non patch repr cell associated with operator: " + str(l[0]) + ". Repr is " + str(r)
+            "Non patch repr cell associated with operator: "
+            + str(operators_of_cells_in_patch[0])
+            + ". Repr is "
+            + str(r)
         )
-    return l[0] if len(l) > 0 else None
+    return operators_of_cells_in_patch[0] if len(operators_of_cells_in_patch) > 0 else None
 
 
 def make_graph_of_free_cells(lattice: patches.Lattice) -> igraph.Graph:

@@ -11,7 +11,7 @@ from lsqecc.lattice_array import sparse_lattice_to_array
 
 GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells
 
-__all__ = ["compile_file", "VisualArrayCell", "GUISlice"]
+__all__ = ["compile_file", "GUISlice"]
 
 
 def compile_file(
