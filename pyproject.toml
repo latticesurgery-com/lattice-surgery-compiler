@@ -9,3 +9,7 @@ src_paths = ["lsqecc", "test"]
 
 [tool.black]
 line-length = 100
+
+[tool.mypy]
+ignore_missing_imports = True
+exclude = debug/ 
