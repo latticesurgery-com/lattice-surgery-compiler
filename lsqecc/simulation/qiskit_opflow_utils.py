@@ -10,8 +10,7 @@ class StateSeparator:
 
     @staticmethod
     def trace_dict_state(state: qk.DictStateFn, trace_over: List[int]) -> qk.DictStateFn:
-        """
-        Take a state comprised on n qubits and get the trace of the system over the subsystems
+        """Take a state comprised on n qubits and get the trace of the system over the subsystems
         specified by a list of indices.
 
         Assumes state is separable as a DictStateFn can only represent pure states.
@@ -22,8 +21,7 @@ class StateSeparator:
 
     @staticmethod
     def trace_to_density_op(state: qk.DictStateFn, trace_over: List[int]) -> qkinfo.DensityMatrix:
-        """
-        Take a state comprised on n qubits and get the trace of the system over the subsystems
+        """Take a state comprised on n qubits and get the trace of the system over the subsystems
         specified by a list of indices.
 
         Makes no assumption about the separability of the traced subsystems and gives a density
@@ -34,8 +32,7 @@ class StateSeparator:
 
     @staticmethod
     def separate(qnum: int, dict_state: qk.DictStateFn) -> Optional[qk.DictStateFn]:
-        """
-        When a qubit is not entangled (up to a small tolerance) with the rest of the register,
+        """When a qubit is not entangled (up to a small tolerance) with the rest of the register,
         trace over the rest of the system, giving the qubits' pure state.
 
         If the selected qubit is entangled return None.
@@ -62,8 +59,7 @@ class StateSeparator:
 
     @staticmethod
     def get_separable_qubits(dict_state: qk.DictStateFn) -> Dict[int, qk.DictStateFn]:
-        """
-        For each qubit, numerically detect if it's seprabale or not. If it is, add to
+        """For each qubit, numerically detect if it's seprabale or not. If it is, add to
         the result dict, indexed by subsystem, the state traced over the remaining qubits.
 
         I.e. if a qubit is not entangled with the rest, its state shows up in the result.

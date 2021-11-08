@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 import cmath
 import enum
-from typing import Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
     from lsqecc.pauli_rotations import PauliOperator
@@ -100,7 +101,8 @@ class DefaultSymbolicStates:
         zero_ampl /= cmath.exp(1j * gphase)
         one_ampl /= cmath.exp(1j * gphase)
 
-        close = lambda a, b: cmath.isclose(a, b, rel_tol=10 ** (-6))
+        def close(a, b):
+            return cmath.isclose(a, b, rel_tol=10 ** (-6))
 
         if close(zero_ampl, 0):
             return DefaultSymbolicStates.One

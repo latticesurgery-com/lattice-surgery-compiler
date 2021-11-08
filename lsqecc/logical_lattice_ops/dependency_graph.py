@@ -1,6 +1,7 @@
 import copy
-from lsqecc.pauli_rotations import PauliOpCircuit, PauliProductOperation
 from typing import List, TypeVar
+
+from lsqecc.pauli_rotations import PauliOpCircuit, PauliProductOperation
 
 T = TypeVar("T")
 

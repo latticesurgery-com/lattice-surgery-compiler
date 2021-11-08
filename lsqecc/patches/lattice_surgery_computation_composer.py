@@ -1,14 +1,15 @@
 import copy
 import enum
 import uuid
-from typing import *
+from typing import Dict, List, Optional, Tuple, cast
 
-import lsqecc.patches.patches as patches
-from . import ancilla_region_routing as ancilla_region_routing
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
-import lsqecc.simulation.qubit_state as qs
+import lsqecc.patches.patches as patches
 import lsqecc.simulation.logical_patch_state_simulation as lps
 import lsqecc.simulation.qiskit_opflow_utils as qo_utils
+import lsqecc.simulation.qubit_state as qs
+
+from . import ancilla_region_routing as ancilla_region_routing
 
 
 class LayoutType(enum.Enum):
@@ -167,7 +168,7 @@ class LatticeSurgeryComputation:
         sim = lps.PatchSimulator(logical_computation)
 
         with comp.timestep() as blank_slice:
-            pass
+            cast(object, blank_slice)  # no-op
 
         for logical_op in comp.logical_computation.ops:
             if logical_op.does_evaluate():
@@ -287,9 +288,8 @@ class LatticeSurgeryComputationComposer:
     def multiBodyMeasurePatches(
         self, cell_pauli_operator_map: Dict[Tuple[int, int], patches.PauliOperator]
     ):
-        """
-        Corresponds to a lattice surgery merge followed by a split.
-        """
+        """Corresponds to a lattice surgery merge followed by a split."""
+
         for v in cell_pauli_operator_map.values():
             if v not in {patches.PauliOperator.X, patches.PauliOperator.Z}:
                 raise Exception(
@@ -316,7 +316,9 @@ class LatticeSurgeryComputationComposer:
                         edge.cell
                     ).state = qs.DefaultSymbolicStates.UnknownState
 
-        is_not_ancilla = lambda patch: patch.patch_type != patches.PatchType.Ancilla
+        def is_not_ancilla(patch):
+            return patch.patch_type != patches.PatchType.Ancilla
+
         self.qubit_patch_slices[-1].patches = list(filter(is_not_ancilla, self.lattice().patches))
 
     def clearActiveStates(self):

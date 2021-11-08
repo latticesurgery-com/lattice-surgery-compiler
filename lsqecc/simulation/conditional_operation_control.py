@@ -2,7 +2,9 @@ from typing import Optional
 
 
 class HasPauliEigenvalueOutcome:
-    """Mixin class to be implmented by things that have a +1 or -1 outcome, like measurements of pauli products"""
+    """Mixin class to be implmented by things that have a +1 or -1 outcome, like
+    measurements of pauli products
+    """
 
     def get_outcome(self) -> Optional[int]:
         if hasattr(self, "outcome"):
@@ -18,15 +20,18 @@ class HasPauliEigenvalueOutcome:
 
 class EvaluationCondition:
     """Instances of this are used as functor to tell if something needs to be evaluated,
-    mostly together with EvaluationConditionManager"""
+    mostly together with EvaluationConditionManager
+    """
 
     def does_evaluate(self):
         raise NotImplementedError
 
 
 class ConditionalOperation:
-    """Mixin for objects representing operations conditional on outcomes. Uses instances EvaluationCondition
-    as functors to be called when checking if a condtional operation needs to execute or not"""
+    """Mixin for objects representing operations conditional on outcomes. Uses instances
+    EvaluationCondition as functors to be called when checking if a condtional operation
+    needs to execute or not
+    """
 
     def set_condition(self, condition: Optional[EvaluationCondition]):
         self.condition = condition
@@ -38,7 +43,7 @@ class ConditionalOperation:
             return None
 
     def does_evaluate(self) -> bool:
-        """Note: Operations conditioned on outcomes that didn't execute also won't execute"""
+        # Note: Operations conditioned on outcomes that didn't execute also won't execute
         if not self.is_conditional():
             return True
         assert self.condition is not None

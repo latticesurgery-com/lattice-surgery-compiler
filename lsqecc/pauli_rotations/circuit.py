@@ -1,21 +1,19 @@
 import copy
-import pyzx as zx
 from fractions import Fraction
 from typing import List, cast
 
+import pyzx as zx
+
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
+
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
 
 
 class PauliOpCircuit(object):
-    """
-    Class for representing quantum circuit.
-
-    """
+    """Class for representing quantum circuit."""
 
     def __init__(self, no_of_qubit: int, name: str = "") -> None:
-        """
-        Generating a circuit
+        """Generating a circuit
 
         Args:
             no_of_qubit (int): Number of qubits in the circuit
@@ -38,8 +36,7 @@ class PauliOpCircuit(object):
         return copy.deepcopy(self)
 
     def add_pauli_block(self, new_block: PauliProductOperation, index: int = None) -> None:
-        """
-        Add a rotation to the circuit
+        """Add a rotation to the circuit
 
         Args:
             rotation (PauliRotation): Targeted rotation
@@ -62,8 +59,7 @@ class PauliOpCircuit(object):
         rotation_amount: Fraction,
         index: int = None,
     ) -> None:
-        """
-        Add a single Pauli operator (I, X, Z, Y) to the circuit.
+        """Add a single Pauli operator (I, X, Z, Y) to the circuit.
 
         Args:
             qubit (int): Targeted qubit
@@ -80,10 +76,8 @@ class PauliOpCircuit(object):
         self.add_pauli_block(new_rotation, index)
 
     def apply_transformation(self, start_index: int = 0) -> None:
-        """
-        Apply Litinski's Transformation
+        """Apply Litinski's Transformation"""
 
-        """
         quarter_rotation = list()
         circuit_has_measurements: bool = self.circuit_has_measurements()
         # Build a stack of pi/4 rotations
@@ -107,10 +101,8 @@ class PauliOpCircuit(object):
                 self.ops.pop()
 
     def remove_y_operators_from_circuit(self, start_index: int = 0) -> None:
-        """
-        Removes Y operators from pi/8 and measurement blocks. To be called
+        """Removes Y operators from pi/8 and measurement blocks. To be called
         after pi/4 rotations have been commuted to the end of the circuit.
-
         """
         i = start_index
         circuit_has_measurements: bool = self.circuit_has_measurements()
@@ -168,8 +160,7 @@ class PauliOpCircuit(object):
             i += 1
 
     def commute_pi_over_four_rotation(self, index: int) -> None:
-        """
-        Commute a rotation block pass its neighbor block.
+        """Commute a rotation block pass its neighbor block.
 
         Args:
             index (int): Index of the targeted block in the current circuit.
@@ -217,8 +208,7 @@ class PauliOpCircuit(object):
         # print(self.render_ascii())
 
     def circuit_has_measurements(self) -> bool:
-        """
-        Check if circuit has any Measurement blocks.
+        """Check if circuit has any Measurement blocks.
 
         Returns:
             bool: True if measurements block are present, False if not present
@@ -231,8 +221,7 @@ class PauliOpCircuit(object):
 
     @staticmethod
     def are_commuting(block1: PauliProductOperation, block2: PauliProductOperation) -> bool:
-        """
-        Check if 2 Pauli Product blocks commute or anti-commute.
+        """Check if 2 Pauli Product blocks commute or anti-commute.
 
         Returns:
             bool: True if they commute, False if they anti-commute
@@ -263,8 +252,7 @@ class PauliOpCircuit(object):
 
     @staticmethod
     def load_from_pyzx(circuit) -> "PauliOpCircuit":
-        """
-        Generate circuit from PyZX Circuit
+        """Generate circuit from PyZX Circuit
 
         Returns:
             circuit: PyZX Circuit
@@ -326,9 +314,7 @@ class PauliOpCircuit(object):
 
     @staticmethod
     def load_reversible_from_qasm_string(quasm_string: str) -> "PauliOpCircuit":
-        """
-        Load a string as if it were a QASM circuit. Only supports reversible circuits.
-        """
+        """Load a string as if it were a QASM circuit. Only supports reversible circuits."""
 
         pyzx_circ = zx.Circuit.from_qasm(quasm_string)
         ret_circ = PauliOpCircuit.load_from_pyzx(pyzx_circ)
@@ -353,14 +339,11 @@ class PauliOpCircuit(object):
         )
 
     def render_latex(self) -> str:
-        """
-        Generate latex render output of the current circuit.
-
-        """
+        """Generate latex render output of the current circuit."""
 
         from mako.template import Template
 
-        latex_template = Template(filename="assets\circuit_latex_render.mak")
+        latex_template = Template(filename="assets/circuit_latex_render.mak")
 
         operator_list: List[str] = list()
         phase_list: List[str] = list()
@@ -386,9 +369,7 @@ class PauliOpCircuit(object):
         return latex_template.render(**doc_params)
 
     def render_ascii(self) -> str:
-        """
-        Return circuit diagram in text format
-        """
+        """Return circuit diagram in text format"""
 
         cols: List[List[str]] = []
 

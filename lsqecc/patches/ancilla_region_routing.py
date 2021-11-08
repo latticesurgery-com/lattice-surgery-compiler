@@ -4,6 +4,7 @@ from ast import literal_eval as make_tuple
 from typing import TYPE_CHECKING, Dict, List, Tuple
 
 import igraph
+
 import lsqecc.patches.patches as patches
 
 if TYPE_CHECKING:
@@ -28,20 +29,24 @@ def get_pauli_op_listing(
         return patch
 
     # TODO check overlapping with representative and document
-    l = list(
+    operators_of_cells_in_patch = list(
         filter(
             lambda cell: cell in patch_pauli_operator_map, get_patch_of_cell_from_patch(cell).cells
         )
     )
 
-    if len(l) == 0:
+    if len(operators_of_cells_in_patch) == 0:
         return None
+
     r = lattice.getPatchRepresentative(cell)
-    if l[0] != r:
+    if operators_of_cells_in_patch[0] != r:
         raise Exception(
-            "Non patch repr cell associated with operator: " + str(l[0]) + ". Repr is " + str(r)
+            "Non patch repr cell associated with operator: "
+            + str(operators_of_cells_in_patch[0])
+            + ". Repr is "
+            + str(r)
         )
-    return l[0] if len(l) > 0 else None
+    return operators_of_cells_in_patch[0] if len(operators_of_cells_in_patch) > 0 else None
 
 
 def make_graph_of_free_cells(lattice: patches.Lattice) -> igraph.Graph:
@@ -167,8 +172,8 @@ def add_ancilla_region_to_lattice_from_paths(
 def compute_ancilla_region_cells(
     lattice: patches.Lattice, patch_pauli_operator_map: Dict[Tuple[int, int], PauliOperator]
 ) -> None:
-    """Compute which cells of the lattice are occupied by the ancilla region to perform the multibody measurement
-    specified by the dict of operators.
+    """Compute which cells of the lattice are occupied by the ancilla region to perform
+    the multibody measurement specified by the dict of operators.
     """
 
     assert all(
@@ -183,11 +188,13 @@ def compute_ancilla_region_cells(
 
     active_qubits = list(map(str, patch_pauli_operator_map.keys()))
 
-    # For path finding purposes separate take one qubit to be the source and the others to be the targets
+    # For path finding purposes separate take one qubit to be the source
+    # and the others to be the targets
     source_qubit: str = active_qubits[0]
     target_qubits: List[str] = active_qubits[1:]
 
-    # Connect the active patches each with a single directed edge along the border of the desired operator
+    # Connect the active patches each with a single directed edge
+    # along the border of the desired operator
     add_directed_edges(g, lattice, patch_pauli_operator_map, source_qubit, target_qubits)
 
     # Now find the paths that join al the patches through the desired operators

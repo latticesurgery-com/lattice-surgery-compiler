@@ -32,6 +32,21 @@ This project is under very active development. We hope to see in the very near f
 ## Contributing
 To get started, we recommend cloning the repo and trying out the compiler. The `debug` folder has a lot of examples of things you can do inside this project. To see where we are at, in terms of development, check out our [project board](https://github.com/orgs/latticesurgery-com/projects/1).
 
+### Dev setup
+In the project's root folder, create pip virtual environment with: 
+
+`$ python -m venv ./venv`
+
+Activate the venv:
+
+`$ source ./venv/bin/activate`
+
+Then install the package in edit mode:
+
+`$ pip install -e .`
+
+Now you can use this venv to work the package, from the command line and in an IDE. Make sure to select the venv you just created as the python environment for the project in your IDE.
+
 ## References
 <a id="1">[1]</a> 
 Alexandru Paler and Austin G Fowler. 
