@@ -4,6 +4,7 @@ from ast import literal_eval as make_tuple
 from typing import TYPE_CHECKING, Dict, List, Tuple
 
 import igraph
+
 import lsqecc.patches.patches as patches
 
 if TYPE_CHECKING:

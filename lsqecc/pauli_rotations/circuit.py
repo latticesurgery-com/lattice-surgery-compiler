@@ -1,9 +1,11 @@
 import copy
-import pyzx as zx
 from fractions import Fraction
 from typing import List, cast
 
+import pyzx as zx
+
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
+
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
 
 

@@ -6,7 +6,7 @@ import qiskit.qasm
 import qiskit.qasm.node
 import qiskit.qasm.node.node
 
-from . import Measurement, PauliOperator, PauliOpCircuit
+from . import Measurement, PauliOpCircuit, PauliOperator
 
 
 def parse_str(qasm_str: str) -> PauliOpCircuit:

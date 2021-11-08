@@ -1,17 +1,17 @@
 import uuid
 from collections import deque
 from fractions import Fraction
-from typing import Deque, Dict, List, Optional, Union, Sequence
+from typing import Deque, Dict, List, Optional, Sequence, Union
 
+import lsqecc.simulation.conditional_operation_control as coc
+import lsqecc.simulation.qubit_state as qs
 from lsqecc.pauli_rotations import (
     Measurement,
+    PauliOpCircuit,
     PauliOperator,
     PauliProductOperation,
     PauliRotation,
-    PauliOpCircuit,
 )
-import lsqecc.simulation.qubit_state as qs
-import lsqecc.simulation.conditional_operation_control as coc
 
 # TODO give a uuid to all patches
 

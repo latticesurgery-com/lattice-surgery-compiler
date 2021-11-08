@@ -1,10 +1,11 @@
 import math
 import random
 import uuid
-from typing import Dict, Iterable, List, Optional, Tuple, TypeVar, Set
+from typing import Dict, Iterable, List, Optional, Set, Tuple, TypeVar
 
 import qiskit
 import qiskit.aqua.operators as qk
+
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 from lsqecc.pauli_rotations import PauliOperator
 

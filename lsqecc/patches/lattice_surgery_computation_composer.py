@@ -3,12 +3,13 @@ import enum
 import uuid
 from typing import *
 
-import lsqecc.patches.patches as patches
-from . import ancilla_region_routing as ancilla_region_routing
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
-import lsqecc.simulation.qubit_state as qs
+import lsqecc.patches.patches as patches
 import lsqecc.simulation.logical_patch_state_simulation as lps
 import lsqecc.simulation.qiskit_opflow_utils as qo_utils
+import lsqecc.simulation.qubit_state as qs
+
+from . import ancilla_region_routing as ancilla_region_routing
 
 
 class LayoutType(enum.Enum):

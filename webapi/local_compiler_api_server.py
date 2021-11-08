@@ -1,12 +1,13 @@
-from lsqecc.pipeline import json_pipeline
-
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import enum
 import http.client
 import json
-import enum
 import traceback
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Dict, Optional
+
 import jsonpickle
-from typing import Optional, Dict
+
+from lsqecc.pipeline import json_pipeline
 
 
 class Routes(enum.Enum):
@@ -15,9 +16,7 @@ class Routes(enum.Enum):
 
 class _LocalCompilerApiServer(BaseHTTPRequestHandler):
     def do_POST(self):
-        content_length = int(
-            self.headers["Content-Length"]
-        )  # <--- Gets the size of data
+        content_length = int(self.headers["Content-Length"])  # <--- Gets the size of data
         post_data = self.rfile.read(content_length)  # <--- Gets the data itself
         print(
             "POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n"
@@ -47,18 +46,14 @@ class _LocalCompilerApiServer(BaseHTTPRequestHandler):
             self.send_header("Content-type", "text/html")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(
-                "POST Route not found: {}".format(self.path).encode("utf-8")
-            )
+            self.wfile.write("POST Route not found: {}".format(self.path).encode("utf-8"))
 
     # Handle Cors
     def do_OPTIONS(self):
         self.send_response(200, "ok")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header(
-            "Access-Control-Allow-Headers", "X-Requested-With, Content-type"
-        )
+        self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-type")
         self.end_headers()
         self.wfile.write("")
 
