@@ -47,6 +47,17 @@ Then install the package in edit mode:
 
 Now you can use this venv to work the package, from the command line and in an IDE. Make sure to select the venv you just created as the python environment for the project in your IDE.
 
+#### Pre commit hooks
+ Pre commit-hooks run type and style checks before every commit. Useful to avoid having to wait for feedback from CI and taking som load off of our pipelines.
+
+Set up instructions:
+* `pip install pre-commit` and then `pre-commit install` 
+* To run: `pre-commit run` or just `git commit ...`, the first time running will take a while since it has to clone all the repos specified in `pre-commit-config.yaml`
+
+If want to run against all files (good for first run to test things out): `pre-commit run -a`. 
+
+
+
 ## References
 <a id="1">[1]</a> 
 Alexandru Paler and Austin G Fowler. 
