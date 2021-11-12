@@ -3,6 +3,9 @@
 default_language_version:
   python: python3.9
 
+ci:
+  autofix_prs: false
+
 default_stages: [commit, push]
 exclude: ^debug/
 
@@ -11,19 +14,17 @@ repos:
     rev: v4.0.1
     hooks:
       - id: check-case-conflict
-      - id: name-tests-test
+      - id: check-docstring-first
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.0
     hooks:
       - id: isort
-        args: ["--check"]
 
   - repo: https://github.com/ambv/black
     rev: 21.10b0
     hooks:
       - id: black
-        args: ["--check"]
 
   - repo: https://gitlab.com/pycqa/flake8
     rev: 4.0.1
