@@ -32,7 +32,7 @@ from lsqecc.pauli_rotations import (
 
 # TODO give a uuid to all patches
 
-"""Patches are now identified by uuids"""
+# Patches are now identified by uuids
 
 
 class LogicalLatticeOperation(coc.ConditionalOperation):
