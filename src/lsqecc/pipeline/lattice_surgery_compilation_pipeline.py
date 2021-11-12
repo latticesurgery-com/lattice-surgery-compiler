@@ -14,16 +14,15 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
-import lsqecc.lattice_array.visual_array_cell as vac
-import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
-import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
-
 from typing import List, Optional, Tuple
 
 import qiskit.visualization as qkvis
 from qiskit import circuit as qkcirc
 
+import lsqecc.lattice_array.visual_array_cell as vac
+import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 import lsqecc.patches.lattice_surgery_computation_composer as lscc
+import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 from lsqecc.lattice_array import sparse_lattice_to_array
 
 GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells

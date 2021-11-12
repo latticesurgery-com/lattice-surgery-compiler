@@ -15,11 +15,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
-import qiskit.quantum_info as qkinfo
+from typing import Dict, List, Optional
 
 import qiskit.aqua.operators as qk
+import qiskit.quantum_info as qkinfo
 from qiskit.quantum_info import *
-from typing import Dict, List, Optional
 
 
 class StateSeparator:
@@ -64,7 +64,9 @@ class StateSeparator:
         )
 
         try:
-            selected_qubit_pure_state = selected_qubit_maybe_mixed_state.to_statevector(rtol=10 ** (-10))
+            selected_qubit_pure_state = selected_qubit_maybe_mixed_state.to_statevector(
+                rtol=10 ** (-10)
+            )
             return qk.DictStateFn(selected_qubit_pure_state.to_dict())
 
         except qkexcept.QiskitError as e:
