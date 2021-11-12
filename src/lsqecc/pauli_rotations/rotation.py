@@ -95,6 +95,12 @@ class PauliProductOperation(coc.ConditionalOperation):
     def __repr__(self) -> str:
         return str(self)
 
+    def __eq__(self, other):
+        pass
+
+    def __ne__(self, other) -> bool:
+        return not self.__eq__(other)
+
     def to_latex(self) -> str:
         return_str = "(" + str(self.ops_list[0])
         if self.qubit_num > 1:
@@ -160,6 +166,13 @@ class PauliRotation(PauliProductOperation):
     def __str__(self) -> str:
         return "{}: {}".format(self.rotation_amount, self.ops_list)
 
+    def __eq__(self, other) -> bool:
+        return (
+            isinstance(other, PauliRotation)
+            and self.rotation_amount == other.rotation_amount
+            and self.ops_list == other.ops_list
+        )
+
     def to_latex(self) -> str:
         return_str = super().to_latex()
         return_str += "_" + phase_frac_to_latex(self.rotation_amount)
@@ -191,6 +204,13 @@ class Measurement(PauliProductOperation):
 
     def __str__(self) -> str:
         return "{}M: {}".format("-" if self.isNegative else "", self.ops_list)
+
+    def __eq__(self, other) -> bool:
+        return (
+            isinstance(other, Measurement)
+            and self.isNegative == other.isNegative
+            and self.ops_list == other.ops_list
+        )
 
     def to_latex(self) -> str:
         return_str = super().to_latex()
