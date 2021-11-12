@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [tool.isort]
 profile = "black"
 multi_line_output = 3
-src_paths = ["lsqecc", "test"]
+src_paths = ["src", "tests"]
 
 [tool.black]
 line-length = 100
