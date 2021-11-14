@@ -43,3 +43,19 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+  
+  build:
+    name: Build Package
+    runs-on: ubuntu-lastest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+        
+    - name: Build package
+      run: |
+        pip install --upgrade pip build setuptools wheel
+        python -m build
