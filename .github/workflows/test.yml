@@ -1,0 +1,62 @@
+name: test
+
+on:
+  push:
+    branches: [ master, dev ]
+    paths-ignore:
+      - '**.md'
+      - 'debug/**'
+      - 'assets/**'
+  pull_request:
+    branches: [ master, dev ]
+    paths-ignore:
+      - '**.md'
+      - 'debug/**'
+      - 'assets/**'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.8", "3.9"]
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache
+      uses: actions/cache@v2.1.6
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('setup.cfg') }}-${{ hashFiles('dev-requirements.txt') }}
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade --upgrade-strategy eager -r dev-requirements.txt -e .
+    
+    - name: Test with pytest
+      run: |
+        pytest
+  
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+        
+    - name: Build package
+      run: |
+        pip install --upgrade pip build setuptools wheel
+        python -m build
