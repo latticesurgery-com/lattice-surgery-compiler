@@ -46,7 +46,7 @@ jobs:
   
   build:
     name: Build Package
-    runs-on: ubuntu-lastest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     
