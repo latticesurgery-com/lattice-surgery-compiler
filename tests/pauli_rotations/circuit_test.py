@@ -1,4 +1,5 @@
 from fractions import Fraction
+from typing import List, Tuple
 
 import pytest
 
@@ -11,7 +12,7 @@ Y = PauliOperator.Y
 Z = PauliOperator.Z
 
 
-def generate_test_pauli_op_circuit(case: str) -> PauliOpCircuit:
+def generate_test_pauli_op_circuit(case: str) -> List[Tuple[PauliOpCircuit, PauliOpCircuit]]:
     c1 = PauliOpCircuit(4)
     c1.add_pauli_block(PauliRotation.from_list([I, X, I, I], Fraction(1, 8)))
     c2 = PauliOpCircuit(4)
