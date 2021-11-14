@@ -49,6 +49,22 @@ class PauliOpCircuit(object):
     def __len__(self) -> int:
         return len(self.ops)
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, PauliOpCircuit):
+            return False
+        elif self.qubit_num != other.qubit_num:
+            return False
+        elif len(self) != len(other):
+            return False
+        else:
+            for op1, op2 in zip(self.ops, other.ops):
+                if op1 != op2:
+                    return False
+            return True
+
+    def __ne__(self, other) -> bool:
+        return not self.__eq__(other)
+
     def copy(self) -> "PauliOpCircuit":
         return copy.deepcopy(self)
 
