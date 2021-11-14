@@ -1,3 +1,4 @@
+from _pytest.fixtures import pytest_sessionstart
 import pytest
 
 from .generate_tests_circuit import *
@@ -22,9 +23,9 @@ def test_circuit_has_measurement(output, expected):
     assert output == expected
 
 
-# def test_apply_transformation(output, expected):
-#     raise NotImplementedError
-#     # assert output == expected
+@pytest.mark.parametrize("output, expected", generate_tests_apply_transformation())
+def test_apply_transformation(output, expected):
+    assert output == expected
 
 
 # def test_remove_y_operators_from_circuit(output, expected):
