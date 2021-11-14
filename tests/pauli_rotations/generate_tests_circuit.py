@@ -62,4 +62,25 @@ def generate_tests_apply_transformation():
     5. Test five --> Controlled Operations, commute - Litinski 4c
     6. Test six --> Controlled Operations, anticommute - Litinski 4c
     """
-    pass
+    tests_list = list()
+
+    # Test 3
+    input = PauliOpCircuit(3)
+    input.add_single_operator(0, Z, Fraction(1, 4))
+    input.add_single_operator(1, X, Fraction(-1, 4))
+    input.add_single_operator(2, Z, Fraction(1, 4))
+    input.add_pauli_block(Measurement.from_list([Z, I, I]))
+    input.add_pauli_block(Measurement.from_list([I, X, I]))
+    input.add_pauli_block(Measurement.from_list([I, I, Z]))
+    input.apply_transformation()
+
+    print(input)
+
+    expected = PauliOpCircuit(3)
+    expected.add_pauli_block(Measurement.from_list([Z, I, I]))
+    expected.add_pauli_block(Measurement.from_list([I, X, I], isNegative=True))
+    expected.add_pauli_block(Measurement.from_list([I, I, Z]))
+    print(expected)
+    tests_list.append((input, expected))
+
+    return tests_list
