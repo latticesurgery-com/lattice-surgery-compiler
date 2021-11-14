@@ -26,6 +26,8 @@ def generate_test_pauli_op_circuit(case: str) -> List[Tuple[PauliOpCircuit, Paul
         return [(c1, c1), (c2, c2), (c3, c3)]
     elif case == "ne":
         return [(c1, c2), (c2, c3), (c3, c1)]
+    else:
+        assert False
 
 
 @pytest.mark.parametrize(
