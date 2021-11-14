@@ -1,4 +1,3 @@
-from _pytest.fixtures import pytest_sessionstart
 import pytest
 
 from .generate_tests_circuit import *
