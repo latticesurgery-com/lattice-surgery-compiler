@@ -11,9 +11,10 @@ A compiler that takes a QASM circuit and turns it into abstract lattice surgery 
 Our long term vision is to have an end to end lattice surgery compiler. We want it to be able to take a manually programmed circuit and ouput a large error corrected circuit, that performs the same computation with many more qubits and a higher degree of accuracy.
 
 #### Features:
-* Data representation for pauli rotations and abstract lattice surgery operations
+* Web-based patch visualizer that shows a computation happening on a surface code lattice (in picture). Try it at https://latticesurgery.com.
+* HTTP Service to compile qasm circuits
+* Data representation for Pauli rotations and abstract lattice surgery operations
 * QASM to lattice surgery patch compiler 
-* Web-based patch visualizer that shows a computation happening on a surface code lattice (in picture)
 * Remove sabilizer operations from the input circuit
 * Simulation of patch computations
 
@@ -29,33 +30,11 @@ Part of our process is inspired by Litinski's Game of Surface Codes [[4]](#4). I
 ## Status
 This project is under very active development. We hope to see in the very near future an operabe release. Currently we have visualization of lattice surgery operations and input circuit handling.
 
-## Contributing
-To get started, we recommend cloning the repo and trying out the compiler. The `debug` folder has a lot of examples of things you can do inside this project. To see where we are at, in terms of development, check out our [project board](https://github.com/orgs/latticesurgery-com/projects/1).
+## Contributing and Development set up
 
-### Dev setup
-In the project's root folder, create pip virtual environment with: 
+Check out our [contribution guide](https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/master/CONTRIBUTING.md).
 
-`$ python -m venv ./venv`
-
-Activate the venv:
-
-`$ source ./venv/bin/activate`
-
-Then install the package in edit mode:
-
-`$ pip install -e .`
-
-Now you can use this venv to work the package, from the command line and in an IDE. Make sure to select the venv you just created as the python environment for the project in your IDE.
-
-#### Pre commit hooks
- Pre commit-hooks run type and style checks before every commit. Useful to avoid having to wait for feedback from CI and taking som load off of our pipelines.
-
-Set up instructions:
-* `pip install pre-commit` and then `pre-commit install` 
-* To run: `pre-commit run` or just `git commit ...`, the first time running will take a while since it has to clone all the repos specified in `pre-commit-config.yaml`
-
-If want to run against all files (good for first run to test things out): `pre-commit run -a`. 
-
+If you just want to get an idea for what this compiler does, check out https://latticesurgery.com.
 
 
 ## References
