@@ -1,5 +1,6 @@
 from fractions import Fraction
 from typing import List, Tuple
+from lsqecc.pauli_rotations import circuit
 
 from lsqecc.pauli_rotations.circuit import PauliOpCircuit
 from lsqecc.pauli_rotations.rotation import PauliRotation, Measurement, PauliOperator
@@ -125,13 +126,12 @@ def generate_tests_apply_transformation():
     input.add_pauli_block(Measurement.from_list([I, I, Z]))
     input.apply_transformation()
 
-    print(input)
-
     expected = PauliOpCircuit(3)
     expected.add_pauli_block(Measurement.from_list([Z, I, I]))
-    expected.add_pauli_block(Measurement.from_list([I, X, I], isNegative=True))
+    expected.add_pauli_block(Measurement.from_list([I, X, I]), isNegative=True)
     expected.add_pauli_block(Measurement.from_list([I, I, Z]))
     print(expected)
     tests_list.append((input, expected))
+    del input, expected
 
     return tests_list
