@@ -12,7 +12,7 @@ You can get start getting involved by creating an [issue](https://github.com/lat
 
 ### Code of conduct
 
-Make sure to check out our [code of conduct]((https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/master/CODE_OF_CONDUCT.md).
+Make sure to check out our [code of conduct](https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/master/CODE_OF_CONDUCT.md).
 
 ## Dev Setup
 
@@ -37,20 +37,21 @@ The [visualizer's repository](https://github.com/latticesurgery-com/web-ui) cont
 
 ### Style and type correctness
 
-We enforce style with `black`, `flake8` and `isort`, and type correctness with `mypy`. Our CI checks that pull requests meet the requirements checked with these tools. Check the next section for the easiest way to manage these requirements.
+We enforce style with [black](https://github.com/psf/black), [flake8](https://flake8.pycqa.org/en/latest/) and [isort](https://github.com/PyCQA/isort), and type correctness with [mypy](http://mypy-lang.org/). Our CI checks that pull requests meet the requirements checked with these tools. Check the next section for the easiest way to manage these requirements.
 
 #### Pre commit hooks
  Pre commit-hooks run type and style checks before every commit. Useful to avoid having to wait for feedback from CI and taking some load off of our pipelines.
 
 Set up instructions:
 * `pip install pre-commit` and then `pre-commit install` 
-* To run: `pre-commit run` or just `git commit ...`, the first time running will take a while since it has to clone all the repos specified in `pre-commit-config.yaml`
+* To run: `pre-commit run` or just `git commit ...`, the first time running will take a while since it has to clone all the repos specified in `pre-commit-config.yaml`. Note that `black` and `isort` might format your code - if that happens you need to use `git add` again to stage those changes. 
 
-If want to run against all files (good for first run to test things out): `pre-commit run -a`. 
+If you want to run against all files (good for first run to test things out): `pre-commit run -a`. 
 
 ### Running tests
+In order for a pull request to be merged, all of the tests must be passed (our CI tool will perform this check for every PR). All test-related content can be found in `tests/`. We use [Pytest](https://pytest.org/) for all of our tests.
 To run the entire testsuite:
-``` ```
+```pytest```
  
-To run a particular tests:
-``` ```
+To run a particular test:
+```pytest tests/path/to/file.py```
