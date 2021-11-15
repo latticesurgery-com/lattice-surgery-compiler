@@ -5,4 +5,5 @@ exclude =
     .git,
     __init__.py,
     __pycache__,
-    debug
+    debug,
+    docs
