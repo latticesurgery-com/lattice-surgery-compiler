@@ -7,12 +7,14 @@ on:
       - '**.md'
       - 'debug/**'
       - 'assets/**'
+      - 'docs/**'
   pull_request:
     branches: [ master, dev ]
     paths-ignore:
       - '**.md'
       - 'debug/**'
       - 'assets/**'
+      - 'docs/**'
 
 jobs:
   test:
