@@ -1,5 +1,6 @@
 from fractions import Fraction
 from typing import List, Tuple
+from lsqecc.pauli_rotations import circuit
 
 from lsqecc.pauli_rotations.circuit import PauliOpCircuit
 from lsqecc.pauli_rotations.rotation import PauliRotation, Measurement, PauliOperator
@@ -52,17 +53,68 @@ def generate_tests_circuit_has_measurements() -> List[Tuple[bool, bool]]:
     ]
 
 
+def generate_tests_are_commuting() -> List[Tuple[bool, bool]]:
+    tests_list = list()
+    block1 = PauliRotation.from_list([X, I, Z, I], Fraction(1, 4))
+    block2 = PauliRotation.from_list([I, Z, I, X], Fraction(-1, 4))
+    block3 = PauliRotation.from_list([Z, X, I, Z], Fraction(1, 8))
+    tests_list.append((PauliOpCircuit.are_commuting(block1, block1), True))
+    tests_list.append((PauliOpCircuit.are_commuting(block1, block2), True))
+    tests_list.append((PauliOpCircuit.are_commuting(block1, block3), False))
+    tests_list.append((PauliOpCircuit.are_commuting(block2, block3), True))
+
+    return tests_list
+
+
 def generate_tests_apply_transformation():
     """
     Three Litinski Rules
-    1. Test one --> P, P` commute - Litinski 4a
-    2. Test two --> P, P` anti commute - Litinski 4a
-    3. Test three --> P, P' commute - Litinski 4b
-    4. Test four --> P,P' anti commute - Litinski 4b
-    5. Test five --> Controlled Operations, commute - Litinski 4c
-    6. Test six --> Controlled Operations, anticommute - Litinski 4c
+    1. Test 1 --> P, P` commute - Litinski 4a
+        Note: Whenever two PauliRotation block are checked from commutation, they always commute in the implemented test case
+    2. Test 2 --> P, P` anti commute - Litinski 4a
+        Note: Whenever two PauliRotation block are checked from commutation, they always anti-commute in the implemented test case
+    3. Test 3 --> P, P' commute - Litinski 4b
+    4. Test 4 --> P,P' anti commute - Litinski 4b
+    5. Test 5 --> Controlled Operations, commute - Litinski 4c
+        Tests for this is implicitly included in tests 1 and 2, as controlled operations are converted Pauli Rotations in load_*() methods
+    6. Test 6 --> Controlled Operations, anticommute - Litinski 4c
+        Tests for this is implicitly included in tests 1 and 2, as controlled operations are converted Pauli Rotations in load_*() methods
+
+    `PauliOpCircuit.commute_pi_over_four_rotations()` are also implicitly tested through these tests
     """
     tests_list = list()
+    # Test 1:
+    input = PauliOpCircuit(4)
+    input.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
+    input.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
+    input.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
+    input.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
+    input.apply_transformation()
+
+    expected = PauliOpCircuit(4)
+    expected.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
+    expected.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
+    expected.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
+    expected.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
+
+    tests_list.append((input, expected))
+    del input, expected
+
+    # Test 2:
+    input = PauliOpCircuit(5)
+    input.add_pauli_block(PauliRotation.from_list([X, I, Z, I, I], Fraction(1, 4)))
+    input.add_pauli_block(PauliRotation.from_list([Z, Z, I, X, I], Fraction(-1, 8)))
+    input.add_pauli_block(PauliRotation.from_list([Y, X, I, Y, I], Fraction(1, 8)))
+    input.add_pauli_block(PauliRotation.from_list([Z, Z, Z, Z, Z], Fraction(-1, 4)))
+    input.apply_transformation()
+
+    expected = PauliOpCircuit(5)
+    expected.add_pauli_block(PauliRotation.from_list([Y, Z, Z, X, I], Fraction(1, 8)))
+    expected.add_pauli_block(PauliRotation.from_list([Z, X, Z, Y, I], Fraction(-1, 8)))
+    expected.add_pauli_block(PauliRotation.from_list([Y, Z, I, Z, Z], Fraction(1, 4)))
+    expected.add_pauli_block(PauliRotation.from_list([X, I, Z, I, I], Fraction(1, 4)))
+    tests_list.append((input, expected))
+    del input, expected
 
     # Test 3
     input = PauliOpCircuit(3)
@@ -74,13 +126,12 @@ def generate_tests_apply_transformation():
     input.add_pauli_block(Measurement.from_list([I, I, Z]))
     input.apply_transformation()
 
-    print(input)
-
     expected = PauliOpCircuit(3)
     expected.add_pauli_block(Measurement.from_list([Z, I, I]))
-    expected.add_pauli_block(Measurement.from_list([I, X, I], isNegative=True))
+    expected.add_pauli_block(Measurement.from_list([I, X, I]), isNegative=True)
     expected.add_pauli_block(Measurement.from_list([I, I, Z]))
     print(expected)
     tests_list.append((input, expected))
+    del input, expected
 
     return tests_list

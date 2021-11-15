@@ -23,6 +23,11 @@ def test_circuit_has_measurement(output, expected):
     assert output == expected
 
 
+@pytest.mark.parametrize("output, expected", generate_tests_are_commuting())
+def test_are_commuting(output, expected):
+    assert output == expected
+
+
 @pytest.mark.parametrize("output, expected", generate_tests_apply_transformation())
 def test_apply_transformation(output, expected):
     assert output == expected
@@ -34,11 +39,6 @@ def test_apply_transformation(output, expected):
 
 
 # def test_commute_pi_over_four_rotations(output, expected):
-#     raise NotImplementedError
-#     # assert output == expected
-
-
-# def test_are_commuting(output, expected):
 #     raise NotImplementedError
 #     # assert output == expected
 
