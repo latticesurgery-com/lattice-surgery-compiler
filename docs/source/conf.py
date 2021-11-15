@@ -19,7 +19,7 @@
 
 project = "Lattice Surgery Compiler"
 copyright = "2021, George Watkins and Alex Nguyen"
-author = "George Watkins and Alex Nguyen"
+author = "George Watkins, Alex Nguyen and Contributors"
 
 
 # -- General configuration ---------------------------------------------------

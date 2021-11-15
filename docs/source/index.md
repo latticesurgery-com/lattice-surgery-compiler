@@ -1,12 +1,8 @@
 # Lattice Surgery Compiler
 
-```{note}
-This documentation is still under active development
-```
-
 ```{include} ../../README.md
-:start-after: <!-- start overview -->
-:end-before: <!-- end overview -->
+:start-after: <!-- start -->
+:end-before: <!-- end -->
 ```
 
 ```{toctree}
@@ -20,6 +16,7 @@ guide/index
 :caption: Development
 :hidden:
 
+contributing
 api/index
 license
 ```

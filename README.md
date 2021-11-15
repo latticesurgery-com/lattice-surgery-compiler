@@ -1,27 +1,26 @@
 # Lattice Surgery Compiler
 [![Unitary Fund](https://img.shields.io/badge/Supported%20By-UNITARY%20FUND-brightgreen.svg?style=for-the-badge)](http://unitary.fund)
 
+<!-- start -->
+
 Compile logical circuits to lattice surgery operations on a surface code lattice and visualize.
 
 ![image](https://user-images.githubusercontent.com/36427091/104856854-98ca5600-58c9-11eb-9599-286c1d5a4736.png)
 
 ## Overview
-
-<!-- start overview -->
-
 A compiler that takes a QASM circuit and turns it into abstract lattice surgery instructions.
 
 Our long term vision is to have an end to end lattice surgery compiler. We want it to be able to take a manually programmed circuit and ouput a large error corrected circuit, that performs the same computation with many more qubits and a higher degree of accuracy.
 
-<!-- end overview -->
-
-#### Features:
+### Features:
 * Web-based patch visualizer that shows a computation happening on a surface code lattice (in picture). Try it at https://latticesurgery.com.
 * HTTP Service to compile qasm circuits
 * Data representation for Pauli rotations and abstract lattice surgery operations
 * QASM to lattice surgery patch compiler 
 * Remove sabilizer operations from the input circuit
 * Simulation of patch computations
+
+<!-- end -->
 
 ## Background 
 A proposed solution to mitigate the occurrence of errors in quantum computers are the so-called quantum error correcting codes (QECC). Specifically we focus on the protocol of lattice surgery, which is based on the prominent methodology of surface codes. A natural question relates to how these techniques can be employed to systematically obtain fault tolerant logical qubits from less reliable ones. Recent work has focused on building compilers that translate a logical quantum circuit to a much larger error corrected one, with the output circuit performing the computation specified by the logical circuit with QECCs [[1]](#1)[[2]](#2). 

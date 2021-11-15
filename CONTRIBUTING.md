@@ -1,5 +1,7 @@
 # Contributing
 
+<!-- start -->
+
 ## Getting Started
 
 If you just want to get an idea for what this compiler does, check out https://latticesurgery.com.
