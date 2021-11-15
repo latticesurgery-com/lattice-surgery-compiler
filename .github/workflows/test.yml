@@ -60,3 +60,23 @@ jobs:
       run: |
         pip install --upgrade pip build setuptools wheel
         python -m build
+
+  doc:
+    name: Build Doc
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+        
+    - name: Install dependencies
+      run: |
+        pip install -r docs/requirements.txt
+    
+    - name: Build doc 
+      run: |
+        cd docs
+        make html 
