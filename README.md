@@ -17,7 +17,7 @@ Our long term vision is to have an end to end lattice surgery compiler. We want 
 * HTTP Service to compile qasm circuits
 * Data representation for Pauli rotations and abstract lattice surgery operations
 * QASM to lattice surgery patch compiler 
-* Remove sabilizer operations from the input circuit
+* Remove stabilizer operations from the input circuit
 * Simulation of patch computations
 
 <!-- end -->
