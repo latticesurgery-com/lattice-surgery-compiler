@@ -57,3 +57,11 @@ To run the entire testsuite:
  
 To run a particular test:
 ```pytest tests/path/to/file.py```
+
+### Building the Docs
+
+We generate docs from docstrings and `.md` files. Our CI pipeline already builds the docs and provides a preview for every PR, but you can preview the docs on you local machine by following the steps below.
+
+ 1. `cd docs` to enter the docs directory
+ 2. `pip install -r requirements.txt` to install or update the doc build dependencies
+ 3. `make clean && make htm` clean builds the docs
