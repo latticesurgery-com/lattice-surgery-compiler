@@ -64,4 +64,4 @@ We generate docs from docstrings and `.md` files. Our CI pipeline already builds
 
  1. `cd docs` to enter the docs directory
  2. `pip install -r requirements.txt` to install or update the doc build dependencies
- 3. `make clean && make htm` clean builds the docs
+ 3. `make clean && make html` clean builds the docs
