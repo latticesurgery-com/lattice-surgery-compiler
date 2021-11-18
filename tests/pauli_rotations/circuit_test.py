@@ -33,21 +33,16 @@ def test_apply_transformation(output, expected):
     assert output == expected
 
 
-# def test_remove_y_operators_from_circuit(output, expected):
-#     raise NotImplementedError
-#     # assert output == expected
-
-
-# def test_commute_pi_over_four_rotations(output, expected):
-#     raise NotImplementedError
-#     # assert output == expected
-
-
 @pytest.mark.parametrize("output, expected", generate_tests_join())
 def test_join(output, expected):
     assert output == expected
 
 
-# def test_count_rotations_by(output, expected):
+@pytest.mark.parametrize("output, expected", generate_tests_count_rotations_by())
+def test_count_rotations_by(output, expected):
+    assert output == expected
+
+
+# def test_remove_y_operators_from_circuit(output, expected):
 #     raise NotImplementedError
 #     # assert output == expected

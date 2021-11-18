@@ -177,3 +177,22 @@ def generate_tests_join() -> List[Tuple[bool, bool]]:
     list.append((j3, False))
 
     return tests_list
+
+
+def generate_tests_count_rotations_by() -> List[Tuple[int, int]]:
+
+    tests_list = list()
+
+    c1 = PauliOpCircuit(4)
+    c1.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
+    c1.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
+    c1.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
+    c1.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
+    c1.add_pauli_block(Measurement.from_list([Z, Z, I, I]))
+
+    tests_list.append((c1.count_rotations_by(Fraction(1, 4)), 1))
+    tests_list.append((c1.count_rotations_by(Fraction(-1, 4)), 1))
+    tests_list.append((c1.count_rotations_by(Fraction(1, 8)), 1))
+    tests_list.append((c1.count_rotations_by(Fraction(1, -8)), 1))
+
+    return tests_list
