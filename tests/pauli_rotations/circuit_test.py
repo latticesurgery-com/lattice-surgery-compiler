@@ -1,7 +1,13 @@
-from _pytest.fixtures import pytest_sessionstart
 import pytest
 
-from .generate_tests_circuit import *
+from .generate_tests_circuit import (
+    generate_tests_apply_transformation,
+    generate_tests_are_commuting,
+    generate_tests_circuit_has_measurements,
+    generate_tests_count_rotations_by,
+    generate_tests_join,
+    generate_tests_pauli_op_circuit_equality,
+)
 
 
 @pytest.mark.parametrize(
