@@ -78,10 +78,10 @@ _PauliOperator_anticommute_tbl: Dict[
 ] = {
     (PauliOperator.Z, PauliOperator.X): (1j, PauliOperator.Y),
     (PauliOperator.X, PauliOperator.Z): (-1j, PauliOperator.Y),
-    (PauliOperator.Z, PauliOperator.Y): (1j, PauliOperator.X),
-    (PauliOperator.Y, PauliOperator.Z): (-1j, PauliOperator.X),
-    (PauliOperator.Y, PauliOperator.X): (1j, PauliOperator.Z),
-    (PauliOperator.X, PauliOperator.Y): (-1j, PauliOperator.Z),
+    (PauliOperator.Y, PauliOperator.Z): (1j, PauliOperator.X),
+    (PauliOperator.Z, PauliOperator.Y): (-1j, PauliOperator.X),
+    (PauliOperator.X, PauliOperator.Y): (1j, PauliOperator.Z),
+    (PauliOperator.Y, PauliOperator.X): (-1j, PauliOperator.Z),
 }
 
 
