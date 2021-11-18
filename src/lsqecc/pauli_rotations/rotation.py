@@ -43,7 +43,7 @@ class PauliOperator(Enum):
     def are_commuting(a: "PauliOperator", b: "PauliOperator") -> bool:
         """Returns True if a and b are commute and False if anti-commute."""
         if not isinstance(a, PauliOperator) or not isinstance(b, PauliOperator):
-            raise Exception("Only supports PauliOperator")
+            raise TypeError("Only supports PauliOperator")
 
         if (a, b) in _PauliOperator_anticommute_tbl:
             return False
@@ -61,7 +61,7 @@ class PauliOperator(Enum):
         """
 
         if not isinstance(a, PauliOperator) or not isinstance(b, PauliOperator):
-            raise Exception("Only supports PauliOperator")
+            raise TypeError("Only supports PauliOperator")
 
         if (a, b) in _PauliOperator_anticommute_tbl:
             return _PauliOperator_anticommute_tbl[(a, b)]
