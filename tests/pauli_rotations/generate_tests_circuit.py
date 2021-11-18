@@ -1,10 +1,8 @@
 from fractions import Fraction
 from typing import List, Tuple
-from debug.scratchspace import test
-from lsqecc.pauli_rotations import circuit
 
 from lsqecc.pauli_rotations.circuit import PauliOpCircuit
-from lsqecc.pauli_rotations.rotation import PauliRotation, Measurement, PauliOperator
+from lsqecc.pauli_rotations.rotation import Measurement, PauliOperator, PauliRotation
 
 I = PauliOperator.I  # noqa: E741
 X = PauliOperator.X
@@ -71,15 +69,19 @@ def generate_tests_apply_transformation():
     """
     Three Litinski Rules
     1. Test 1 --> P, P` commute - Litinski 4a
-        Note: Whenever two PauliRotation block are checked from commutation, they always commute in the implemented test case
+        Note: Whenever two PauliRotation block are checked from commutation, they always
+        commute in the implemented test case
     2. Test 2 --> P, P` anti commute - Litinski 4a
-        Note: Whenever two PauliRotation block are checked from commutation, they always anti-commute in the implemented test case
+        Note: Whenever two PauliRotation block are checked from commutation, they always
+        anti-commute in the implemented test case
     3. Test 3 --> P, P' commute - Litinski 4b
     4. Test 4 --> P,P' anti commute - Litinski 4b
     5. Test 5 --> Controlled Operations, commute - Litinski 4c
-        Tests for this is implicitly included in tests 1 and 2, as controlled operations are converted Pauli Rotations in load_*() methods
+        Tests for this is implicitly included in tests 1 and 2, as controlled operations
+        are converted Pauli Rotations in load_*() methods
     6. Test 6 --> Controlled Operations, anticommute - Litinski 4c
-        Tests for this is implicitly included in tests 1 and 2, as controlled operations are converted Pauli Rotations in load_*() methods
+        Tests for this is implicitly included in tests 1 and 2, as controlled operations
+        are converted Pauli Rotations in load_*() methods
 
     `PauliOpCircuit.commute_pi_over_four_rotations()` are also implicitly tested through these tests
     """
@@ -172,9 +174,9 @@ def generate_tests_join() -> List[Tuple[bool, bool]]:
     c4.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
     c4.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
 
-    list.append((j1 == c4, True))
-    list.append((j2, False))
-    list.append((j3, False))
+    tests_list.append((j1 == c4, True))
+    tests_list.append((j2, False))
+    tests_list.append((j3, False))
 
     return tests_list
 
