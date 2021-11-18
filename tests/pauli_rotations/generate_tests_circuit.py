@@ -175,8 +175,8 @@ def generate_tests_join() -> List[Tuple[bool, bool]]:
     c4.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
 
     tests_list.append((j1 == c4, True))
-    tests_list.append((j2, False))
-    tests_list.append((j3, False))
+    tests_list.append((j2 == c3, False))
+    tests_list.append((j3 == c3, False))
 
     return tests_list
 
