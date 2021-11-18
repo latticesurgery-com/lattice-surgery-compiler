@@ -355,7 +355,11 @@ class PauliOpCircuit(object):
 
     @staticmethod
     def join(lhs: "PauliOpCircuit", rhs: "PauliOpCircuit") -> "PauliOpCircuit":
-        assert lhs.qubit_num == rhs.qubit_num
+        try:
+            assert lhs.qubit_num == rhs.qubit_num
+        except AssertionError:
+            print("The two circuits joined must have the same number of qubits!")
+            return False  ##
         c = lhs.copy()
         c.ops.extend(rhs.ops)
         return c

@@ -43,9 +43,9 @@ def test_apply_transformation(output, expected):
 #     # assert output == expected
 
 
-# def test_join(output, expected):
-#     raise NotImplementedError
-#     # assert output == expected
+@pytest.mark.parametrize("output, expected", generate_tests_join())
+def test_join(output, expected):
+    assert output == expected
 
 
 # def test_count_rotations_by(output, expected):
