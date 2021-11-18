@@ -224,7 +224,7 @@ class PauliOpCircuit(object):
 
             # Flip the phase if product of coefficients is negative
             # Product of coefficients will always be either i or -i (see issues #28 for proof)
-            product_of_coefficients /= 1j
+            product_of_coefficients *= 1j
             if isinstance(self.ops[next_block], Measurement):
                 if product_of_coefficients.real < 0:
                     measurement = cast(Measurement, self.ops[next_block])

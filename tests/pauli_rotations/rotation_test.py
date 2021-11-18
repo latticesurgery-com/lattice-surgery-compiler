@@ -119,7 +119,7 @@ class TestPauliOperator:
         assert PauliOperator.multiply_operators(input, I) == (1, input)
         assert PauliOperator.multiply_operators(I, input) == (1, input)
 
-    @pytest.mark.parametrize("input, expected", [((Z, X), Y), ((Z, Y), X), ((Y, X), Z)])
+    @pytest.mark.parametrize("input, expected", [((Z, X), Y), ((Y, Z), X), ((X, Y), Z)])
     def test_multiply_operators_non_commuting(self, input, expected):
         assert PauliOperator.multiply_operators(*input) == (1j, expected)
         assert PauliOperator.multiply_operators(*reversed(input)) == (-1j, expected)
