@@ -76,7 +76,7 @@ class TestMeasurement:
             (Measurement.from_list([Y, Z, X, I]), Measurement.from_list([Y, Z, X, I])),
         ],
     )
-    def test_measurement_eq(measurement_1, measurement_2):
+    def test_measurement_eq(self, measurement_1, measurement_2):
         assert measurement_1 == measurement_2
 
     @pytest.mark.parametrize(
@@ -87,7 +87,7 @@ class TestMeasurement:
             (Measurement.from_list([Y, X, I, I]), Measurement.from_list([Y, Z, X, I])),
         ],
     )
-    def test_measurement_ne(measurement_1, measurement_2):
+    def test_measurement_ne(self, measurement_1, measurement_2):
         assert measurement_1 != measurement_2
 
 
