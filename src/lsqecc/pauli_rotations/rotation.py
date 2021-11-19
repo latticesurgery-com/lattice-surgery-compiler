@@ -181,6 +181,9 @@ class PauliRotation(PauliProductOperation):
 
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> "PauliRotation":
+        if not pauli_ops:
+            raise ValueError("Cannot create PauliRotation from empty list")
+
         r = PauliRotation(len(pauli_ops), rotation)
         for i, op in enumerate(pauli_ops):
             r.change_single_op(i, op)
@@ -219,8 +222,10 @@ class Measurement(PauliProductOperation):
 
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], isNegative: bool = False) -> "Measurement":
-        m = Measurement(len(pauli_ops), isNegative)
+        if not pauli_ops:
+            raise ValueError("Cannot create PauliRotation from empty list")
 
+        m = Measurement(len(pauli_ops), isNegative)
         for i, op in enumerate(pauli_ops):
             m.change_single_op(i, op)
 
