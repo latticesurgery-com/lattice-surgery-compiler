@@ -130,6 +130,38 @@ class TestMeasurement:
         assert measurement_1 != measurement_2
 
 
+class TestPauliProductOperation:
+    """Test for methods share by both Measurements and PauliRotation"""
+
+    def test_change_single_op(self):
+        r = PauliRotation(5, Fraction(1, 4))
+        r.change_single_op(3, X)
+        assert r.ops_list[3] == X
+
+    def test_change_single_op_invalid_index(self):
+        m = Measurement(5)
+        with pytest.raises(IndexError):
+            m.change_single_op(5, X)
+
+    def test_change_single_op_invalid_op(self):
+        r = PauliRotation(5, Fraction(1, 4))
+        with pytest.raises(TypeError):
+            r.change_single_op(3, "X")
+
+    def test_get_op(self):
+        m = Measurement.from_list([X, Z, I, X, Y, Z])
+        assert m.get_op(3) == X
+
+    def test_get_op_invalid_index(self):
+        m = Measurement(5)
+        with pytest.raises(IndexError):
+            m.get_op(5)
+
+    def test_get_ops_map(self):
+        m = Measurement.from_list([X, Z, I, X, I, Z])
+        assert m.get_ops_map() == {0: X, 1: Z, 3: X, 5: Z}
+
+
 class TestPauliOperator:
     """Tests for PauliOperator"""
 
