@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
+from abc import ABC, abstractmethod
 from enum import Enum
 from fractions import Fraction
 from typing import Dict, List, Tuple
@@ -85,9 +86,10 @@ _PauliOperator_anticommute_tbl: Dict[
 }
 
 
-class PauliProductOperation(coc.ConditionalOperation):
-    qubit_num: int
-    ops_list: List[PauliOperator]
+class PauliProductOperation(ABC):
+    def __init__(self, no_of_qubit: int):
+        self.qubit_num: int = no_of_qubit
+        self.ops_list: List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
 
     def __str__(self) -> str:
         pass
@@ -101,6 +103,7 @@ class PauliProductOperation(coc.ConditionalOperation):
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
+    @abstractmethod
     def to_latex(self) -> str:
         return_str = "(" + str(self.ops_list[0])
         if self.qubit_num > 1:
@@ -109,6 +112,7 @@ class PauliProductOperation(coc.ConditionalOperation):
         return_str += ")"
         return return_str
 
+    @abstractmethod
     def change_single_op(self, qubit: int, new_op: PauliOperator) -> None:
         """Modify a Pauli Operator
 
@@ -122,6 +126,7 @@ class PauliProductOperation(coc.ConditionalOperation):
 
         self.ops_list[qubit] = new_op
 
+    @abstractmethod
     def get_op(self, qubit: int) -> PauliOperator:
         """Return the current operator of qubit i.
 
@@ -133,6 +138,7 @@ class PauliProductOperation(coc.ConditionalOperation):
         """
         return self.ops_list[qubit]
 
+    @abstractmethod
     def get_ops_map(self) -> Dict[int, PauliOperator]:
         """ "
         Return a map of qubit_n -> operator
@@ -146,7 +152,7 @@ class PauliProductOperation(coc.ConditionalOperation):
         )
 
 
-class PauliRotation(PauliProductOperation):
+class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
     """Class for representing a Pauli Product Rotation Block."""
 
     def __init__(self, no_of_qubit: int, rotation_amount: Fraction) -> None:
@@ -158,10 +164,8 @@ class PauliRotation(PauliProductOperation):
             rotation_amount (Fraction): Rotation amount (e.g. 1/4, 1/8). Implicitly multiplied
                 by pi.
         """
-
-        self.qubit_num: int = no_of_qubit
+        super().__init__(no_of_qubit)
         self.rotation_amount: Fraction = rotation_amount
-        self.ops_list: List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
 
     def __str__(self) -> str:
         return "{}: {}".format(self.rotation_amount, self.ops_list)
@@ -189,8 +193,17 @@ class PauliRotation(PauliProductOperation):
             r.change_single_op(i, op)
         return r
 
+    def change_single_op(self, qubit: int, new_op: PauliOperator) -> None:
+        return super().change_single_op(qubit, new_op)
 
-class Measurement(PauliProductOperation):
+    def get_op(self, qubit: int) -> PauliOperator:
+        return super().get_op(qubit)
+
+    def get_ops_map(self) -> Dict[int, PauliOperator]:
+        return super().get_ops_map()
+
+
+class Measurement(PauliProductOperation, coc.ConditionalOperation):
     """Representing a Pauli Product Measurement Block"""
 
     def __init__(self, no_of_qubit: int, isNegative: bool = False) -> None:
@@ -201,9 +214,8 @@ class Measurement(PauliProductOperation):
             no_of_qubit (int): Number of qubits in the circuit
             isNegative (bool, optional): Set to negative. Defaults to False.
         """
-        self.qubit_num: int = no_of_qubit
+        super().__init__(no_of_qubit)
         self.isNegative: bool = isNegative
-        self.ops_list: List[PauliOperator] = [PauliOperator("I") for i in range(no_of_qubit)]
 
     def __str__(self) -> str:
         return "{}M: {}".format("-" if self.isNegative else "", self.ops_list)
@@ -230,3 +242,12 @@ class Measurement(PauliProductOperation):
             m.change_single_op(i, op)
 
         return m
+
+    def change_single_op(self, qubit: int, new_op: PauliOperator) -> None:
+        return super().change_single_op(qubit, new_op)
+
+    def get_op(self, qubit: int) -> PauliOperator:
+        return super().get_op(qubit)
+
+    def get_ops_map(self) -> Dict[int, PauliOperator]:
+        return super().get_ops_map()
