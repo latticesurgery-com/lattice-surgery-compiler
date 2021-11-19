@@ -31,6 +31,28 @@ class TestPauliRotation:
     """Tests for PauliRotation"""
 
     @pytest.mark.parametrize(
+        "input, fraction",
+        [
+            ([X], Fraction(1, 8)),
+            ([X, Z], Fraction(1, 4)),
+            ([X, Z, I, Y, Z], Fraction(1, 2)),
+        ],
+    )
+    def test_from_list(self, input, fraction):
+        pauli_rotation = PauliRotation.from_list(input, fraction)
+        assert pauli_rotation.ops_list == input
+        assert pauli_rotation.qubit_num == len(input)
+        assert pauli_rotation.rotation_amount == fraction
+
+    def test_from_list_empty(self):
+        with pytest.raises(ValueError):
+            PauliRotation.from_list([], Fraction(1, 2))
+
+    def test_from_list_invalid_pauli_operator(self):
+        with pytest.raises(TypeError):
+            PauliRotation.from_list([X, "X"], Fraction(1, 2))
+
+    @pytest.mark.parametrize(
         "pauli_rotation_1, pauli_rotation_2",
         [
             (PauliRotation(3, Fraction(1, 2)), PauliRotation(3, Fraction(1, 2))),
@@ -67,6 +89,23 @@ class TestPauliRotation:
 
 class TestMeasurement:
     """Tests for Measurement class"""
+
+    @pytest.mark.parametrize(
+        "input, isNegative", [([X], True), ([X, Z], False), ([X, Z, I, Y, Z], True)]
+    )
+    def test_from_list(self, input, isNegative):
+        measurement = Measurement.from_list(input, isNegative)
+        assert measurement.ops_list == input
+        assert measurement.qubit_num == len(input)
+        assert measurement.isNegative == isNegative
+
+    def test_from_list_empty(self):
+        with pytest.raises(ValueError):
+            Measurement.from_list([])
+
+    def test_from_list_invalid_pauli_operator(self):
+        with pytest.raises(TypeError):
+            Measurement.from_list([X, "X"])
 
     @pytest.mark.parametrize(
         "measurement_1, measurement_2",
