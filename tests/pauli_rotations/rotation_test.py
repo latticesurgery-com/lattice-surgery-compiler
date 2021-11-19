@@ -19,7 +19,12 @@ from fractions import Fraction
 
 import pytest
 
-from lsqecc.pauli_rotations import Measurement, PauliOperator, PauliRotation, PauliProductOperation
+from lsqecc.pauli_rotations import (
+    Measurement,
+    PauliOperator,
+    PauliProductOperation,
+    PauliRotation,
+)
 
 I = PauliOperator.I  # noqa: E741
 X = PauliOperator.X
