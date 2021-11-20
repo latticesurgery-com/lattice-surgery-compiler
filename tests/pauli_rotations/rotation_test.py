@@ -19,7 +19,12 @@ from fractions import Fraction
 
 import pytest
 
-from lsqecc.pauli_rotations import Measurement, PauliOperator, PauliRotation
+from lsqecc.pauli_rotations import (
+    Measurement,
+    PauliOperator,
+    PauliProductOperation,
+    PauliRotation,
+)
 
 I = PauliOperator.I  # noqa: E741
 X = PauliOperator.X
@@ -160,6 +165,11 @@ class TestPauliProductOperation:
     def test_get_ops_map(self):
         m = Measurement.from_list([X, Z, I, X, I, Z])
         assert m.get_ops_map() == {0: X, 1: Z, 3: X, 5: Z}
+
+    def test_pauli_product_op_init(self):
+        # Should not be able to initialize an instance of PauliProductOperation
+        with pytest.raises(TypeError):
+            PauliProductOperation(2)
 
 
 class TestPauliOperator:
