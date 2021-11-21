@@ -1,4 +1,4 @@
-name: test
+name: Test
 
 on:
   push:
@@ -62,7 +62,7 @@ jobs:
     - name: Test with pytest
       run: |
         if [[ ${{ matrix.python-version }} == '3.9' ]]; then
-          pytest --cov=./ --cov-report=xml;
+          pytest --cov=lsqecc --cov-report=term --cov-report=xml;
         else 
           pytest;
         fi
