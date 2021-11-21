@@ -1,0 +1,11 @@
+testing:
+  - tests/*
+  - tests/**/*
+
+documentation:
+  - docs/**/*
+  - '**/*.md'
+
+compiler:
+  - src/lsqecc/*
+  - src/lsqecc/**/*
