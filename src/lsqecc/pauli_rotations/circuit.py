@@ -82,7 +82,6 @@ class PauliOpCircuit(object):
         if index is None:
             index = len(self)
 
-        # print(rotation)
         self.ops.insert(index, new_block)
 
     def add_single_operator(

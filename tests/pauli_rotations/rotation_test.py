@@ -91,6 +91,37 @@ class TestPauliRotation:
     def test_pauli_rotation_ne(self, pauli_rotation_1, pauli_rotation_2):
         assert pauli_rotation_1 != pauli_rotation_2
 
+    @pytest.mark.parametrize(
+        "input, expected",
+        [
+            (PauliRotation.from_list([Y], Fraction(1, 2)), "1/2: [Y]"),
+            (PauliRotation.from_list([I, X], Fraction(4, 2)), "2: [I, X]"),
+            (PauliRotation.from_list([Y, X], Fraction(-0, 5)), "0: [Y, X]"),
+            (PauliRotation.from_list([X, Z, Y], Fraction(-6, 8)), "-3/4: [X, Z, Y]"),
+        ],
+    )
+    def test_str(self, input, expected):
+        assert str(input) == expected
+
+    @pytest.mark.parametrize(
+        "input, expected",
+        [
+            (PauliRotation.from_list([Y], Fraction(1, 2)), r"(Y)_\frac{\pi}{2}"),
+            (PauliRotation.from_list([Z, I], Fraction(-0, 4)), r"(Z \otimes I)_0"),
+            (PauliRotation.from_list([X, Y], Fraction(-6, 3)), r"(X \otimes Y)_-2\pi"),
+            (
+                PauliRotation.from_list([Y, X, Z], Fraction(-3, 4)),
+                r"(Y \otimes X \otimes Z)_-\frac{3\pi}{4}",
+            ),
+            (
+                PauliRotation.from_list([Y, X, I, Z], Fraction(8, 6)),
+                r"(Y \otimes X \otimes I \otimes Z)_\frac{4\pi}{3}",
+            ),
+        ],
+    )
+    def test_to_latex(self, input, expected):
+        assert input.to_latex() == expected
+
 
 class TestMeasurement:
     """Tests for Measurement class"""
@@ -133,6 +164,27 @@ class TestMeasurement:
     )
     def test_measurement_ne(self, measurement_1, measurement_2):
         assert measurement_1 != measurement_2
+
+    @pytest.mark.parametrize(
+        "input, expected",
+        [
+            (Measurement.from_list([Y]), "M: [Y]"),
+            (Measurement.from_list([I, X], True), "-M: [I, X]"),
+        ],
+    )
+    def test_str(self, input, expected):
+        assert str(input) == expected
+
+    @pytest.mark.parametrize(
+        "input, expected",
+        [
+            (Measurement.from_list([Y]), "(Y)_M"),
+            (Measurement.from_list([I, X], True), r"(I \otimes X)_{-M}"),
+            (Measurement.from_list([X, Y, Z], True), r"(X \otimes Y \otimes Z)_{-M}"),
+        ],
+    )
+    def test_to_latex(self, input, expected):
+        assert input.to_latex() == expected
 
 
 class TestPauliProductOperation:
