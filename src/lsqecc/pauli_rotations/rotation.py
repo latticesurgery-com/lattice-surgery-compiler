@@ -177,7 +177,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         )
 
     def to_latex(self) -> str:
-        return f"{super().to_latex()}_{phase_frac_to_latex(self.rotation_amount)}"
+        return f"{super().to_latex()}_{{{phase_frac_to_latex(self.rotation_amount)}}}"
 
     @staticmethod
     def from_list(pauli_ops: List[PauliOperator], rotation: Fraction) -> "PauliRotation":

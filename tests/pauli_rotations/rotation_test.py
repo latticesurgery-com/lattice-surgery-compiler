@@ -106,16 +106,16 @@ class TestPauliRotation:
     @pytest.mark.parametrize(
         "input, expected",
         [
-            (PauliRotation.from_list([Y], Fraction(1, 2)), r"(Y)_\frac{\pi}{2}"),
-            (PauliRotation.from_list([Z, I], Fraction(-0, 4)), r"(Z \otimes I)_0"),
-            (PauliRotation.from_list([X, Y], Fraction(-6, 3)), r"(X \otimes Y)_-2\pi"),
+            (PauliRotation.from_list([Y], Fraction(1, 2)), r"(Y)_{\frac{\pi}{2}}"),
+            (PauliRotation.from_list([Z, I], Fraction(-0, 4)), r"(Z \otimes I)_{0}"),
+            (PauliRotation.from_list([X, Y], Fraction(-6, 3)), r"(X \otimes Y)_{-2\pi}"),
             (
                 PauliRotation.from_list([Y, X, Z], Fraction(-3, 4)),
-                r"(Y \otimes X \otimes Z)_-\frac{3\pi}{4}",
+                r"(Y \otimes X \otimes Z)_{-\frac{3\pi}{4}}",
             ),
             (
                 PauliRotation.from_list([Y, X, I, Z], Fraction(8, 6)),
-                r"(Y \otimes X \otimes I \otimes Z)_\frac{4\pi}{3}",
+                r"(Y \otimes X \otimes I \otimes Z)_{\frac{4\pi}{3}}",
             ),
         ],
     )
