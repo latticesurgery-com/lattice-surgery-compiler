@@ -68,7 +68,7 @@ jobs:
         fi
   
     - name: Save coverage report
-      if: ${{ matrix.python-version }} == "3.9"
+      if: matrix.python-version == '3.9'
       uses: actions/upload-artifact@v2.2.4
       with: 
         name: coverage-report
@@ -76,6 +76,7 @@ jobs:
 
   upload-coverage:
     name: Upload Coverage Report
+    if: github.repository_owner == 'latticesurgery-com'
     needs: [test]
     runs-on: ubuntu-latest
     steps:
