@@ -85,7 +85,8 @@ class TestDependencyGraph:
         graph.terminal_node.append(DependencyGraph.Node("test"))
         assert graph.generate_adjacency_list() == {"test": []}
 
-    def test_generate_adjacency_list(self):
+    @pytest.fixture
+    def sample_graph(self):
         graph = DependencyGraph()
         node1 = DependencyGraph.Node("test1")
         node2 = DependencyGraph.Node("test2")
@@ -98,10 +99,22 @@ class TestDependencyGraph:
         node2.add_child(node4)
         node3.add_child(node5)
         node4.add_child(node5)
-        assert graph.generate_adjacency_list() == {
+        return graph
+
+    def test_generate_adjacency_list(self, sample_graph):
+        assert sample_graph.generate_adjacency_list() == {
             "test1": ["test3"],
             "test2": ["test3", "test4"],
             "test3": ["test5"],
             "test4": ["test5"],
             "test5": [],
         }
+
+    def test_generate_edge_list(self, sample_graph):
+        assert sample_graph.generate_edge_list() == [
+            ("test1", "test3"),
+            ("test2", "test3"),
+            ("test2", "test4"),
+            ("test3", "test5"),
+            ("test4", "test5"),
+        ]
