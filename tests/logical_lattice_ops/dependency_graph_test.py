@@ -15,9 +15,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
+from fractions import Fraction
+
 import pytest
 
 from lsqecc.logical_lattice_ops.dependency_graph import DependencyGraph
+from lsqecc.pauli_rotations import PauliOpCircuit, PauliOperator, PauliRotation
 
 
 class TestNode:
@@ -118,3 +121,38 @@ class TestDependencyGraph:
             ("test3", "test5"),
             ("test4", "test5"),
         ]
+
+    @pytest.fixture
+    def sample_circuit(self):
+        """Sample PauliOpCircuit based on #71"""
+        pauli_list = [
+            ([PauliOperator.X, PauliOperator.X], Fraction(1, 8)),
+            ([PauliOperator.Z, PauliOperator.Z], Fraction(1, 4)),
+            ([PauliOperator.X, PauliOperator.Z], Fraction(-1, 4)),
+            ([PauliOperator.I, PauliOperator.X], Fraction(-1, 4)),
+            ([PauliOperator.Z, PauliOperator.I], Fraction(-1, 4)),
+            ([PauliOperator.I, PauliOperator.Z], Fraction(-1, 4)),
+        ]
+        c = PauliOpCircuit(2)
+
+        for block in pauli_list:
+            c.add_pauli_block(PauliRotation.from_list(*block))
+        return c
+
+    def test_from_circuit_by_commutation(self, sample_circuit):
+        """Testing DAG genration from PauliOpCircuit, example from #71"""
+        graph = DependencyGraph.from_circuit_by_commutation(sample_circuit)
+
+        node5 = graph.terminal_node[0]
+        node4 = graph.terminal_node[1]
+        node3 = node5.children[0]
+        node2 = node4.children[0]
+        node1 = node2.children[0]
+        node0 = node2.children[1]
+
+        assert node0.op == sample_circuit.ops[0]
+        assert node1.op == sample_circuit.ops[1]
+        assert node3.op == sample_circuit.ops[3]
+        assert node2.op == sample_circuit.ops[2]
+        assert node4.op == sample_circuit.ops[4]
+        assert node5.op == sample_circuit.ops[5]

@@ -24,6 +24,8 @@ T = TypeVar("T")
 
 
 class DependencyGraph:
+    """Class representing a dependency DAG. Experimental"""
+
     class Node:
         def __init__(self, op: T):
             self.op = op
