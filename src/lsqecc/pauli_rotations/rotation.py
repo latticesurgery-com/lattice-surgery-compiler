@@ -177,7 +177,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         )
 
     def __hash__(self) -> int:
-        return hash((self.rotation_amount, tuple(self.ops_list)))
+        return hash(hash(self.rotation_amount) + hash(tuple(self.ops_list)))
 
     def to_latex(self) -> str:
         return f"{super().to_latex()}_{{{phase_frac_to_latex(self.rotation_amount)}}}"
@@ -219,7 +219,7 @@ class Measurement(PauliProductOperation, coc.ConditionalOperation):
         )
 
     def __hash__(self) -> int:
-        return hash((self.isNegative, tuple(self.ops_list)))
+        return hash(hash(self.isNegative) + hash(tuple(self.ops_list)))
 
     def to_latex(self) -> str:
         return_str = super().to_latex()

@@ -103,6 +103,24 @@ class TestPauliRotation:
     def test_str(self, input, expected):
         assert str(input) == expected
 
+    def test_hash(self):
+        # Equal but distinct object have equal hashes
+        assert hash(PauliRotation.from_list([Y, X, Z], Fraction(1, 2))) == hash(
+            PauliRotation.from_list([Y, X, Z], Fraction(1, 2))
+        )
+        # Different angle
+        assert hash(PauliRotation.from_list([Y, X, Z], Fraction(1, 2))) != hash(
+            PauliRotation.from_list([Y, X, Z], Fraction(1, 4))
+        )
+        # Same angle different ops
+        assert hash(PauliRotation.from_list([Y, X, Z], Fraction(1, 2))) != hash(
+            PauliRotation.from_list([Y, X, X], Fraction(1, 2))
+        )
+        # Same angles and same ops in different order
+        assert hash(PauliRotation.from_list([Y, X, Z], Fraction(1, 2))) != hash(
+            PauliRotation.from_list([Y, Z, X], Fraction(1, 2))
+        )
+
     @pytest.mark.parametrize(
         "input, expected",
         [
@@ -174,6 +192,24 @@ class TestMeasurement:
     )
     def test_str(self, input, expected):
         assert str(input) == expected
+
+    def test_hash(self):
+        # Equal but distinct object have equal hashes
+        assert hash(Measurement.from_list([Y, X, Z], isNegative=True)) == hash(
+            Measurement.from_list([Y, X, Z], isNegative=True)
+        )
+        # Different sign to the observable
+        assert hash(Measurement.from_list([Y, X, Z], isNegative=True)) != hash(
+            Measurement.from_list([Y, X, Z], isNegative=False)
+        )
+        # Same sign, different ops
+        assert hash(Measurement.from_list([Y, X, Z], isNegative=True)) != hash(
+            Measurement.from_list([Y, X, X], isNegative=True)
+        )
+        # Same sign, same ops in different order
+        assert hash(Measurement.from_list([Y, X, Z], isNegative=True)) != hash(
+            Measurement.from_list([Y, Z, X], isNegative=True)
+        )
 
     @pytest.mark.parametrize(
         "input, expected",
