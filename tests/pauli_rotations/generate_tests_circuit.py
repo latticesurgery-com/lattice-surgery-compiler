@@ -55,7 +55,9 @@ def generate_tests_circuit_has_measurements() -> List[Tuple[PauliOpCircuit, bool
 def generate_tests_are_commuting() -> List[
     Tuple[Union[PauliRotation, Measurement], Union[PauliRotation, Measurement], bool]
 ]:
-    tests_list = list()
+    tests_list: List[
+        Tuple[Union[PauliRotation, Measurement], Union[PauliRotation, Measurement], bool]
+    ] = list()
     block1 = PauliRotation.from_list([X, I, Z, I], Fraction(1, 4))
     block2 = PauliRotation.from_list([I, Z, I, X], Fraction(-1, 4))
     block3 = Measurement.from_list([Z, X, I, Z])
