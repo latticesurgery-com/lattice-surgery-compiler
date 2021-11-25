@@ -18,22 +18,24 @@
 import copy
 from typing import List, TypeVar
 
-from lsqecc.pauli_rotations import PauliOpCircuit, PauliProductOperation
+from lsqecc.pauli_rotations import PauliOpCircuit
 
 T = TypeVar("T")
 
 
 class DependencyGraph:
+    """Class representing a dependency DAG. Experimental"""
+
     class Node:
         def __init__(self, op: T):
             self.op = op
-            self.parents: List["DependencyGraph.Node"] = list()
-            self.children: List["DependencyGraph.Node"] = list()
+            self.parents: List[DependencyGraph.Node] = list()
+            self.children: List[DependencyGraph.Node] = list()
 
         def __str__(self) -> str:
-            return "({}: Parent: {}, Children: {})".format(
-                self.op, [a.op for a in self.parents], [b.op for b in self.children]
-            )
+            parents = [p.op for p in self.parents]
+            children = [c.op for c in self.children]
+            return f"({self.op}: Parent: {parents}, Children: {children})"
 
         def __repr__(self) -> str:
             return str(self)
@@ -43,6 +45,17 @@ class DependencyGraph:
                 return self.op == other.op
             else:
                 return False
+
+        def __ne__(self, other) -> bool:
+            return not self.__eq__(other)
+
+        def add_child(self, child: "DependencyGraph.Node") -> None:
+            self.children.append(child)
+            child.parents.append(self)
+
+        def add_parent(self, parent: "DependencyGraph.Node") -> None:
+            self.parents.append(parent)
+            parent.children.append(self)
 
     def __init__(self):
         self.terminal_node = list()
@@ -60,7 +73,7 @@ class DependencyGraph:
         return DependencyGraph.from_list(circuit.ops, func)
 
     @staticmethod
-    def from_list(input_list: List[PauliProductOperation], comparing_function) -> "DependencyGraph":
+    def from_list(input_list: List[T], comparing_function) -> "DependencyGraph":
         """
         Build a DependencyGraph from a list.
 
