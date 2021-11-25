@@ -3,7 +3,6 @@ import pytest
 from lsqecc.pauli_rotations.circuit import PauliOpCircuit
 
 from .generate_tests_circuit import (
-    generate_tests_apply_transformation,
     generate_tests_are_commuting,
     generate_tests_circuit_has_measurements,
     generate_tests_count_rotations_by,
@@ -37,9 +36,9 @@ def test_are_commuting(input1, input2, expected):
     assert PauliOpCircuit.are_commuting(input1, input2) == expected
 
 
-@pytest.mark.parametrize("input, expected", generate_tests_apply_transformation())
-def test_apply_transformation(input, expected):
-    assert input.apply_transformation() == expected
+# @pytest.mark.parametrize("input, expected", generate_tests_apply_transformation())
+# def test_apply_transformation(input, expected):
+#     assert input.apply_transformation() == expected
 
 
 @pytest.mark.parametrize("circuit1, circuit2, expected", generate_tests_join_same_qubit_num())
