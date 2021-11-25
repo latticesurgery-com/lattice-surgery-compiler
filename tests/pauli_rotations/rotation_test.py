@@ -103,23 +103,29 @@ class TestPauliRotation:
     def test_str(self, input, expected):
         assert str(input) == expected
 
-    def test_hash(self):
+    def test_hash_equal(self):
         # Equal but distinct object have equal hashes
         assert hash(PauliRotation.from_list([Y, X, Z], Fraction(1, 2))) == hash(
             PauliRotation.from_list([Y, X, Z], Fraction(1, 2))
         )
-        # Different angle
-        assert hash(PauliRotation.from_list([Y, X, Z], Fraction(1, 2))) != hash(
-            PauliRotation.from_list([Y, X, Z], Fraction(1, 4))
-        )
-        # Same angle different ops
-        assert hash(PauliRotation.from_list([Y, X, Z], Fraction(1, 2))) != hash(
-            PauliRotation.from_list([Y, X, X], Fraction(1, 2))
-        )
-        # Same angles and same ops in different order
-        assert hash(PauliRotation.from_list([Y, X, Z], Fraction(1, 2))) != hash(
-            PauliRotation.from_list([Y, Z, X], Fraction(1, 2))
-        )
+
+    @pytest.mark.parametrize(
+        "rotation1, rotation2",
+        [
+            # Different everything
+            (([I, X, Z, Y], Fraction(1, 2)), ([Y, X, Z], Fraction(1, 4))),
+            # Different angle
+            (([Y, X, Z], Fraction(1, 2)), ([Y, X, Z], Fraction(1, 4))),
+            # Same angle different ops
+            (([Y, X, Z], Fraction(1, 2)), ([Y, X, X], Fraction(1, 2))),
+            # Same angle same ops in different order
+            (([Y, X, Z], Fraction(1, 2)), ([Y, Z, X], Fraction(1, 2))),
+        ],
+    )
+    def test_hash_not_equal(self, rotation1, rotation2):
+        a = PauliRotation.from_list(*rotation1)
+        b = PauliRotation.from_list(*rotation2)
+        assert hash(a) != hash(b)
 
     @pytest.mark.parametrize(
         "input, expected",
@@ -193,23 +199,29 @@ class TestMeasurement:
     def test_str(self, input, expected):
         assert str(input) == expected
 
-    def test_hash(self):
+    def test_hash_equal(self):
         # Equal but distinct object have equal hashes
-        assert hash(Measurement.from_list([Y, X, Z], isNegative=True)) == hash(
-            Measurement.from_list([Y, X, Z], isNegative=True)
+        assert hash(Measurement.from_list([Y, X, Z], True)) == hash(
+            Measurement.from_list([Y, X, Z], True)
         )
-        # Different sign to the observable
-        assert hash(Measurement.from_list([Y, X, Z], isNegative=True)) != hash(
-            Measurement.from_list([Y, X, Z], isNegative=False)
-        )
-        # Same sign, different ops
-        assert hash(Measurement.from_list([Y, X, Z], isNegative=True)) != hash(
-            Measurement.from_list([Y, X, X], isNegative=True)
-        )
-        # Same sign, same ops in different order
-        assert hash(Measurement.from_list([Y, X, Z], isNegative=True)) != hash(
-            Measurement.from_list([Y, Z, X], isNegative=True)
-        )
+
+    @pytest.mark.parametrize(
+        "measurement1, measurement2",
+        [
+            # Different everything
+            (([I, X, Z, Y], True), ([Y, X, Z], False)),
+            # Different sign to the observable
+            (([Y, X, Z], True), ([Y, X, Z], False)),
+            # Same sign, different ops
+            (([Y, X, Z], True), ([Y, X, X], True)),
+            # Same sign, same ops in different order
+            (([Y, X, Z], True), ([Y, Z, X], True)),
+        ],
+    )
+    def test_hash_not_equal(self, measurement1, measurement2):
+        a = Measurement.from_list(*measurement1)
+        b = Measurement.from_list(*measurement2)
+        assert hash(a) != hash(b)
 
     @pytest.mark.parametrize(
         "input, expected",
