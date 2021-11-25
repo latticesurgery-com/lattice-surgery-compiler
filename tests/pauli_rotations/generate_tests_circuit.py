@@ -58,7 +58,7 @@ def generate_tests_are_commuting() -> List[
     tests_list = list()
     block1 = PauliRotation.from_list([X, I, Z, I], Fraction(1, 4))
     block2 = PauliRotation.from_list([I, Z, I, X], Fraction(-1, 4))
-    block3 = Measurement.from_list([Z, X, I, Z], Fraction(1, 8))
+    block3 = Measurement.from_list([Z, X, I, Z])
     tests_list.append((block1, block1, True))
     tests_list.append((block1, block2, True))
     tests_list.append((block1, block3, False))
