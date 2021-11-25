@@ -2,7 +2,12 @@ from fractions import Fraction
 from typing import List, Tuple
 
 from lsqecc.pauli_rotations.circuit import PauliOpCircuit
-from lsqecc.pauli_rotations.rotation import Measurement, PauliOperator, PauliRotation
+from lsqecc.pauli_rotations.rotation import (
+    Measurement,
+    PauliOperator,
+    PauliProductOperation,
+    PauliRotation,
+)
 
 I = PauliOperator.I  # noqa: E741
 X = PauliOperator.X
@@ -30,7 +35,7 @@ def generate_tests_pauli_op_circuit_equality(
         assert False
 
 
-def generate_tests_circuit_has_measurements() -> List[Tuple[bool, bool]]:
+def generate_tests_circuit_has_measurements() -> List[Tuple[PauliOpCircuit, bool]]:
     c1 = PauliOpCircuit(4)
     c1.add_pauli_block(PauliRotation.from_list([Z, X, I, Y], Fraction(1, 8)))
     c1.add_pauli_block(PauliRotation.from_list([Z, X, I, Y], Fraction(-1, 8)))
@@ -46,26 +51,28 @@ def generate_tests_circuit_has_measurements() -> List[Tuple[bool, bool]]:
     c3.add_pauli_block(Measurement.from_list([X, X]))
 
     return [
-        (c1.circuit_has_measurements(), False),
-        (c2.circuit_has_measurements(), True),
-        (c3.circuit_has_measurements(), True),
+        (c1, False),
+        (c2, True),
+        (c3, True),
     ]
 
 
-def generate_tests_are_commuting() -> List[Tuple[bool, bool]]:
+def generate_tests_are_commuting() -> List[
+    Tuple[PauliProductOperation, PauliProductOperation, bool]
+]:
     tests_list = list()
     block1 = PauliRotation.from_list([X, I, Z, I], Fraction(1, 4))
     block2 = PauliRotation.from_list([I, Z, I, X], Fraction(-1, 4))
     block3 = PauliRotation.from_list([Z, X, I, Z], Fraction(1, 8))
-    tests_list.append((PauliOpCircuit.are_commuting(block1, block1), True))
-    tests_list.append((PauliOpCircuit.are_commuting(block1, block2), True))
-    tests_list.append((PauliOpCircuit.are_commuting(block1, block3), False))
-    tests_list.append((PauliOpCircuit.are_commuting(block2, block3), True))
+    tests_list.append((block1, block1, True))
+    tests_list.append((block1, block2, True))
+    tests_list.append((block1, block3, False))
+    tests_list.append((block2, block3, True))
 
     return tests_list
 
 
-def generate_tests_apply_transformation():
+def generate_tests_apply_transformation() -> List[Tuple[PauliOpCircuit, PauliOpCircuit]]:
     """
     Three Litinski Rules
     1. Test 1 --> P, P` commute - Litinski 4a
@@ -92,7 +99,7 @@ def generate_tests_apply_transformation():
     input.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
     input.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
     input.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
-    input.apply_transformation()
+    # input.apply_transformation()
 
     expected = PauliOpCircuit(4)
     expected.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
@@ -109,7 +116,7 @@ def generate_tests_apply_transformation():
     input.add_pauli_block(PauliRotation.from_list([Z, Z, I, X, I], Fraction(-1, 8)))
     input.add_pauli_block(PauliRotation.from_list([Y, X, I, Y, I], Fraction(1, 8)))
     input.add_pauli_block(PauliRotation.from_list([Z, Z, Z, Z, Z], Fraction(-1, 4)))
-    input.apply_transformation()
+    # input.apply_transformation()
 
     expected = PauliOpCircuit(5)
     expected.add_pauli_block(PauliRotation.from_list([Y, Z, Z, X, I], Fraction(1, 8)))
@@ -128,7 +135,7 @@ def generate_tests_apply_transformation():
     input.add_pauli_block(Measurement.from_list([Z, I, I]))
     input.add_pauli_block(Measurement.from_list([I, X, I]))
     input.add_pauli_block(Measurement.from_list([I, I, Z]))
-    input.apply_transformation()
+    # input.apply_transformation()
 
     expected = PauliOpCircuit(3)
     expected.add_pauli_block(Measurement.from_list([Z, I, I]))
@@ -141,7 +148,9 @@ def generate_tests_apply_transformation():
     return tests_list
 
 
-def generate_tests_join() -> List[Tuple[bool, bool]]:
+def generate_tests_join_same_qubit_num() -> List[
+    Tuple[PauliOpCircuit, PauliOpCircuit, PauliOpCircuit]
+]:
 
     tests_list = list()
     c1 = PauliOpCircuit(4)
@@ -156,32 +165,73 @@ def generate_tests_join() -> List[Tuple[bool, bool]]:
     c2.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
     c2.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
 
-    c3 = PauliOpCircuit(5)
-    c3.add_pauli_block(PauliRotation.from_list([Z, X, Z, Y, I], Fraction(-1, 8)))
-    c3.add_pauli_block(PauliRotation.from_list([Y, Z, Z, X, I], Fraction(1, 8)))
-    c3.add_pauli_block(PauliRotation.from_list([Y, Z, I, Z, Z], Fraction(1, 4)))
+    c3 = PauliOpCircuit(4)
+    c3.add_pauli_block(PauliRotation.from_list([Z, X, Z, Y], Fraction(-1, 8)))
+    c3.add_pauli_block(PauliRotation.from_list([Y, Z, Z, X], Fraction(1, 8)))
+    c3.add_pauli_block(PauliRotation.from_list([Y, Z, I, Z], Fraction(1, 4)))
 
-    j1 = PauliOpCircuit.join(c1, c2)
-    j2 = PauliOpCircuit.join(c1, c3)
-    j3 = PauliOpCircuit.join(c2, c3)
-    c4 = PauliOpCircuit(4)
-    c4.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
-    c4.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
-    c4.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
-    c4.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
-    c4.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
-    c4.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
-    c4.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
-    c4.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
+    j1 = PauliOpCircuit(4)
+    j1.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
+    j1.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
+    j1.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
+    j1.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
+    j1.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
+    j1.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
+    j1.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
+    j1.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
 
-    tests_list.append((j1 == c4, True))
-    tests_list.append((j2 == c3, False))
-    tests_list.append((j3 == c3, False))
+    j2 = PauliOpCircuit(4)
+    j2.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
+    j2.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
+    j2.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
+    j2.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
+    j2.add_pauli_block(PauliRotation.from_list([Z, X, Z, Y], Fraction(-1, 8)))
+    j2.add_pauli_block(PauliRotation.from_list([Y, Z, Z, X], Fraction(1, 8)))
+    j2.add_pauli_block(PauliRotation.from_list([Y, Z, I, Z], Fraction(1, 4)))
+
+    j3 = PauliOpCircuit(4)
+    j3.add_pauli_block(PauliRotation.from_list([Z, X, Z, Y], Fraction(-1, 8)))
+    j3.add_pauli_block(PauliRotation.from_list([Y, Z, Z, X], Fraction(1, 8)))
+    j3.add_pauli_block(PauliRotation.from_list([Y, Z, I, Z], Fraction(1, 4)))
+    j3.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
+    j3.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
+    j3.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
+    j3.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
+
+    tests_list.append((c1, c2, j1))
+    tests_list.append((c2, c3, j2))
+    tests_list.append((c3, c1, j3))
 
     return tests_list
 
 
-def generate_tests_count_rotations_by() -> List[Tuple[int, int]]:
+def generate_tests_join_different_qubit_num() -> List[Tuple[PauliOpCircuit, PauliOpCircuit]]:
+    tests_list = list()
+    c1 = PauliOpCircuit(4)
+    c1.add_pauli_block(PauliRotation.from_list([X, I, Z, I], Fraction(1, 4)))
+    c1.add_pauli_block(PauliRotation.from_list([I, Z, I, X], Fraction(-1, 8)))
+    c1.add_pauli_block(PauliRotation.from_list([X, X, I, I], Fraction(-1, 4)))
+    c1.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
+
+    c2 = PauliOpCircuit(3)
+    c2.add_pauli_block(PauliRotation.from_list([Z, I, X], Fraction(-1, 8)))
+    c2.add_pauli_block(PauliRotation.from_list([I, Z, X], Fraction(1, 8)))
+    c2.add_pauli_block(PauliRotation.from_list([X, I, I], Fraction(-1, 4)))
+    c2.add_pauli_block(PauliRotation.from_list([I, Z, I], Fraction(1, 4)))
+
+    c3 = PauliOpCircuit(5)
+    c3.add_pauli_block(PauliRotation.from_list([Z, X, Z, Y, X], Fraction(-1, 8)))
+    c3.add_pauli_block(PauliRotation.from_list([Y, Z, Z, X, I], Fraction(1, 8)))
+    c3.add_pauli_block(PauliRotation.from_list([Y, Z, I, Z, Y], Fraction(1, 4)))
+
+    tests_list.append((c1, c2))
+    tests_list.append((c2, c3))
+    tests_list.append((c3, c1))
+
+    return tests_list
+
+
+def generate_tests_count_rotations_by() -> List[Tuple[PauliOpCircuit, Fraction, int]]:
 
     tests_list = list()
 
@@ -192,9 +242,9 @@ def generate_tests_count_rotations_by() -> List[Tuple[int, int]]:
     c1.add_pauli_block(PauliRotation.from_list([I, I, Z, X], Fraction(1, 8)))
     c1.add_pauli_block(Measurement.from_list([Z, Z, I, I]))
 
-    tests_list.append((c1.count_rotations_by(Fraction(1, 4)), 1))
-    tests_list.append((c1.count_rotations_by(Fraction(-1, 4)), 1))
-    tests_list.append((c1.count_rotations_by(Fraction(1, 8)), 1))
-    tests_list.append((c1.count_rotations_by(Fraction(1, -8)), 1))
+    tests_list.append((c1, Fraction(1, 4), 1))
+    tests_list.append((c1, Fraction(-1, 4), 1))
+    tests_list.append((c1, Fraction(1, 8), 1))
+    tests_list.append((c1, Fraction(1, -8), 1))
 
     return tests_list
