@@ -27,6 +27,7 @@ def generate_tests_pauli_op_circuit_equality(
     else:
         return [(c1, c2), (c2, c3), (c3, c1)]
 
+
 def generate_tests_circuit_has_measurements() -> List[Tuple[PauliOpCircuit, bool]]:
     c1 = PauliOpCircuit(4)
     c1.add_pauli_block(PauliRotation.from_list([Z, X, I, Y], Fraction(1, 8)))
