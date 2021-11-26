@@ -1,44 +1,62 @@
-from fractions import Fraction
-from typing import List, Tuple
-
 import pytest
 
-from lsqecc.pauli_rotations import Measurement, PauliOperator, PauliRotation
 from lsqecc.pauli_rotations.circuit import PauliOpCircuit
 
-I = PauliOperator.I  # noqa: E741
-X = PauliOperator.X
-Y = PauliOperator.Y
-Z = PauliOperator.Z
-
-
-def generate_test_pauli_op_circuit(case: str) -> List[Tuple[PauliOpCircuit, PauliOpCircuit]]:
-    c1 = PauliOpCircuit(4)
-    c1.add_pauli_block(PauliRotation.from_list([I, X, I, I], Fraction(1, 8)))
-    c2 = PauliOpCircuit(4)
-    c2.add_pauli_block(PauliRotation.from_list([X, Y, Z, I], Fraction(-1, 4)))
-    c2.add_pauli_block(PauliRotation.from_list([I, Z, Z, I], Fraction(1, 8)))
-    c3 = PauliOpCircuit(4)
-    c3.add_pauli_block(PauliRotation.from_list([X, Y, Z, I], Fraction(-1, 4)))
-    c3.add_pauli_block(PauliRotation.from_list([I, Z, Z, I], Fraction(1, 8)))
-    c3.add_pauli_block(Measurement.from_list([Y, X, I, I]))
-    if case == "eq":
-        return [(c1, c1), (c2, c2), (c3, c3)]
-    elif case == "ne":
-        return [(c1, c2), (c2, c3), (c3, c1)]
-    else:
-        assert False
+from .generate_tests_circuit import (
+    generate_tests_are_commuting,
+    generate_tests_circuit_has_measurements,
+    generate_tests_count_rotations_by,
+    generate_tests_join_different_qubit_num,
+    generate_tests_join_same_qubit_num,
+    generate_tests_pauli_op_circuit_equality,
+)
 
 
 @pytest.mark.parametrize(
-    "pauli_op_circuit_1, pauli_op_circuit_2", generate_test_pauli_op_circuit("eq")
+    "pauli_op_circuit_1, pauli_op_circuit_2", generate_tests_pauli_op_circuit_equality(for_eq=True)
 )
 def test_pauli_op_circuit_eq(pauli_op_circuit_1, pauli_op_circuit_2):
-    assert pauli_op_circuit_1 == pauli_op_circuit_1
+    assert pauli_op_circuit_1 == pauli_op_circuit_2
 
 
 @pytest.mark.parametrize(
-    "pauli_op_circuit_1, pauli_op_circuit_2", generate_test_pauli_op_circuit("ne")
+    "pauli_op_circuit_1, pauli_op_circuit_2", generate_tests_pauli_op_circuit_equality(for_eq=False)
 )
 def test_pauli_op_circuit_ne(pauli_op_circuit_1, pauli_op_circuit_2):
     assert pauli_op_circuit_1 != pauli_op_circuit_2
+
+
+@pytest.mark.parametrize("input, expected", generate_tests_circuit_has_measurements())
+def test_circuit_has_measurement(input, expected):
+    assert input.circuit_has_measurements() == expected
+
+
+@pytest.mark.parametrize("input1, input2, expected", generate_tests_are_commuting())
+def test_are_commuting(input1, input2, expected):
+    assert PauliOpCircuit.are_commuting(input1, input2) == expected
+
+
+# @pytest.mark.parametrize("input, expected", generate_tests_apply_transformation())
+# def test_apply_transformation(input, expected):
+#     assert input.apply_transformation() == expected
+
+
+@pytest.mark.parametrize("circuit1, circuit2, expected", generate_tests_join_same_qubit_num())
+def test_join_same_qubit_num(circuit1, circuit2, expected):
+    assert PauliOpCircuit.join(circuit1, circuit2) == expected
+
+
+@pytest.mark.parametrize("circuit1, circuit2", generate_tests_join_different_qubit_num())
+def test_join_different_qubit_num(circuit1, circuit2):
+    with pytest.raises(Exception):
+        PauliOpCircuit.join(circuit1, circuit2)
+
+
+@pytest.mark.parametrize("circuit, fraction, expected", generate_tests_count_rotations_by())
+def test_count_rotations_by(circuit, fraction, expected):
+    assert circuit.count_rotations_by(fraction) == expected
+
+
+# def test_remove_y_operators_from_circuit(output, expected):
+#     raise NotImplementedError
+#     # assert output == expected
