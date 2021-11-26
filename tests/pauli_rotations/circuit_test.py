@@ -13,7 +13,7 @@ from .generate_tests_circuit import (
 
 
 @pytest.mark.parametrize(
-    "pauli_op_circuit_1, pauli_op_circuit_2", generate_tests_pauli_op_circuit_equality("eq")
+    "pauli_op_circuit_1, pauli_op_circuit_2", generate_tests_pauli_op_circuit_equality(for_eq=True)
 )
 def test_pauli_op_circuit_eq(pauli_op_circuit_1, pauli_op_circuit_2):
     assert pauli_op_circuit_1 == pauli_op_circuit_2
