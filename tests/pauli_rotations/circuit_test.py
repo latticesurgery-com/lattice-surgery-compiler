@@ -20,7 +20,7 @@ def test_pauli_op_circuit_eq(pauli_op_circuit_1, pauli_op_circuit_2):
 
 
 @pytest.mark.parametrize(
-    "pauli_op_circuit_1, pauli_op_circuit_2", generate_tests_pauli_op_circuit_equality("ne")
+    "pauli_op_circuit_1, pauli_op_circuit_2", generate_tests_pauli_op_circuit_equality(for_eq=False)
 )
 def test_pauli_op_circuit_ne(pauli_op_circuit_1, pauli_op_circuit_2):
     assert pauli_op_circuit_1 != pauli_op_circuit_2
