@@ -136,3 +136,20 @@ def test_commute_rotation_measurement_commuting(rotation, measurement):
 def test_commute_rotation_measurement_anticommute():
     # TODO: Develop test cases for this test
     pass
+
+
+def test_commute_no_next_block():
+    circuit = PauliOpCircuit(1)
+    circuit.add_pauli_block(PauliRotation.from_list([X], Fraction(1, 4)))
+
+    with pytest.raises(Exception):
+        circuit.commute_pi_over_four_rotation(0)
+
+
+def test_commute_non_pi_over_4_rotation():
+    circuit = PauliOpCircuit(1)
+    circuit.add_pauli_block(PauliRotation.from_list([X], Fraction(1, 8)))
+    circuit.add_pauli_block(PauliRotation.from_list([Y], Fraction(1, 4)))
+
+    with pytest.raises(Exception):
+        circuit.commute_pi_over_four_rotation(0)
