@@ -90,9 +90,10 @@ def test_commute_rotation_to_rotation_commuting(rotation1, rotation2):
     "rotation1, rotation2, resultant_rotation",
     [
         (([X], Fraction(1, 4)), ([Z], Fraction(1, 4)), ([Y], Fraction(1, 4))),
-        (([Y], Fraction(1, 4)), ([X], Fraction(-1, 8)), ([Z], Fraction(-1, 8))),
-        (([Z, X], Fraction(1, 4)), ([Y, X], Fraction(1, 8)), ([X, I], Fraction(1, 8))),
+        (([Y], Fraction(-1, 4)), ([X], Fraction(-1, 8)), ([Z], Fraction(-1, 8))),
+        (([Z, X], Fraction(-1, 4)), ([Y, X], Fraction(1, 8)), ([X, I], Fraction(1, 8))),
         (([X, Z, Y], Fraction(1, 4)), ([Y, X, Z], Fraction(-1, 8)), ([Z, Y, X], Fraction(-1, 8))),
+        (([X, Z, Z], Fraction(1, 4)), ([Y, X, Y], Fraction(-1, 8)), ([Z, Y, X], Fraction(1, 8))),
         (
             ([X, Y, X, Z, Z], Fraction(1, 4)),
             ([Z, Y, I, X, Y], Fraction(1, 8)),
@@ -133,9 +134,31 @@ def test_commute_rotation_measurement_commuting(rotation, measurement):
     assert test_circuit.ops[1].rotation_amount == rotation[1]
 
 
-def test_commute_rotation_measurement_anticommute():
-    # TODO: Develop test cases for this test
-    pass
+@pytest.mark.parametrize(
+    "rotation, measurement, resultant_measurement",
+    [
+        (([X], Fraction(1, 4)), ([Z], False), ([Y], False)),
+        (([Y], Fraction(-1, 4)), ([X], True), ([Z], True)),
+        (([Z, X], Fraction(-1, 4)), ([Y, X], False), ([X, I], False)),
+        (([X, Z, Y], Fraction(1, 4)), ([Y, X, Z], True), ([Z, Y, X], True)),
+        (([X, Z, Z], Fraction(1, 4)), ([Y, X, Y], True), ([Z, Y, X], False)),
+        (
+            ([X, Y, X, Z, Z], Fraction(1, 4)),
+            ([Z, Y, I, X, Y], False),
+            ([Y, I, X, Y, X], False),
+        ),
+    ],
+)
+def test_commute_rotation_measurement_anticommute(rotation, measurement, resultant_measurement):
+    test_circuit = PauliOpCircuit(len(rotation[0]))
+    test_circuit.add_pauli_block(PauliRotation.from_list(*rotation))
+    test_circuit.add_pauli_block(Measurement.from_list(*measurement))
+    test_circuit.commute_pi_over_four_rotation(0)
+
+    assert test_circuit.ops[0].ops_list == resultant_measurement[0]
+    assert test_circuit.ops[0].isNegative == resultant_measurement[1]
+    assert test_circuit.ops[1].ops_list == rotation[0]
+    assert test_circuit.ops[1].rotation_amount == rotation[1]
 
 
 def test_commute_no_next_block():
