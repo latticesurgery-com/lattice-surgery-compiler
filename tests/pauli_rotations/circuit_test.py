@@ -173,6 +173,42 @@ def test_swap_rotation_measurement_anticommute(rotation, measurement, measuremen
     assert test_circuit.ops[1].rotation_amount == rotation[1]
 
 
+@pytest.mark.parametrize(
+    "block1, block2",
+    [
+        (([X], Fraction(1, 4)), ([Z], False)),
+        (([Y], Fraction(-1, 4)), ([X], True)),
+        (([Z, X], Fraction(-1, 4)), ([Y, X], Fraction(1, 2))),
+        (([X, Z, Y], Fraction(1, 4)), ([Y, X, Z], Fraction(1, 2))),
+    ],
+)
+def test_swap_commute_exception(block1, block2):
+    test_circuit = PauliOpCircuit(len(block1[0]))
+    test_circuit.add_pauli_block(PauliRotation.from_list(*block1))
+    test_circuit.add_pauli_block(Measurement.from_list(*block2))
+
+    with pytest.raises(Exception):
+        test_circuit._swap_adjacent_commuting_blocks(0)
+
+
+@pytest.mark.parametrize(
+    "block1, block2",
+    [
+        (([X], Fraction(1, 4)), ([I], Fraction(1, 4))),
+        (([I, X], Fraction(1, 4)), ([Y, X], Fraction(-1, 8))),
+        (([X, Z, Y], Fraction(1, 4)), ([Y, X, Y], False)),
+        (([I, Z, I, X], Fraction(-1, 4)), ([Z, X, I, Z], True)),
+    ],
+)
+def test_swap_anticommute_exception(block1, block2):
+    test_circuit = PauliOpCircuit(len(block1[0]))
+    test_circuit.add_pauli_block(PauliRotation.from_list(*block1))
+    test_circuit.add_pauli_block(Measurement.from_list(*block2))
+
+    with pytest.raises(Exception):
+        test_circuit._swap_adjacent_anticommuting_blocks(0)
+
+
 def test_swap_no_next_block():
     circuit = PauliOpCircuit(1)
     circuit.add_pauli_block(PauliRotation.from_list([X], Fraction(1, 4)))
