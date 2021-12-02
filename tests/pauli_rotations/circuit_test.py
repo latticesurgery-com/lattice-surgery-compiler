@@ -75,9 +75,12 @@ def test_count_rotations_by(circuit, fraction, expected):
     ],
 )
 def test_commute_rotation_to_rotation_commuting(rotation1, rotation2):
+    # Before commuting: rotation1 ---- rotation2
     test_circuit = PauliOpCircuit(len(rotation1[0]))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation1))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation2))
+
+    # After commuting: rotation2 ---- rotation1
     test_circuit.commute_pi_over_four_rotation(0)
 
     assert test_circuit.ops[0].ops_list == rotation2[0]
@@ -87,7 +90,7 @@ def test_commute_rotation_to_rotation_commuting(rotation1, rotation2):
 
 
 @pytest.mark.parametrize(
-    "rotation1, rotation2, resultant_rotation",
+    "rotation1, rotation2, rotation2_after",
     [
         (([X], Fraction(1, 4)), ([Z], Fraction(1, 4)), ([Y], Fraction(1, 4))),
         (([Y], Fraction(-1, 4)), ([X], Fraction(-1, 8)), ([Z], Fraction(-1, 8))),
@@ -101,14 +104,17 @@ def test_commute_rotation_to_rotation_commuting(rotation1, rotation2):
         ),
     ],
 )
-def test_commute_rotation_rotation_anti_commuting(rotation1, rotation2, resultant_rotation):
+def test_commute_rotation_rotation_anti_commuting(rotation1, rotation2, rotation2_after):
+    # Before commuting: rotation1 ---- rotation2
     test_circuit = PauliOpCircuit(len(rotation1[0]))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation1))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation2))
+
+    # After commuting: rotation2_after ---- rotation1
     test_circuit.commute_pi_over_four_rotation(0)
 
-    assert test_circuit.ops[0].ops_list == resultant_rotation[0]
-    assert test_circuit.ops[0].rotation_amount == resultant_rotation[1]
+    assert test_circuit.ops[0].ops_list == rotation2_after[0]
+    assert test_circuit.ops[0].rotation_amount == rotation2_after[1]
     assert test_circuit.ops[1].ops_list == rotation1[0]
     assert test_circuit.ops[1].rotation_amount == rotation1[1]
 
@@ -123,9 +129,12 @@ def test_commute_rotation_rotation_anti_commuting(rotation1, rotation2, resultan
     ],
 )
 def test_commute_rotation_measurement_commuting(rotation, measurement):
+    # Before commuting: rotation ---- measurement
     test_circuit = PauliOpCircuit(len(rotation[0]))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation))
     test_circuit.add_pauli_block(Measurement.from_list(*measurement))
+
+    # After commuting: measurement ---- rotation
     test_circuit.commute_pi_over_four_rotation(0)
 
     assert test_circuit.ops[0].ops_list == measurement[0]
@@ -135,7 +144,7 @@ def test_commute_rotation_measurement_commuting(rotation, measurement):
 
 
 @pytest.mark.parametrize(
-    "rotation, measurement, resultant_measurement",
+    "rotation, measurement, measurement_after",
     [
         (([X], Fraction(1, 4)), ([Z], False), ([Y], False)),
         (([Y], Fraction(-1, 4)), ([X], True), ([Z], True)),
@@ -149,14 +158,17 @@ def test_commute_rotation_measurement_commuting(rotation, measurement):
         ),
     ],
 )
-def test_commute_rotation_measurement_anticommute(rotation, measurement, resultant_measurement):
+def test_commute_rotation_measurement_anticommute(rotation, measurement, measurement_after):
+    # Before commuting: rotation ---- measurement
     test_circuit = PauliOpCircuit(len(rotation[0]))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation))
     test_circuit.add_pauli_block(Measurement.from_list(*measurement))
+
+    # After commuting: measurement_after ---- rotation
     test_circuit.commute_pi_over_four_rotation(0)
 
-    assert test_circuit.ops[0].ops_list == resultant_measurement[0]
-    assert test_circuit.ops[0].isNegative == resultant_measurement[1]
+    assert test_circuit.ops[0].ops_list == measurement_after[0]
+    assert test_circuit.ops[0].isNegative == measurement_after[1]
     assert test_circuit.ops[1].ops_list == rotation[0]
     assert test_circuit.ops[1].rotation_amount == rotation[1]
 
