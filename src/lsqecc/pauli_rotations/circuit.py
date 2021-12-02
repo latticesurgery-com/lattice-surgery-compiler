@@ -191,7 +191,7 @@ class PauliOpCircuit(object):
 
             i += 1
 
-    def __swap_adjacent_commuting_blocks(self, index: int) -> None:
+    def _swap_adjacent_commuting_blocks(self, index: int) -> None:
         """
         Move a pi over four rotation block past its' neighbor block when the blocks commute
 
@@ -203,7 +203,7 @@ class PauliOpCircuit(object):
         self.ops[index] = self.ops[next_block]
         self.ops[next_block] = temp
 
-    def __swap_adjacent_anticommuting_blocks(self, index: int) -> None:
+    def _swap_adjacent_anticommuting_blocks(self, index: int) -> None:
         """
         Move a pi over four rotation block past its' neighbor block when the blocks anti-commute
 
@@ -257,9 +257,11 @@ class PauliOpCircuit(object):
             raise Exception("First operand must be +-pi/4 Pauli rotation")
 
         if not PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
-            self.__swap_adjacent_anticommuting_blocks(index)
+            self._swap_adjacent_anticommuting_blocks(index)
+        elif PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
+            self._swap_adjacent_commuting_blocks(index)
         else:
-            self.__swap_adjacent_commuting_blocks(index)
+            raise Exception("The two blocks must commute or anti-commute!")
 
     def circuit_has_measurements(self) -> bool:
         """Check if circuit has any Measurement blocks.
