@@ -74,14 +74,14 @@ def test_count_rotations_by(circuit, fraction, expected):
         (([I, Z, I, X], Fraction(-1, 4)), ([Z, X, I, Z], Fraction(-1, 8))),
     ],
 )
-def test_commute_rotation_to_rotation_commuting(rotation1, rotation2):
+def test_swap_rotation_to_rotation_commuting(rotation1, rotation2):
     # Before commuting: rotation1 ---- rotation2
     test_circuit = PauliOpCircuit(len(rotation1[0]))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation1))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation2))
 
     # After commuting: rotation2 ---- rotation1
-    test_circuit.commute_pi_over_four_rotation(0)
+    test_circuit.swap_adjacent_blocks(0)
 
     assert test_circuit.ops[0].ops_list == rotation2[0]
     assert test_circuit.ops[0].rotation_amount == rotation2[1]
@@ -104,14 +104,14 @@ def test_commute_rotation_to_rotation_commuting(rotation1, rotation2):
         ),
     ],
 )
-def test_commute_rotation_rotation_anti_commuting(rotation1, rotation2, rotation2_after):
+def test_swap_rotation_rotation_anti_commuting(rotation1, rotation2, rotation2_after):
     # Before commuting: rotation1 ---- rotation2
     test_circuit = PauliOpCircuit(len(rotation1[0]))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation1))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation2))
 
     # After commuting: rotation2_after ---- rotation1
-    test_circuit.commute_pi_over_four_rotation(0)
+    test_circuit.swap_adjacent_blocks(0)
 
     assert test_circuit.ops[0].ops_list == rotation2_after[0]
     assert test_circuit.ops[0].rotation_amount == rotation2_after[1]
@@ -128,14 +128,14 @@ def test_commute_rotation_rotation_anti_commuting(rotation1, rotation2, rotation
         (([I, Z, I, X], Fraction(-1, 4)), ([Z, X, I, Z], True)),
     ],
 )
-def test_commute_rotation_measurement_commuting(rotation, measurement):
+def test_swap_rotation_measurement_commuting(rotation, measurement):
     # Before commuting: rotation ---- measurement
     test_circuit = PauliOpCircuit(len(rotation[0]))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation))
     test_circuit.add_pauli_block(Measurement.from_list(*measurement))
 
     # After commuting: measurement ---- rotation
-    test_circuit.commute_pi_over_four_rotation(0)
+    test_circuit.swap_adjacent_blocks(0)
 
     assert test_circuit.ops[0].ops_list == measurement[0]
     assert test_circuit.ops[0].isNegative == measurement[1]
@@ -158,14 +158,14 @@ def test_commute_rotation_measurement_commuting(rotation, measurement):
         ),
     ],
 )
-def test_commute_rotation_measurement_anticommute(rotation, measurement, measurement_after):
+def test_swap_rotation_measurement_anticommute(rotation, measurement, measurement_after):
     # Before commuting: rotation ---- measurement
     test_circuit = PauliOpCircuit(len(rotation[0]))
     test_circuit.add_pauli_block(PauliRotation.from_list(*rotation))
     test_circuit.add_pauli_block(Measurement.from_list(*measurement))
 
     # After commuting: measurement_after ---- rotation
-    test_circuit.commute_pi_over_four_rotation(0)
+    test_circuit.swap_adjacent_blocks(0)
 
     assert test_circuit.ops[0].ops_list == measurement_after[0]
     assert test_circuit.ops[0].isNegative == measurement_after[1]
@@ -173,18 +173,18 @@ def test_commute_rotation_measurement_anticommute(rotation, measurement, measure
     assert test_circuit.ops[1].rotation_amount == rotation[1]
 
 
-def test_commute_no_next_block():
+def test_swap_no_next_block():
     circuit = PauliOpCircuit(1)
     circuit.add_pauli_block(PauliRotation.from_list([X], Fraction(1, 4)))
 
     with pytest.raises(Exception):
-        circuit.commute_pi_over_four_rotation(0)
+        circuit.swap_adjacent_blocks(0)
 
 
-def test_commute_non_pi_over_4_rotation():
+def test_swap_non_pi_over_4_rotation():
     circuit = PauliOpCircuit(1)
     circuit.add_pauli_block(PauliRotation.from_list([X], Fraction(1, 8)))
     circuit.add_pauli_block(PauliRotation.from_list([Y], Fraction(1, 4)))
 
     with pytest.raises(Exception):
-        circuit.commute_pi_over_four_rotation(0)
+        circuit.swap_adjacent_blocks(0)
