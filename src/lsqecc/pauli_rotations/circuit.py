@@ -199,6 +199,9 @@ class PauliOpCircuit(object):
             index (int): Index of the targeted block in the current circuit
         """
         next_block = index + 1
+        if not PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
+            raise Exception("The blocks to be swapped must commute!")
+
         temp = self.ops[index]
         self.ops[index] = self.ops[next_block]
         self.ops[next_block] = temp
@@ -212,6 +215,9 @@ class PauliOpCircuit(object):
 
         """
         next_block = index + 1
+        if PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
+            raise Exception("The blocks to be swapped must anti-commute!")
+
         product_of_coefficients = complex(1)
 
         for i in range(self.qubit_num):
@@ -258,10 +264,8 @@ class PauliOpCircuit(object):
 
         if not PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
             self._swap_adjacent_anticommuting_blocks(index)
-        elif PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
-            self._swap_adjacent_commuting_blocks(index)
         else:
-            raise Exception("The two blocks must commute or anti-commute!")
+            self._swap_adjacent_commuting_blocks(index)
 
     def circuit_has_measurements(self) -> bool:
         """Check if circuit has any Measurement blocks.
