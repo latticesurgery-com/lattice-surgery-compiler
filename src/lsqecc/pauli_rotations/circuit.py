@@ -127,7 +127,7 @@ class PauliOpCircuit(object):
         while quarter_rotation:
             index = quarter_rotation.pop()
             while index + 1 < len(self):
-                self.commute_pi_over_four_rotation(index)
+                self.swap_adjacent_blocks(index)
                 index += 1
             if circuit_has_measurements:
                 self.ops.pop()
@@ -180,7 +180,7 @@ class PauliOpCircuit(object):
                     # Commute the right (new) pi/4 rotations towards the end of the circuit
                     for right_block_index in right_block_indices:
                         while right_block_index + 1 < len(self.ops):
-                            self.commute_pi_over_four_rotation(right_block_index)
+                            self.swap_adjacent_blocks(right_block_index)
                             right_block_index += 1
                         if circuit_has_measurements:
                             self.ops.pop()
@@ -191,15 +191,68 @@ class PauliOpCircuit(object):
 
             i += 1
 
-    def commute_pi_over_four_rotation(self, index: int) -> None:
-        """Commute a rotation block pass its neighbor block.
+    def _swap_adjacent_commuting_blocks(self, index: int) -> None:
+        """
+        Move a pi over four rotation block past its' neighbor block when the blocks commute
 
         Args:
-            index (int): Index of the targeted block in the current circuit.
+            index (int): Index of the targeted block in the current circuit
+        """
+        next_block = index + 1
+        if not PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
+            raise Exception("The blocks to be swapped must commute!")
+
+        temp = self.ops[index]
+        self.ops[index] = self.ops[next_block]
+        self.ops[next_block] = temp
+
+    def _swap_adjacent_anticommuting_blocks(self, index: int) -> None:
+        """
+        Move a pi over four rotation block past its' neighbor block when the blocks anti-commute
+
+        Args:
+            index (int): Index of the targeted block in the current circuit
 
         """
         next_block = index + 1
+        if PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
+            raise Exception("The blocks to be swapped must anti-commute!")
 
+        product_of_coefficients = complex(1)
+
+        for i in range(self.qubit_num):
+            new_op = PauliOperator.multiply_operators(
+                self.ops[index].get_op(i), self.ops[next_block].get_op(i)
+            )
+
+            self.ops[next_block].change_single_op(i, new_op[1])
+            product_of_coefficients *= new_op[0]
+
+        # Flip the phase if product of coefficients is negative
+        # Product of coefficients will always be either i or -i (see issues #28 for proof)
+        product_of_coefficients *= 1j
+        if isinstance(self.ops[next_block], Measurement):
+            if product_of_coefficients.real < 0:
+                measurement = cast(Measurement, self.ops[next_block])
+                measurement.isNegative = not measurement.isNegative
+
+        else:
+            cast(PauliRotation, self.ops[next_block]).rotation_amount *= (
+                -1 if product_of_coefficients.real < 0 else 1
+            )
+
+        temp = self.ops[index]
+        self.ops[index] = self.ops[next_block]
+        self.ops[next_block] = temp
+
+    def swap_adjacent_blocks(self, index: int) -> None:
+        """
+        Move a pi over four rotation block past its' neighbor block
+
+        Args:
+            index (int): Index of the targeted block in the current circuit
+        """
+        next_block = index + 1
         if next_block >= len(self.ops):
             raise Exception("No operation to commute past")
 
@@ -209,35 +262,10 @@ class PauliOpCircuit(object):
         }:
             raise Exception("First operand must be +-pi/4 Pauli rotation")
 
-        # Need to calculate iPP' when PP' = -P'P (anti-commute)
         if not PauliOpCircuit.are_commuting(self.ops[index], self.ops[next_block]):
-            product_of_coefficients = complex(1)
-
-            for i in range(self.qubit_num):
-                new_op = PauliOperator.multiply_operators(
-                    self.ops[index].get_op(i), self.ops[next_block].get_op(i)
-                )
-
-                self.ops[next_block].change_single_op(i, new_op[1])
-                product_of_coefficients *= new_op[0]
-
-            # Flip the phase if product of coefficients is negative
-            # Product of coefficients will always be either i or -i (see issues #28 for proof)
-            product_of_coefficients *= 1j
-            if isinstance(self.ops[next_block], Measurement):
-                if product_of_coefficients.real < 0:
-                    measurement = cast(Measurement, self.ops[next_block])
-                    measurement.isNegative = not measurement.isNegative
-
-            else:
-                cast(PauliRotation, self.ops[next_block]).rotation_amount *= (
-                    -1 if product_of_coefficients.real < 0 else 1
-                )
-
-        temp = self.ops[index]
-        self.ops[index] = self.ops[next_block]
-        self.ops[next_block] = temp
-        # print(self.render_ascii())
+            self._swap_adjacent_anticommuting_blocks(index)
+        else:
+            self._swap_adjacent_commuting_blocks(index)
 
     def circuit_has_measurements(self) -> bool:
         """Check if circuit has any Measurement blocks.
