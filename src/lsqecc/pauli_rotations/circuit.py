@@ -91,7 +91,7 @@ class PauliOpCircuit(object):
         rotation_amount: Fraction,
         index: int = None,
     ) -> None:
-        """Add a single Pauli operator (I, X, Z, Y) to the circuit.
+        """Add a single Pauli operator rotation (I, X, Z, Y) to the circuit.
 
         Args:
             qubit (int): Targeted qubit
@@ -412,7 +412,7 @@ class PauliOpCircuit(object):
             for operator in operation.ops_list:
                 operator_list += str(operator)
 
-                # Latex format for phase label (I didnt want to do this in the template file)
+            # Latex format for phase label (I didnt want to do this in the template file)
             if isinstance(operation, PauliRotation):
                 operator_str = "$" + phase_frac_to_latex(operation.rotation_amount) + "$"
 

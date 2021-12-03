@@ -73,6 +73,18 @@ def test_count_rotations_by(circuit, fraction, expected):
     assert circuit.count_rotations_by(fraction) == expected
 
 
+def test_add_single_operator():
+    circuit = PauliOpCircuit(4)
+    circuit.add_pauli_block(PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4)))
+    circuit.add_pauli_block(PauliRotation.from_list([Y, X, Z, I], Fraction(1, 4)))
+
+    circuit.add_single_operator(2, X, Fraction(1, 2))
+    assert circuit.ops[2] == PauliRotation.from_list([I, I, X, I], Fraction(1, 2))
+
+    circuit.add_single_operator(1, Y, Fraction(1, 4), 1)
+    assert circuit.ops[1] == PauliRotation.from_list([I, Y, I, I], Fraction(1, 4))
+
+
 @pytest.mark.parametrize(
     "rotation1, rotation2",
     [
