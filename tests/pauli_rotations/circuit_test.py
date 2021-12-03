@@ -224,3 +224,26 @@ def test_swap_non_pi_over_4_rotation():
 
     with pytest.raises(Exception):
         circuit.swap_adjacent_blocks(0)
+
+
+def test_render_ascii():
+    c = PauliOpCircuit(4)
+
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 2)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 4)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 8)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(-1, 8)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 16)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(-1, 16)))
+    c.add_pauli_block(Measurement.from_list([I, X, Y, Z]))
+    c.add_pauli_block(Measurement.from_list([I, X, Y, Z], True))
+
+    expected_output = (
+        " q0--|I|--|I|--|I|--|I|---|I|---|I|--|I|--|I|\n"
+        " q1--|X|--|X|--|X|--|X|---|X|---|X|--|X|--|X|\n"
+        " q2--|Y|--|Y|--|Y|--|Y|---|Y|---|Y|--|Y|--|Y|\n"
+        " q3--|Z|--|Z|--|Z|--|Z|---|Z|---|Z|--|Z|--|Z|\n"
+        "pi*  1/2  1/4  1/8 -1/8  1/16 -1/16   M   -M \n"
+    )
+
+    assert c.render_ascii() == expected_output
