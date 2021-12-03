@@ -41,7 +41,7 @@ class PauliOpCircuit(object):
         self.name: str = name
 
     def __str__(self) -> str:
-        return f"PauliOpCircuit {self.name}: {self.qubit_num} qubit(s), {len(self)} rotations(s)"
+        return f"PauliOpCircuit {self.name}: {self.qubit_num} qubit(s), {len(self)} block(s)"
 
     def __repr__(self) -> str:
         return str(self)

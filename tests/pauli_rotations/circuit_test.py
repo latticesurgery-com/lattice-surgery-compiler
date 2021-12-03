@@ -20,6 +20,17 @@ Y = PauliOperator.Y
 Z = PauliOperator.Z
 
 
+def test_str():
+    c = PauliOpCircuit(4)
+    assert str(c) == "PauliOpCircuit : 4 qubit(s), 0 block(s)"
+
+    c.name = "test"
+    assert str(c) == "PauliOpCircuit test: 4 qubit(s), 0 block(s)"
+
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 2)))
+    assert str(c) == "PauliOpCircuit test: 4 qubit(s), 1 block(s)"
+
+
 @pytest.mark.parametrize(
     "pauli_op_circuit_1, pauli_op_circuit_2", generate_tests_pauli_op_circuit_equality(for_eq=True)
 )
