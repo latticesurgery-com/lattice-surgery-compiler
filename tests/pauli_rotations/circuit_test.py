@@ -44,6 +44,14 @@ def test_are_commuting(input1, input2, expected):
     assert PauliOpCircuit.are_commuting(input1, input2) == expected
 
 
+def test_are_commuting_diferent_qubit_num():
+    block1 = PauliRotation.from_list([I, X, Y, Z], Fraction(1, 2))
+    block2 = PauliRotation.from_list([I, X, Y, Z, Y], Fraction(1, 4))
+
+    with pytest.raises(Exception):
+        PauliOpCircuit.are_commuting(block1, block2)
+
+
 # @pytest.mark.parametrize("input, expected", generate_tests_apply_transformation())
 # def test_apply_transformation(input, expected):
 #     assert input.apply_transformation() == expected

@@ -287,7 +287,7 @@ class PauliOpCircuit(object):
             bool: True if they commute, False if they anti-commute
         """
         if block1.qubit_num != block2.qubit_num:
-            return False
+            raise Exception("Blocks must have same number of qubits")
 
         ret_val = 1
 
