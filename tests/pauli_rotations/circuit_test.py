@@ -84,6 +84,21 @@ def test_count_rotations_by(circuit, fraction, expected):
     assert circuit.count_rotations_by(fraction) == expected
 
 
+def test_add_pauli_block():
+    circuit = PauliOpCircuit(4)
+    circuit.add_pauli_block(PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4)))
+    assert circuit.ops[0] == PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4))
+
+    circuit.add_pauli_block(PauliRotation.from_list([Y, X, Z, I], Fraction(1, 4)), 0)
+    assert circuit.ops[0] == PauliRotation.from_list([Y, X, Z, I], Fraction(1, 4))
+
+
+def test_add_pauli_block_different_qubit_num():
+    circuit = PauliOpCircuit(1)
+    with pytest.raises(Exception):
+        circuit.add_pauli_block(PauliRotation.from_list([X, Z], Fraction(1, 4)))
+
+
 def test_add_single_operator():
     circuit = PauliOpCircuit(4)
     circuit.add_pauli_block(PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4)))
