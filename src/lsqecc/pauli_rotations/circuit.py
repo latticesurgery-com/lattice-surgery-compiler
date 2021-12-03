@@ -41,7 +41,7 @@ class PauliOpCircuit(object):
         self.name: str = name
 
     def __str__(self) -> str:
-        return f"PauliOpCircuit {self.name}: {self.qubit_num} qubit(s), {len(self)} rotations(s)"
+        return f"PauliOpCircuit {self.name}: {self.qubit_num} qubit(s), {len(self)} block(s)"
 
     def __repr__(self) -> str:
         return str(self)
@@ -50,17 +50,11 @@ class PauliOpCircuit(object):
         return len(self.ops)
 
     def __eq__(self, other) -> bool:
-        if not isinstance(other, PauliOpCircuit):
-            return False
-        elif self.qubit_num != other.qubit_num:
-            return False
-        elif len(self) != len(other):
-            return False
-        else:
-            for op1, op2 in zip(self.ops, other.ops):
-                if op1 != op2:
-                    return False
-            return True
+        return (
+            isinstance(other, PauliOpCircuit)
+            and self.qubit_num == other.qubit_num
+            and self.ops == other.ops
+        )
 
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
@@ -91,7 +85,7 @@ class PauliOpCircuit(object):
         rotation_amount: Fraction,
         index: int = None,
     ) -> None:
-        """Add a single Pauli operator (I, X, Z, Y) to the circuit.
+        """Add a single Pauli operator rotation (I, X, Z, Y) to the circuit.
 
         Args:
             qubit (int): Targeted qubit
@@ -287,7 +281,7 @@ class PauliOpCircuit(object):
             bool: True if they commute, False if they anti-commute
         """
         if block1.qubit_num != block2.qubit_num:
-            return False
+            raise Exception("Blocks must have same number of qubits")
 
         ret_val = 1
 
@@ -412,7 +406,7 @@ class PauliOpCircuit(object):
             for operator in operation.ops_list:
                 operator_list += str(operator)
 
-                # Latex format for phase label (I didnt want to do this in the template file)
+            # Latex format for phase label (I didnt want to do this in the template file)
             if isinstance(operation, PauliRotation):
                 operator_str = "$" + phase_frac_to_latex(operation.rotation_amount) + "$"
 

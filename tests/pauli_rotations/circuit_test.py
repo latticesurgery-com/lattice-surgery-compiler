@@ -20,6 +20,17 @@ Y = PauliOperator.Y
 Z = PauliOperator.Z
 
 
+def test_str():
+    c = PauliOpCircuit(4)
+    assert str(c) == "PauliOpCircuit : 4 qubit(s), 0 block(s)"
+
+    c.name = "test"
+    assert str(c) == "PauliOpCircuit test: 4 qubit(s), 0 block(s)"
+
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 2)))
+    assert str(c) == "PauliOpCircuit test: 4 qubit(s), 1 block(s)"
+
+
 @pytest.mark.parametrize(
     "pauli_op_circuit_1, pauli_op_circuit_2", generate_tests_pauli_op_circuit_equality(for_eq=True)
 )
@@ -44,6 +55,14 @@ def test_are_commuting(input1, input2, expected):
     assert PauliOpCircuit.are_commuting(input1, input2) == expected
 
 
+def test_are_commuting_diferent_qubit_num():
+    block1 = PauliRotation.from_list([I, X, Y, Z], Fraction(1, 2))
+    block2 = PauliRotation.from_list([I, X, Y, Z, Y], Fraction(1, 4))
+
+    with pytest.raises(Exception):
+        PauliOpCircuit.are_commuting(block1, block2)
+
+
 # @pytest.mark.parametrize("input, expected", generate_tests_apply_transformation())
 # def test_apply_transformation(input, expected):
 #     assert input.apply_transformation() == expected
@@ -63,6 +82,33 @@ def test_join_different_qubit_num(circuit1, circuit2):
 @pytest.mark.parametrize("circuit, fraction, expected", generate_tests_count_rotations_by())
 def test_count_rotations_by(circuit, fraction, expected):
     assert circuit.count_rotations_by(fraction) == expected
+
+
+def test_add_pauli_block():
+    circuit = PauliOpCircuit(4)
+    circuit.add_pauli_block(PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4)))
+    assert circuit.ops[0] == PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4))
+
+    circuit.add_pauli_block(PauliRotation.from_list([Y, X, Z, I], Fraction(1, 4)), 0)
+    assert circuit.ops[0] == PauliRotation.from_list([Y, X, Z, I], Fraction(1, 4))
+
+
+def test_add_pauli_block_different_qubit_num():
+    circuit = PauliOpCircuit(1)
+    with pytest.raises(Exception):
+        circuit.add_pauli_block(PauliRotation.from_list([X, Z], Fraction(1, 4)))
+
+
+def test_add_single_operator():
+    circuit = PauliOpCircuit(4)
+    circuit.add_pauli_block(PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4)))
+    circuit.add_pauli_block(PauliRotation.from_list([Y, X, Z, I], Fraction(1, 4)))
+
+    circuit.add_single_operator(2, X, Fraction(1, 2))
+    assert circuit.ops[2] == PauliRotation.from_list([I, I, X, I], Fraction(1, 2))
+
+    circuit.add_single_operator(1, Y, Fraction(1, 4), 1)
+    assert circuit.ops[1] == PauliRotation.from_list([I, Y, I, I], Fraction(1, 4))
 
 
 @pytest.mark.parametrize(
@@ -224,3 +270,26 @@ def test_swap_non_pi_over_4_rotation():
 
     with pytest.raises(Exception):
         circuit.swap_adjacent_blocks(0)
+
+
+def test_render_ascii():
+    c = PauliOpCircuit(4)
+
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 2)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 4)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 8)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(-1, 8)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(1, 16)))
+    c.add_pauli_block(PauliRotation.from_list([I, X, Y, Z], Fraction(-1, 16)))
+    c.add_pauli_block(Measurement.from_list([I, X, Y, Z]))
+    c.add_pauli_block(Measurement.from_list([I, X, Y, Z], True))
+
+    expected_output = (
+        " q0--|I|--|I|--|I|--|I|---|I|---|I|--|I|--|I|\n"
+        " q1--|X|--|X|--|X|--|X|---|X|---|X|--|X|--|X|\n"
+        " q2--|Y|--|Y|--|Y|--|Y|---|Y|---|Y|--|Y|--|Y|\n"
+        " q3--|Z|--|Z|--|Z|--|Z|---|Z|---|Z|--|Z|--|Z|\n"
+        "pi*  1/2  1/4  1/8 -1/8  1/16 -1/16   M   -M \n"
+    )
+
+    assert c.render_ascii() == expected_output
