@@ -8,6 +8,7 @@ on:
       - 'debug/**'
       - 'assets/**'
       - 'docs/**'
+      - '.pre-commit-config.yaml'
   pull_request:
     branches: [ master, dev ]
     paths-ignore:
@@ -15,7 +16,7 @@ on:
       - 'debug/**'
       - 'assets/**'
       - 'docs/**'
-
+      - '.pre-commit-config.yaml'
 jobs:
   build:
     name: Build Package
