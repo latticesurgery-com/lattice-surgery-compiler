@@ -192,6 +192,43 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
             r.change_single_op(i, op)
         return r
 
+    def remove_y_operators(self) -> Tuple[List["PauliRotation"], List["PauliRotation"]]:
+        """Remove Y operators from a Pauli Rotation. Currently supports only pi/8 rotation"""
+        if self.rotation_amount not in (Fraction(1, 8), Fraction(-1, 8)):
+            raise NotImplementedError("Method only supports pi/8 rotations")
+
+        left_rotations: List["PauliRotation"] = list()
+        right_rotations: List["PauliRotation"] = list()
+        y_op_indices = list()
+
+        # Find Y operators and modify them into X operators
+        for index, operator in enumerate(self.ops_list):
+            if operator == PauliOperator.Y:
+                y_op_indices.append(index)
+                self.ops_list[index] = PauliOperator.X
+
+        if not y_op_indices:
+            return left_rotations, right_rotations
+
+        if len(y_op_indices) % 2 == 0:
+            # For even numbers of Y operators, add 2 additional pi/4 rotations (one on each side)
+            first_y_operator = y_op_indices.pop(0)
+            new_rotation_ops = [
+                PauliOperator.Z if i == first_y_operator else PauliOperator.I
+                for i in range(self.qubit_num)
+            ]
+            left_rotations.append(PauliRotation.from_list(new_rotation_ops, Fraction(1, 4)))
+            right_rotations.append(PauliRotation.from_list(new_rotation_ops, Fraction(-1, 4)))
+
+        new_rotation_ops = [
+            PauliOperator.Z if i in y_op_indices else PauliOperator.I for i in range(self.qubit_num)
+        ]
+
+        left_rotations.append(PauliRotation.from_list(new_rotation_ops, Fraction(1, 4)))
+        right_rotations.append(PauliRotation.from_list(new_rotation_ops, Fraction(-1, 4)))
+
+        return left_rotations, right_rotations
+
 
 class Measurement(PauliProductOperation, coc.ConditionalOperation):
     """Representing a Pauli Product Measurement Block"""
