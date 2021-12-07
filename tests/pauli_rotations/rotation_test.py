@@ -32,6 +32,31 @@ Y = PauliOperator.Y
 Z = PauliOperator.Z
 
 
+def test_cases_remove_y_operators():
+    # TODO: Add more cases here
+    case_1 = (
+        PauliRotation.from_list([Y, I, Y, Z, Y, Y], Fraction(1, 8)),
+        PauliRotation.from_list([X, I, X, Z, X, X], Fraction(1, 8)),
+        [
+            PauliRotation.from_list([Z, I, I, I, I, I], Fraction(1, 4)),
+            PauliRotation.from_list([I, I, Z, I, Z, Z], Fraction(1, 4)),
+        ],
+        [
+            PauliRotation.from_list([Z, I, I, I, I, I], Fraction(-1, 4)),
+            PauliRotation.from_list([I, I, Z, I, Z, Z], Fraction(-1, 4)),
+        ],
+    )
+
+    case_2 = (
+        PauliRotation.from_list([Y, Y, Y, Z], Fraction(1, 8)),
+        PauliRotation.from_list([X, X, X, Z], Fraction(1, 8)),
+        [PauliRotation.from_list([Z, Z, Z, I], Fraction(1, 4))],
+        [PauliRotation.from_list([Z, Z, Z, I], Fraction(-1, 4))],
+    )
+
+    return [case_1, case_2]
+
+
 class TestPauliRotation:
     """Tests for PauliRotation"""
 
@@ -145,6 +170,21 @@ class TestPauliRotation:
     )
     def test_to_latex(self, input, expected):
         assert input.to_latex() == expected
+
+    def test_remove_y_operator_not_pi_8(self):
+        r = PauliRotation.from_list([I, X, Y, Z, Y], Fraction(1, 4))
+        with pytest.raises(NotImplementedError):
+            r.remove_y_operators()
+
+    def test_remove_y_operators_no_y_op(self):
+        r = PauliRotation.from_list([X, Z, I, Z], Fraction(1, 8))
+        assert r.remove_y_operators() == ([], [])
+        assert r.ops_list == [X, Z, I, Z]
+
+    @pytest.mark.parametrize("rotation, new_rotation, lhs, rhs", test_cases_remove_y_operators())
+    def test_remove_y_operators_1(self, rotation, new_rotation, lhs, rhs):
+        assert rotation.remove_y_operators() == (lhs, rhs)
+        assert rotation == new_rotation
 
 
 class TestMeasurement:
