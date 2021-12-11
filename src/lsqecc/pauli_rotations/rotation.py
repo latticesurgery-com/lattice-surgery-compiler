@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
+import copy
 from abc import ABC, abstractmethod
 from enum import Enum
 from fractions import Fraction
@@ -192,24 +193,28 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
             r.change_single_op(i, op)
         return r
 
-    def remove_y_operators(self) -> Tuple[List["PauliRotation"], List["PauliRotation"]]:
-        """Remove Y operators from a Pauli Rotation. Currently supports only pi/8 rotation"""
+    def get_y_free_equivalent(self) -> List["PauliRotation"]:
+        """Return the equivalent of current Pauli rotation but without Y operator.
+        Currently supports only pi/8 rotation
+        """
         if self.rotation_amount not in (Fraction(1, 8), Fraction(-1, 8)):
             raise NotImplementedError("Method only supports pi/8 rotations")
 
-        left_rotations: List["PauliRotation"] = list()
-        right_rotations: List["PauliRotation"] = list()
         y_op_indices = list()
+        y_free_rotation = copy.deepcopy(self)
 
         # Find Y operators and modify them into X operators
         for index, operator in enumerate(self.ops_list):
             if operator == PauliOperator.Y:
                 y_op_indices.append(index)
-                self.ops_list[index] = PauliOperator.X
+                y_free_rotation.ops_list[index] = PauliOperator.X
 
         if not y_op_indices:
-            return left_rotations, right_rotations
+            del y_free_rotation
+            return [self]
 
+        left_rotations: List["PauliRotation"] = list()
+        right_rotations: List["PauliRotation"] = list()
         if len(y_op_indices) % 2 == 0:
             # For even numbers of Y operators, add 2 additional pi/4 rotations (one on each side)
             first_y_operator = y_op_indices.pop(0)
@@ -227,7 +232,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         left_rotations.append(PauliRotation.from_list(new_rotation_ops, Fraction(1, 4)))
         right_rotations.append(PauliRotation.from_list(new_rotation_ops, Fraction(-1, 4)))
 
-        return left_rotations, right_rotations
+        return left_rotations + [y_free_rotation] + right_rotations
 
 
 class Measurement(PauliProductOperation, coc.ConditionalOperation):
