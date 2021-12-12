@@ -126,64 +126,19 @@ class PauliOpCircuit(object):
             if circuit_has_measurements:
                 self.ops.pop()
 
-    def remove_y_operators_from_circuit(self, start_index: int = 0) -> None:
-        """Removes Y operators from pi/8 and measurement blocks. To be called
-        after pi/4 rotations have been commuted to the end of the circuit.
-        """
-        i = start_index
-        circuit_has_measurements: bool = self.circuit_has_measurements()
+    def remove_y_operators_from_circuit(self) -> "PauliOpCircuit":
+        """Return a Y-operator-free copy of the current circuit."""
+        y_free_circuit = PauliOpCircuit(self.qubit_num, self.name)
 
-        while i < len(self.ops):
-            pauli_block = self.ops[i]
-            if isinstance(pauli_block, Measurement) or (
-                cast(PauliRotation, pauli_block).rotation_amount
-                in {Fraction(1, 8), Fraction(-1, 8)}
+        for block in self.ops:
+            if isinstance(block, Measurement) or (
+                cast(PauliRotation, block).rotation_amount in {Fraction(1, 8), Fraction(-1, 8)}
             ):
-                y_op_indices = list()
-
-                # Find Y operators and modify them into X operators
-                for j in range(self.qubit_num):
-                    if pauli_block.ops_list[j] == PauliOperator.Y:
-                        y_op_indices.append(j)
-                        pauli_block.ops_list[j] = PauliOperator.X
-
-                if y_op_indices:
-                    right_block_indices = list()
-
-                    # For even numbers of Y operators, add 2 additional pi/4
-                    # rotations (one on each side)
-                    if len(y_op_indices) % 2 == 0:
-                        first_operator = y_op_indices.pop(0)
-                        self.add_single_operator(first_operator, PauliOperator.Z, Fraction(1, 4), i)
-                        self.add_single_operator(
-                            first_operator, PauliOperator.Z, Fraction(-1, 4), i + 2
-                        )
-                        right_block_indices.append(i + 4)
-                        i += 1
-
-                    # Add 2 pi/4 rotations on each side of the Pauli block
-                    new_block = [
-                        PauliOperator.Z if i in y_op_indices else PauliOperator.I
-                        for i in range(self.qubit_num)
-                    ]
-                    self.add_pauli_block(PauliRotation.from_list(new_block, Fraction(1, 4)), i)
-                    self.add_pauli_block(PauliRotation.from_list(new_block, Fraction(-1, 4)), i + 2)
-                    right_block_indices.append(i + 2)
-                    i += 1
-
-                    # Commute the right (new) pi/4 rotations towards the end of the circuit
-                    for right_block_index in right_block_indices:
-                        while right_block_index + 1 < len(self.ops):
-                            self.swap_adjacent_blocks(right_block_index)
-                            right_block_index += 1
-                        if circuit_has_measurements:
-                            self.ops.pop()
+                y_free_circuit.ops.extend(block.get_y_free_equivalent())
             else:
-                # This is assuming pi/4 rotations (not including ones from this operation)
-                # have been commuted to the end of the circuit.
-                break
+                y_free_circuit.add_pauli_block(copy.deepcopy(block))
 
-            i += 1
+        return y_free_circuit
 
     def _swap_adjacent_commuting_blocks(self, index: int) -> None:
         """
