@@ -3,9 +3,11 @@
 
 <!-- start -->
 
-Compile logical circuits to lattice surgery operations on a surface code lattice and visualize.
+Compile logical circuits to lattice surgery operations on a surface code lattice and visualize. [Project Status](
+https://github.com/latticesurgery-com/general-issue-tracker/issues/3).
 
 ![image](https://user-images.githubusercontent.com/36427091/104856854-98ca5600-58c9-11eb-9599-286c1d5a4736.png)
+
 
 ## Overview
 A compiler that takes a QASM circuit and turns it into abstract lattice surgery instructions.
