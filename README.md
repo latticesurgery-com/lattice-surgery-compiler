@@ -38,7 +38,7 @@ This project is under very active development. We hope to see in the very near f
 
 ## Contributing and Development set up
 
-Check out our [contribution guide](https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/master/CONTRIBUTING.md).
+Check out our [contribution guide](https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/dev/CONTRIBUTING.md).
 
 If you just want to get an idea for what this compiler does, check out https://latticesurgery.com.
 
