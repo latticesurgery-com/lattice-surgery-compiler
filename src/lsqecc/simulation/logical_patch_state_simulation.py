@@ -21,7 +21,7 @@ import uuid
 from typing import Dict, Iterable, List, Optional, Set, Tuple, TypeVar
 
 import qiskit
-import qiskit.aqua.operators as qk
+import qiskit.opflow as qk
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 from lsqecc.pauli_rotations import PauliOperator
@@ -31,12 +31,12 @@ from .qubit_state import DefaultSymbolicStates, SymbolicState
 
 class ConvertersToQiskit:
     @staticmethod
-    def pauli_op(op: PauliOperator) -> Optional[qiskit.aqua.operators.PrimitiveOp]:
-        known_map: Dict[PauliOperator, qiskit.aqua.operators.PrimitiveOp] = {
-            PauliOperator.I: qiskit.aqua.operators.I,
-            PauliOperator.X: qiskit.aqua.operators.X,
-            PauliOperator.Y: qiskit.aqua.operators.Y,
-            PauliOperator.Z: qiskit.aqua.operators.Z,
+    def pauli_op(op: PauliOperator) -> Optional[qiskit.opflow.PrimitiveOp]:
+        known_map: Dict[PauliOperator, qiskit.opflow.PrimitiveOp] = {
+            PauliOperator.I: qiskit.opflow.I,
+            PauliOperator.X: qiskit.opflow.X,
+            PauliOperator.Y: qiskit.opflow.Y,
+            PauliOperator.Z: qiskit.opflow.Z,
         }
         return known_map[op]
 

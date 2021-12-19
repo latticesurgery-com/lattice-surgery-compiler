@@ -17,8 +17,8 @@
 
 from typing import Dict, List, Optional
 
-import qiskit.aqua.operators as qk
 import qiskit.exceptions as qkexcept
+import qiskit.opflow as qk
 import qiskit.quantum_info as qkinfo
 
 

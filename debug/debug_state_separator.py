@@ -9,7 +9,7 @@ from qiskit_opflow_utils import StateSeparator
 import webgui.lattice_view
 from fractions import Fraction
 
-import qiskit.aqua.operators as qk
+import qiskit.opflow as qk
 import qiskit.quantum_info as qkinfo
 
 import math
