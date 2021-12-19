@@ -18,7 +18,7 @@
 from typing import Dict, List, Optional
 
 import qiskit.exceptions as qkexcept
-import qiskit.opflow as qk
+import qiskit.opflow as qkop
 import qiskit.quantum_info as qkinfo
 
 
@@ -26,7 +26,7 @@ class StateSeparator:
     """Namespace for functions that deal with separating states."""
 
     @staticmethod
-    def trace_dict_state(state: qk.DictStateFn, trace_over: List[int]) -> qk.DictStateFn:
+    def trace_dict_state(state: qkop.DictStateFn, trace_over: List[int]) -> qkop.DictStateFn:
         """Take a state comprised on n qubits and get the trace of the system over the subsystems
         specified by a list of indices.
 
@@ -34,10 +34,10 @@ class StateSeparator:
         """
         input_statevector = qkinfo.Statevector(state.to_matrix())
         traced_statevector = qkinfo.partial_trace(input_statevector, trace_over).to_statevector()
-        return qk.DictStateFn(traced_statevector.to_dict())
+        return qkop.DictStateFn(traced_statevector.to_dict())
 
     @staticmethod
-    def trace_to_density_op(state: qk.DictStateFn, trace_over: List[int]) -> qkinfo.DensityMatrix:
+    def trace_to_density_op(state: qkop.DictStateFn, trace_over: List[int]) -> qkinfo.DensityMatrix:
         """Take a state comprised on n qubits and get the trace of the system over the subsystems
         specified by a list of indices.
 
@@ -48,7 +48,7 @@ class StateSeparator:
         return qkinfo.partial_trace(input_statevector, trace_over)
 
     @staticmethod
-    def separate(qnum: int, dict_state: qk.DictStateFn) -> Optional[qk.DictStateFn]:
+    def separate(qnum: int, dict_state: qkop.DictStateFn) -> Optional[qkop.DictStateFn]:
         """When a qubit is not entangled (up to a small tolerance) with the rest of the register,
         trace over the rest of the system, giving the qubits' pure state.
 
@@ -67,7 +67,7 @@ class StateSeparator:
             selected_qubit_pure_state = selected_qubit_maybe_mixed_state.to_statevector(
                 rtol=10 ** (-10)
             )
-            return qk.DictStateFn(selected_qubit_pure_state.to_dict())
+            return qkop.DictStateFn(selected_qubit_pure_state.to_dict())
 
         except qkexcept.QiskitError as e:
             if e.message != "Density matrix is not a pure state":
@@ -75,7 +75,7 @@ class StateSeparator:
             return None
 
     @staticmethod
-    def get_separable_qubits(dict_state: qk.DictStateFn) -> Dict[int, qk.DictStateFn]:
+    def get_separable_qubits(dict_state: qkop.DictStateFn) -> Dict[int, qkop.DictStateFn]:
         """For each qubit, numerically detect if it's seprabale or not. If it is, add to
         the result dict, indexed by subsystem, the state traced over the remaining qubits.
 

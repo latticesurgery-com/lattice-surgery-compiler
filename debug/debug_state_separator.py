@@ -9,7 +9,7 @@ from qiskit_opflow_utils import StateSeparator
 import webgui.lattice_view
 from fractions import Fraction
 
-import qiskit.opflow as qk
+import qiskit.opflow as qkop
 import qiskit.quantum_info as qkinfo
 
 import math
@@ -18,20 +18,20 @@ import math
 
 if __name__ == "__main__":
     if len(sys.argv)>1 and sys.argv[1] == 'debug_trace':
-        state = qk.DictStateFn({'10': 1 / math.sqrt(2), '00': 1 / math.sqrt(2)})
+        state = qkop.DictStateFn({'10': 1 / math.sqrt(2), '00': 1 / math.sqrt(2)})
         l = [StateSeparator.trace_dict_state(state,[0]),StateSeparator.trace_dict_state(state,[1])]
         print(l[0])
         print(l[1])
 
 
     print("Separable qubits,")
-    bell_pair = qk.DictStateFn({'11':1/math.sqrt(2),'00':1/math.sqrt(2)})
+    bell_pair = qkop.DictStateFn({'11': 1 / math.sqrt(2), '00': 1 / math.sqrt(2)})
     print("of a Bell pair:",StateSeparator.get_separable_qubits(bell_pair))
-    bell_pair_plus = qk.Plus^bell_pair
-    bell_pair_plus = cast(qk.DictStateFn, bell_pair_plus.eval())
+    bell_pair_plus = qkop.Plus ^ bell_pair
+    bell_pair_plus = cast(qkop.DictStateFn, bell_pair_plus.eval())
     print("of a Bell pair tensored with |+>:",StateSeparator.get_separable_qubits(bell_pair_plus))
-    bell_pair_plus_surround = qk.Minus ^ bell_pair ^ qk.Plus
-    bell_pair_plus_surround = cast(qk.DictStateFn, bell_pair_plus_surround.eval())
+    bell_pair_plus_surround = qkop.Minus ^ bell_pair ^ qkop.Plus
+    bell_pair_plus_surround = cast(qkop.DictStateFn, bell_pair_plus_surround.eval())
     print("of |+> otimes Bell pair otimes |->:")
     separated = StateSeparator.get_separable_qubits(bell_pair_plus_surround)
     print("0 :", separated[0])
@@ -39,8 +39,8 @@ if __name__ == "__main__":
     print()
 
     print("More tests:")
-    state = qk.DictStateFn({'10': 1 / math.sqrt(2), '00': 1 / math.sqrt(2)})
+    state = qkop.DictStateFn({'10': 1 / math.sqrt(2), '00': 1 / math.sqrt(2)})
     print(StateSeparator.get_separable_qubits(state))
 
-    state = qk.DictStateFn({'000':1/math.sqrt(4),'010':1/math.sqrt(4), '100':1/math.sqrt(4),'110':1/math.sqrt(4)})
+    state = qkop.DictStateFn({'000': 1 / math.sqrt(4), '010': 1 / math.sqrt(4), '100': 1 / math.sqrt(4), '110': 1 / math.sqrt(4)})
     print(StateSeparator.get_separable_qubits(state))
