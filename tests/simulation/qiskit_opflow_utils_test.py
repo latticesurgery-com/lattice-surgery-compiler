@@ -17,31 +17,34 @@
 import math
 
 import pytest
-import qiskit.opflow as qk
+import qiskit.opflow as qkop
+import qiskit.quantum_info as qkinfo
 from qiskit import QiskitError
 
 from lsqecc.simulation.qiskit_opflow_utils import StateSeparator
 
-bell_pair = qk.DictStateFn({"11": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
+bell_pair = qkop.DictStateFn({"11": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
 
 
 class TestStateSeparator:
     def test_trace_dict_state_type(self):
-        assert isinstance(StateSeparator.trace_dict_state(qk.One ^ qk.Zero, [1]).primitive, dict)
+        assert isinstance(
+            StateSeparator.trace_dict_state(qkop.One ^ qkop.Zero, [1]).primitive, dict
+        )
 
     def test_trace_dict_state_indices_trivial(self):
-        traced_state = StateSeparator.trace_dict_state(qk.One ^ qk.One, [0])
-        assert isinstance(traced_state, qk.DictStateFn)
+        traced_state = StateSeparator.trace_dict_state(qkop.One ^ qkop.One, [0])
+        assert isinstance(traced_state, qkop.DictStateFn)
         assert traced_state.primitive.get("0") is None
         assert traced_state.primitive["1"] == pytest.approx(1)
 
-        traced_state = StateSeparator.trace_dict_state(qk.One ^ qk.One, [1])
-        assert isinstance(traced_state, qk.DictStateFn)
+        traced_state = StateSeparator.trace_dict_state(qkop.One ^ qkop.One, [1])
+        assert isinstance(traced_state, qkop.DictStateFn)
         assert traced_state.primitive.get("0") is None
         assert traced_state.primitive["1"] == pytest.approx(1)
 
     def test_trace_dict_state_over_one_qubit(self):
-        state = qk.DictStateFn({"10": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
+        state = qkop.DictStateFn({"10": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
         s0 = StateSeparator.trace_dict_state(state, [0])
         s1 = StateSeparator.trace_dict_state(state, [1])
 
@@ -54,20 +57,20 @@ class TestStateSeparator:
         assert s1.primitive.get("1") is None
 
     def test_trace_dict_state_test_indices(self):
-        traced_state = StateSeparator.trace_dict_state(qk.One ^ qk.Zero ^ qk.Plus, [1, 2])
+        traced_state = StateSeparator.trace_dict_state(qkop.One ^ qkop.Zero ^ qkop.Plus, [1, 2])
         assert traced_state.primitive["0"] == pytest.approx(1 / math.sqrt(2))
         assert traced_state.primitive["1"] == pytest.approx(1 / math.sqrt(2))
 
-        traced_state = StateSeparator.trace_dict_state(qk.One ^ qk.Zero ^ qk.Plus, [0, 2])
+        traced_state = StateSeparator.trace_dict_state(qkop.One ^ qkop.Zero ^ qkop.Plus, [0, 2])
         assert traced_state.primitive["0"] == pytest.approx(1)
         assert traced_state.primitive.get("1") is None
 
-        traced_state = StateSeparator.trace_dict_state(qk.One ^ qk.Zero ^ qk.Plus, [0, 1])
+        traced_state = StateSeparator.trace_dict_state(qkop.One ^ qkop.Zero ^ qkop.Plus, [0, 1])
         assert traced_state.primitive.get("0") is None
         assert traced_state.primitive["1"] == pytest.approx(1)
 
     def test_trace_dict_state_test_leave_one_qubit(self):
-        traced_state = StateSeparator.trace_dict_state(qk.One ^ qk.Zero ^ qk.Plus, [0])
+        traced_state = StateSeparator.trace_dict_state(qkop.One ^ qkop.Zero ^ qkop.Plus, [0])
         assert traced_state.primitive.get("0") is None
         assert traced_state.primitive.get("1") is None
 
@@ -77,7 +80,7 @@ class TestStateSeparator:
         assert traced_state.primitive.get("11") is None
 
     def test_trace_dict_state_test_leave_superposition(self):
-        traced_state = StateSeparator.trace_dict_state(qk.One ^ qk.Zero ^ qk.Plus, [2])
+        traced_state = StateSeparator.trace_dict_state(qkop.One ^ qkop.Zero ^ qkop.Plus, [2])
         assert traced_state.primitive.get("0") is None
         assert traced_state.primitive.get("1") is None
 
@@ -102,3 +105,34 @@ class TestStateSeparator:
         assert isinstance(traced01.primitive, dict)
         assert traced01.primitive["00"] == pytest.approx(1 / math.sqrt(2))
         assert traced01.primitive["11"] == pytest.approx(1 / math.sqrt(2))
+
+    @pytest.mark.parametrize(
+        "state, trace_over, desired_state",
+        [
+            (qkop.Zero ^ qkop.One, [0], qkop.Zero),
+            (qkop.Zero ^ qkop.One, [1], qkop.One),
+            (qkop.Zero ^ qkop.Plus, [0], qkop.Zero),
+            (qkop.Zero ^ qkop.Plus, [1], qkop.Plus),
+            (qkop.Zero ^ qkop.Plus ^ qkop.One, [1], qkop.Zero ^ qkop.One),
+            (qkop.Zero ^ qkop.Plus ^ qkop.One, [0], qkop.Zero ^ qkop.Plus),
+            (qkop.Zero ^ qkop.Plus ^ qkop.One, [2], qkop.Plus ^ qkop.One),
+            (qkop.Zero ^ qkop.Plus ^ qkop.One, [0, 1], qkop.Zero),
+            (qkop.Zero ^ qkop.Plus ^ qkop.One, [1, 2], qkop.One),
+            (qkop.Zero ^ qkop.Plus ^ qkop.One, [0, 2], qkop.Plus),
+        ],
+    )
+    def test_trace_to_density_op_separable_states(self, state, trace_over, desired_state):
+        traced_state = StateSeparator.trace_to_density_op(state, trace_over)
+
+        desired_state_as_density_matrix = qkinfo.DensityMatrix(desired_state).data
+        assert traced_state.data.shape == desired_state_as_density_matrix.data.shape
+
+        rows, cols = traced_state.data.shape
+        for row in range(rows):
+            for col in range(cols):
+                assert traced_state.data[row, col] == pytest.approx(
+                    desired_state_as_density_matrix[row, col]
+                )
+
+    def test_trace_to_density_op_non_separable_states(self, state, trace_over, desired_state):
+        pass
