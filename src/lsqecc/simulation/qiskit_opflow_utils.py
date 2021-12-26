@@ -95,4 +95,4 @@ def to_dict_fn(vector_state: qkop.OperatorBase) -> qkop.DictStateFn:
     elif isinstance(vector_state, qkop.SparseVectorStateFn):
         return cast(qkop.DictStateFn, vector_state.to_dict_fn())
     else:
-        raise NotImplementedError
+        raise NotImplementedError(f"Conversion to_dict_fn of {repr(type(vector_state))}")

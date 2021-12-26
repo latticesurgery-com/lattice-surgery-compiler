@@ -129,7 +129,7 @@ class TestStateSeparator:
         ],
     )
     def test_separate(self, qnum, state: qkop.StateFn, desired_state: qkop.StateFn):
-        maybe_separated_state = StateSeparator.separate(qnum, to_dict_fn(state))
+        maybe_separated_state = StateSeparator.separate(qnum, to_dict_fn(state.eval()))
         if desired_state is None:
             assert maybe_separated_state is None
         else:
