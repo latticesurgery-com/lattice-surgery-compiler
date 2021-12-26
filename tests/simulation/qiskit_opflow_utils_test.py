@@ -16,6 +16,7 @@
 # USA
 import math
 
+import numpy as np
 import pytest
 import qiskit.opflow as qkop
 import qiskit.quantum_info as qkinfo
@@ -26,6 +27,33 @@ from lsqecc.simulation.qiskit_opflow_utils import StateSeparator
 bell_pair = qkop.DictStateFn({"11": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
 
 
+# For some reason, sometimes SparseVectorStateFn a nested vector
+# ... maybe it's intended to be a column
+def to_vector(state: qkop.OperatorBase):
+    if len(state.to_matrix().shape) == 2:
+        return state.to_matrix()[0]
+    return state.to_matrix()
+
+
+def assert_eq_numpy_vectors(lhs: np.array, rhs: np.array):
+    assert len(rhs.shape) == 1
+    assert lhs.shape == rhs.shape
+    rows = lhs.shape[0]
+    for row in range(rows):
+        assert lhs[row] == pytest.approx(rhs[row])
+
+
+def assert_eq_numpy_matrices(lhs: np.array, rhs: np.array):
+    assert len(rhs.shape) == 2
+    assert lhs.shape == rhs.shape
+    rows, cols = lhs.shape
+    for row in range(rows):
+        for col in range(cols):
+            assert lhs[row, col] == pytest.approx(rhs[row, col])
+
+
+# The tracing functionality is delegated to qiskit we mostly check that our interface is working
+# correctly and that things such as indexing and corner cases
 class TestStateSeparator:
     def test_trace_dict_state_type(self):
         assert isinstance(
@@ -50,12 +78,10 @@ class TestStateSeparator:
         ],
     )
     def test_trace_dict_state_separable_states(self, state, trace_over, desired_state):
-        traced_state = StateSeparator.trace_dict_state(state, trace_over).to_matrix()
-        desired_state_as_matrix = desired_state.to_matrix()
-
-        assert traced_state.shape == desired_state_as_matrix.shape
-        for j in range(traced_state.shape[0]):
-            assert traced_state[j] == pytest.approx(desired_state_as_matrix[j])
+        assert_eq_numpy_vectors(
+            desired_state.to_matrix(),
+            StateSeparator.trace_dict_state(state, trace_over).to_matrix(),
+        )
 
     def test_trace_dict_state_fail(self):
         with pytest.raises(QiskitError):
@@ -79,18 +105,33 @@ class TestStateSeparator:
         ],
     )
     def test_trace_to_density_op_separable_states(self, state, trace_over, desired_state):
-        traced_state = StateSeparator.trace_to_density_op(state, trace_over)
+        assert_eq_numpy_matrices(
+            qkinfo.DensityMatrix(desired_state).data,
+            StateSeparator.trace_to_density_op(state, trace_over).data,
+        )
 
-        desired_state_as_density_matrix = qkinfo.DensityMatrix(desired_state).data
-        assert traced_state.data.shape == desired_state_as_density_matrix.data.shape
+    def test_trace_to_density_op_bell_pair(self):
+        traced_state = StateSeparator.trace_to_density_op(bell_pair, [0]).data
+        assert traced_state[0, 0] == pytest.approx(1 / 2)
+        assert traced_state[0, 1] == pytest.approx(0)
+        assert traced_state[1, 0] == pytest.approx(0)
+        assert traced_state[1, 1] == pytest.approx(1 / 2)
 
-        rows, cols = traced_state.data.shape
-        for row in range(rows):
-            for col in range(cols):
-                assert traced_state.data[row, col] == pytest.approx(
-                    desired_state_as_density_matrix[row, col]
-                )
-
-    @pytest.mark.skip
-    def test_trace_to_density_op_non_separable_states(self, state, trace_over, desired_state):
-        pass
+    @pytest.mark.parametrize(
+        "qnum, state, desired_state",
+        [
+            (0, qkop.Plus ^ qkop.One, qkop.One),
+            (1, qkop.Plus ^ qkop.One, qkop.Plus),
+            (1, qkop.Plus ^ qkop.Zero ^ qkop.One, qkop.Zero),
+            (0, bell_pair, None),
+            (1, bell_pair, None),
+        ],
+    )
+    def test_separate(self, qnum, state, desired_state: qkop.StateFn):
+        maybe_separated_state = StateSeparator.separate(qnum, state)
+        if desired_state is None:
+            assert maybe_separated_state is None
+        else:
+            assert_eq_numpy_vectors(
+                to_vector(desired_state.eval()), maybe_separated_state.to_matrix()
+            )
