@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 import math
+from typing import Dict, cast
 
 import numpy as np
 import pytest
@@ -22,7 +23,7 @@ import qiskit.opflow as qkop
 import qiskit.quantum_info as qkinfo
 from qiskit import QiskitError
 
-from lsqecc.simulation.qiskit_opflow_utils import StateSeparator
+from lsqecc.simulation.qiskit_opflow_utils import StateSeparator, to_dict_fn
 
 bell_pair = qkop.DictStateFn({"11": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
 
@@ -134,4 +135,27 @@ class TestStateSeparator:
         else:
             assert_eq_numpy_vectors(
                 to_vector(desired_state.eval()), maybe_separated_state.to_matrix()
+            )
+
+    @pytest.mark.parametrize(
+        "state, desired_states",
+        [
+            # (qkop.One, {0:qkop.One}), TODO add support for separating a single qubit
+            (qkop.Plus ^ qkop.One, {0: qkop.One, 1: qkop.Plus}),
+            (qkop.Plus ^ qkop.Zero ^ qkop.One, {0: qkop.One, 1: qkop.Zero, 2: qkop.Plus}),
+            (bell_pair, {}),
+            (bell_pair ^ qkop.Zero, {0: qkop.Zero}),
+            (qkop.Plus ^ bell_pair ^ qkop.One, {0: qkop.One, 3: qkop.Plus}),
+        ],
+    )
+    def test_get_separable_qubits(
+        self, state: qkop.StateFn, desired_states: Dict[int, qkop.StateFn]
+    ):
+        separable_qubits_with_state = StateSeparator.get_separable_qubits(to_dict_fn(state.eval()))
+
+        assert desired_states.keys() == separable_qubits_with_state.keys()
+        for index in desired_states.keys():
+            assert_eq_numpy_vectors(
+                to_vector(desired_states[index]),
+                to_vector(cast(qkop.OperatorBase, separable_qubits_with_state[index])),
             )
