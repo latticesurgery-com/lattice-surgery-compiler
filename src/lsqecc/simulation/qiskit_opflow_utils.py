@@ -38,7 +38,7 @@ class StateSeparator:
 
     @staticmethod
     def trace_to_density_op(state: qk.DictStateFn, trace_over: List[int]) -> qkinfo.DensityMatrix:
-        """Take a state comprised on n qubits and get the trace of the system over the subsystems
+        """Take a state comprised of n qubits and get the trace of the system over the subsystems
         specified by a list of indices.
 
         Makes no assumption about the separability of the traced subsystems and gives a density
@@ -55,7 +55,6 @@ class StateSeparator:
         If the selected qubit is entangled return None.
         """
 
-        # Qubits are indexed left to right in the dict state so we need to swap
         remaing_qubits = list(range(dict_state.num_qubits))
         remaing_qubits.remove(qnum)
 
@@ -85,5 +84,5 @@ class StateSeparator:
         for i in range(dict_state.num_qubits):
             maybe_state = StateSeparator.separate(i, dict_state)
             if maybe_state is not None:
-                out[dict_state.num_qubits - i - 1] = maybe_state
+                out[dict_state.num_qubits] = maybe_state
         return out
