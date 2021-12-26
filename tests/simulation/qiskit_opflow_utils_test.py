@@ -128,11 +128,12 @@ class TestStateSeparator:
             (1, bell_pair, None),
         ],
     )
-    def test_separate(self, qnum, state, desired_state: qkop.StateFn):
-        maybe_separated_state = StateSeparator.separate(qnum, state)
+    def test_separate(self, qnum, state: qkop.StateFn, desired_state: qkop.StateFn):
+        maybe_separated_state = StateSeparator.separate(qnum, to_dict_fn(state))
         if desired_state is None:
             assert maybe_separated_state is None
         else:
+            assert maybe_separated_state is not None  # For mypy
             assert_eq_numpy_vectors(
                 to_vector(desired_state.eval()), maybe_separated_state.to_matrix()
             )
