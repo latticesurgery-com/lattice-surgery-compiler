@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
 import qiskit.exceptions as qkexcept
 import qiskit.opflow as qkop
@@ -84,5 +84,15 @@ class StateSeparator:
         for i in range(dict_state.num_qubits):
             maybe_state = StateSeparator.separate(i, dict_state)
             if maybe_state is not None:
-                out[dict_state.num_qubits] = maybe_state
+                out[i] = maybe_state
         return out
+
+
+def to_dict_fn(vector_state: qkop.OperatorBase) -> qkop.DictStateFn:
+    # Switch two identical cases to keep mypy happy
+    if isinstance(vector_state, qkop.VectorStateFn):
+        return cast(qkop.DictStateFn, vector_state.to_dict_fn())
+    elif isinstance(vector_state, qkop.SparseVectorStateFn):
+        return cast(qkop.DictStateFn, vector_state.to_dict_fn())
+    else:
+        raise NotImplementedError
