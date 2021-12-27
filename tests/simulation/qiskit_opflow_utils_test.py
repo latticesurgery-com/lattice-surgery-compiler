@@ -160,3 +160,22 @@ class TestStateSeparator:
                 to_vector(desired_states[index]),
                 to_vector(cast(qkop.OperatorBase, separable_qubits_with_state[index])),
             )
+
+
+@pytest.mark.parametrize(
+    "state, desired_state",
+    [
+        (qkop.Zero.eval(), {"0": 1}),
+        (qkop.Plus.eval(), {"0": 1 / math.sqrt(2), "1": 1 / math.sqrt(2)}),
+    ],
+)
+def test_to_dict_fn(state: qkop.OperatorBase, desired_state: Dict[str, float]):
+    state_dict = to_dict_fn(state).primitive
+    assert state_dict.keys() == desired_state.keys()
+    for key, desired_val in desired_state.items():
+        assert desired_val == pytest.approx(state_dict[key])
+
+
+def test_to_dict_fn_not_implemented():
+    with pytest.raises(NotImplementedError):
+        to_dict_fn(qkop.Plus)
