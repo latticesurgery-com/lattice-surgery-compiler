@@ -61,5 +61,30 @@ class TestProjectiveMeasurement:
         ],
     )
     def test_borns_rule(self, projector: qkop.OperatorBase, state: qkop.OperatorBase, probability):
-
         assert ProjectiveMeasurement.borns_rule(projector, state) == pytest.approx(probability)
+
+    @pytest.mark.parametrize(
+        "projector, initial_state, desired_state_after_measurement, desired_probability",
+        [
+            ((qkop.I + qkop.Z) / 2, qkop.Zero, qkop.Zero, 1),
+            ((qkop.I + qkop.Z) / 2, qkop.Plus, qkop.Zero, 0.5),
+            ((qkop.I - qkop.Z) / 2, qkop.Plus, qkop.One, 0.5),
+            ((qkop.I + qkop.X) / 2, qkop.Plus, qkop.Plus, 1),
+            ((qkop.I + qkop.X) / 2, qkop.Zero, qkop.Plus, 0.5),
+            ((qkop.I - qkop.X) / 2, qkop.Zero, qkop.Minus, 0.5),
+        ],
+    )
+    def test_compute_outcome_state(
+        self,
+        projector: qkop.OperatorBase,
+        initial_state: qkop.OperatorBase,
+        desired_state_after_measurement: qkop.OperatorBase,
+        desired_probability,
+    ):
+        actual_state, actual_probability = ProjectiveMeasurement.compute_outcome_state(
+            projector, initial_state
+        )
+        assert actual_probability == pytest.approx(desired_probability)
+        assert_eq_numpy_vectors(
+            to_vector(desired_state_after_measurement.eval()), to_vector(actual_state)
+        )
