@@ -14,6 +14,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
+from typing import Tuple
 
 import pytest
 import qiskit.opflow as qkop
@@ -88,3 +89,32 @@ class TestProjectiveMeasurement:
         assert_eq_numpy_vectors(
             to_vector(desired_state_after_measurement.eval()), to_vector(actual_state)
         )
+
+    @pytest.mark.parametrize(
+        "pauli_observable, desired_projectors",
+        [
+            (qkop.X, ((qkop.I + qkop.X) / 2, (qkop.I - qkop.X) / 2)),
+            (
+                qkop.I ^ qkop.X,
+                (
+                    ((qkop.I ^ qkop.I) + (qkop.I ^ qkop.X)) / 2,
+                    ((qkop.I ^ qkop.I) - (qkop.I ^ qkop.X)) / 2,
+                ),
+            ),
+            (
+                qkop.Z ^ qkop.X,
+                (
+                    ((qkop.I ^ qkop.I) + (qkop.Z ^ qkop.X)) / 2,
+                    ((qkop.I ^ qkop.I) - (qkop.Z ^ qkop.X)) / 2,
+                ),
+            ),
+        ],
+    )
+    def test_get_projectors_from_pauli_observable(
+        self,
+        pauli_observable: qkop.OperatorBase,
+        desired_projectors: Tuple[qkop.OperatorBase, qkop.OperatorBase],
+    ):
+        p_0, p_1 = ProjectiveMeasurement.get_projectors_from_pauli_observable(pauli_observable)
+        assert_eq_numpy_vectors(to_vector(desired_projectors[0]), to_vector(p_0))
+        assert_eq_numpy_vectors(to_vector(desired_projectors[1]), to_vector(p_1))
