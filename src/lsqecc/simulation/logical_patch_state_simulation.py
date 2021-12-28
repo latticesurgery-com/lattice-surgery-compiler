@@ -75,7 +75,7 @@ class ProjectiveMeasurement:
     @staticmethod
     def compute_outcome_state(
         projector: qkop.OperatorBase, state_before_measurement: qkop.OperatorBase
-    ) -> Tuple[qkop.OperatorBase, float]:
+    ) -> Tuple[qkop.DictStateFn, float]:
         prob = ProjectiveMeasurement.borns_rule(projector, state_before_measurement)
         assert prob.imag < 10 ** (-8)
         prob = prob.real
@@ -83,7 +83,12 @@ class ProjectiveMeasurement:
         state_after_measurement = (projector @ state_before_measurement).eval() / (
             math.sqrt(prob) if prob > 0 else 1
         )
-        return state_after_measurement, prob
+        return (
+            state_after_measurement
+            if isinstance(state_after_measurement, qkop.DictStateFn)
+            else state_after_measurement.eval().to_dict_fn(),
+            prob,
+        )
 
     @staticmethod
     def get_projectors_from_pauli_observable(
@@ -102,8 +107,7 @@ class ProjectiveMeasurement:
 
         out = []
         for proj, eigenv in [[p_plus, +1], [p_minus, -1]]:
-            out_state, prob = ProjectiveMeasurement.compute_outcome_state(proj, state)
-            numerical_out_state = out_state.eval()
+            numerical_out_state, prob = ProjectiveMeasurement.compute_outcome_state(proj, state)
             if isinstance(numerical_out_state, qkop.VectorStateFn) or isinstance(
                 numerical_out_state, qkop.SparseVectorStateFn
             ):
