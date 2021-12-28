@@ -18,7 +18,7 @@
 import math
 import random
 import uuid
-from typing import Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import Dict, Iterable, List, Optional, Set, Tuple, TypeVar, cast
 
 import qiskit.opflow as qkop
 
@@ -70,7 +70,7 @@ class ProjectiveMeasurement:
         def compute_states(s):
             return s.to_matrix_op().eval()
 
-        return qkop.StateFn(projector).adjoint().eval(compute_states(state))
+        return cast(float, qkop.StateFn(projector).adjoint().eval(compute_states(state)))
 
     @staticmethod
     def compute_outcome_state(
