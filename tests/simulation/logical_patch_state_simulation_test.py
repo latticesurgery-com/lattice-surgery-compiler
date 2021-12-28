@@ -14,7 +14,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
-from typing import Tuple
+from typing import List, Tuple
 
 import pytest
 import qiskit.opflow as qkop
@@ -25,6 +25,11 @@ from lsqecc.simulation.logical_patch_state_simulation import (
 )
 from lsqecc.simulation.qiskit_opflow_utils import to_vector
 from tests.simulation.numpy_matrix_assertions import assert_eq_numpy_vectors
+
+
+# Type Alias, looking forward to PEP613 ...
+class Outcome(ProjectiveMeasurement.BinaryMeasurementOutcome):
+    pass
 
 
 @pytest.mark.parametrize(
@@ -118,3 +123,43 @@ class TestProjectiveMeasurement:
         p_0, p_1 = ProjectiveMeasurement.get_projectors_from_pauli_observable(pauli_observable)
         assert_eq_numpy_vectors(to_vector(desired_projectors[0]), to_vector(p_0))
         assert_eq_numpy_vectors(to_vector(desired_projectors[1]), to_vector(p_1))
+
+    @pytest.mark.parametrize(
+        "pauli_observable, state_before_measurement, desired_outcome_probability_pairs",
+        [
+            (qkop.Z, qkop.Zero, [(Outcome(qkop.Zero.eval(), 1), 1)]),
+            (
+                qkop.Z,
+                qkop.Plus,
+                [(Outcome(qkop.Zero.eval(), 1), 0.5), (Outcome(qkop.One.eval(), -1), 0.5)],
+            ),
+            (qkop.X, qkop.Plus, [(Outcome(qkop.Plus.eval(), 1), 1)]),
+            (
+                qkop.X,
+                qkop.Zero,
+                [(Outcome(qkop.Plus.eval(), 1), 0.5), (Outcome(qkop.Minus.eval(), -1), 0.5)],
+            ),
+        ],
+    )
+    def test_pauli_product_measurement_distribution(
+        self,
+        pauli_observable: qkop.OperatorBase,
+        state_before_measurement: qkop.OperatorBase,
+        desired_outcome_probability_pairs: List[Tuple[Outcome, float]],
+    ):
+        actual_outcome_probability_pairs = (
+            ProjectiveMeasurement.pauli_product_measurement_distribution(
+                pauli_observable, state_before_measurement
+            )
+        )
+        for i, actual_outcome_probability_pair in enumerate(actual_outcome_probability_pairs):
+            actual_outcome, actual_outcome_probability = actual_outcome_probability_pair
+            desired_outcome, desired_outcome_probability = desired_outcome_probability_pairs[i]
+            assert_eq_numpy_vectors(
+                to_vector(desired_outcome.resulting_state),
+                to_vector(actual_outcome.resulting_state),
+            )
+            assert desired_outcome.corresponding_eigenvalue == pytest.approx(
+                actual_outcome.corresponding_eigenvalue
+            )
+            assert desired_outcome_probability == pytest.approx(actual_outcome_probability)
