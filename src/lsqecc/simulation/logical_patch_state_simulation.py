@@ -45,14 +45,16 @@ class ConvertersToQiskit:
         return zero_ampl * qkop.Zero + one_ampl * qkop.One
 
 
-def circuit_add_op_to_qubit(circ: qkop.CircuitOp, op: qkop.PrimitiveOp, idx: int) -> qkop.CircuitOp:
+def circuit_add_op_to_qubit(
+    circ: qkop.OperatorBase, op: qkop.PrimitiveOp, idx: int
+) -> qkop.CircuitOp:
     """Take a local operator (applied to a single qubit) and apply it to the given circuit."""
-    new_op = op
-    if idx > 0:
-        new_op = (qkop.I ^ idx) ^ new_op
+    identity_padded_op = op
     if circ.num_qubits - idx - 1 > 0:
-        new_op = new_op ^ (qkop.I ^ (circ.num_qubits - idx - 1))
-    return new_op @ circ
+        identity_padded_op = (qkop.I ^ (circ.num_qubits - idx - 1)) ^ identity_padded_op
+    if idx > 0:
+        identity_padded_op = identity_padded_op ^ (qkop.I ^ idx)
+    return identity_padded_op @ circ
 
 
 class ProjectiveMeasurement:
