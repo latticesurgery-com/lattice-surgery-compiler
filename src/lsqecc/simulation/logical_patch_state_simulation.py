@@ -74,13 +74,15 @@ class ProjectiveMeasurement:
 
     @staticmethod
     def compute_outcome_state(
-        projector: qkop.OperatorBase, state: qkop.OperatorBase
+        projector: qkop.OperatorBase, state_before_measurement: qkop.OperatorBase
     ) -> Tuple[qkop.OperatorBase, float]:
-        prob = ProjectiveMeasurement.borns_rule(projector, state)
+        prob = ProjectiveMeasurement.borns_rule(projector, state_before_measurement)
         assert prob.imag < 10 ** (-8)
         prob = prob.real
-        state = (projector @ state) / math.sqrt(prob) if prob != 0 else (projector @ state)
-        return state, prob
+        # Projective measurement by applying the projector. According to Neilsen and Chuang 2.104
+        assert prob > 0
+        state_after_measurement = (projector @ state_before_measurement).eval() / math.sqrt(prob)
+        return state_after_measurement, prob
 
     @staticmethod
     def get_projectors_from_pauli_observable(
