@@ -80,8 +80,9 @@ class ProjectiveMeasurement:
         assert prob.imag < 10 ** (-8)
         prob = prob.real
         # Projective measurement by applying the projector. According to Neilsen and Chuang 2.104
-        assert prob > 0
-        state_after_measurement = (projector @ state_before_measurement).eval() / math.sqrt(prob)
+        state_after_measurement = (projector @ state_before_measurement).eval() / (
+            math.sqrt(prob) if prob > 0 else 1
+        )
         return state_after_measurement, prob
 
     @staticmethod
@@ -103,13 +104,21 @@ class ProjectiveMeasurement:
         for proj, eigenv in [[p_plus, +1], [p_minus, -1]]:
             out_state, prob = ProjectiveMeasurement.compute_outcome_state(proj, state)
             numerical_out_state = out_state.eval()
+            if isinstance(numerical_out_state, qkop.VectorStateFn) or isinstance(
+                numerical_out_state, qkop.SparseVectorStateFn
+            ):
+                numerical_out_state = numerical_out_state.to_dict_fn()
             if not isinstance(numerical_out_state, qkop.DictStateFn):
                 raise Exception(
                     "Composed ops do not eval to single state, but to " + str(numerical_out_state)
                 )
-            out.append(
-                (ProjectiveMeasurement.BinaryMeasurementOutcome(numerical_out_state, eigenv), prob)
-            )
+            if prob > 10 ** (-8):
+                out.append(
+                    (
+                        ProjectiveMeasurement.BinaryMeasurementOutcome(numerical_out_state, eigenv),
+                        prob,
+                    )
+                )
         return out
 
 
