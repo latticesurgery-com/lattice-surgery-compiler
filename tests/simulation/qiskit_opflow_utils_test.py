@@ -23,34 +23,11 @@ import qiskit.opflow as qkop
 import qiskit.quantum_info as qkinfo
 from qiskit import QiskitError
 
-from lsqecc.simulation.qiskit_opflow_utils import StateSeparator, to_dict_fn
+from lsqecc.simulation.qiskit_opflow_utils import StateSeparator, to_dict_fn, to_vector
+
+from .numpy_matrix_assertions import assert_eq_numpy_matrices, assert_eq_numpy_vectors
 
 bell_pair = qkop.DictStateFn({"11": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
-
-
-# For some reason, sometimes SparseVectorStateFn a nested vector
-# ... maybe it's intended to be a column
-def to_vector(state: qkop.OperatorBase):
-    if len(state.to_matrix().shape) == 2:
-        return state.to_matrix()[0]
-    return state.to_matrix()
-
-
-def assert_eq_numpy_vectors(lhs: np.array, rhs: np.array):
-    assert len(rhs.shape) == 1
-    assert lhs.shape == rhs.shape
-    rows = lhs.shape[0]
-    for row in range(rows):
-        assert lhs[row] == pytest.approx(rhs[row])
-
-
-def assert_eq_numpy_matrices(lhs: np.array, rhs: np.array):
-    assert len(rhs.shape) == 2
-    assert lhs.shape == rhs.shape
-    rows, cols = lhs.shape
-    for row in range(rows):
-        for col in range(cols):
-            assert lhs[row, col] == pytest.approx(rhs[row, col])
 
 
 # The tracing functionality is delegated to qiskit we mostly check that our interface is working
@@ -179,3 +156,18 @@ def test_to_dict_fn(state: qkop.OperatorBase, desired_state: Dict[str, float]):
 def test_to_dict_fn_not_implemented():
     with pytest.raises(NotImplementedError):
         to_dict_fn(qkop.Plus)
+
+
+@pytest.mark.parametrize(
+    "op, vector_form",
+    [
+        (qkop.Zero, np.array([1, 0])),
+        # Creates a SparseVectorStateFn, which to_matrix returns as a nested array
+        (
+            qkop.DictStateFn({"00": 1 / math.sqrt(2), "11": 1 / math.sqrt(2)}).eval(),
+            np.array([0.70710678, 0.0, 0.0, 0.70710678]),
+        ),
+    ],
+)
+def test_to_vector(op, vector_form):
+    assert_eq_numpy_vectors(to_vector(op), vector_form)

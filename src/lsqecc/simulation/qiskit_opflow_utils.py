@@ -96,3 +96,11 @@ def to_dict_fn(vector_state: qkop.OperatorBase) -> qkop.DictStateFn:
         return cast(qkop.DictStateFn, vector_state.to_dict_fn())
     else:
         raise NotImplementedError(f"Conversion to_dict_fn of {repr(type(vector_state))}")
+
+
+# For some reason, sometimes SparseVectorStateFn a nested vector
+# ... maybe it's intended to be a column
+def to_vector(state: qkop.OperatorBase):
+    if len(state.to_matrix().shape) == 2:
+        return state.to_matrix()[0]
+    return state.to_matrix()
