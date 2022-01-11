@@ -14,7 +14,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import pytest
 import qiskit.opflow as qkop
@@ -22,6 +22,7 @@ import qiskit.opflow as qkop
 from lsqecc.simulation.logical_patch_state_simulation import (
     ProjectiveMeasurement,
     circuit_add_op_to_qubit,
+    proportional_choice,
 )
 from lsqecc.simulation.qiskit_opflow_utils import to_vector
 from tests.simulation.numpy_matrix_assertions import assert_eq_numpy_vectors
@@ -163,3 +164,27 @@ class TestProjectiveMeasurement:
                 actual_outcome.corresponding_eigenvalue
             )
             assert desired_outcome_probability == pytest.approx(actual_outcome_probability)
+
+
+@pytest.mark.parametrize(
+    "assoc_data_prob",
+    [
+        [("a", 0.50), ("b", 0.30), ("c", 0.20)],
+        [
+            ("a", 1.0),
+            ("b", 0),
+            ("c", 0),
+        ],
+    ],
+)
+def test_proportional_choice(assoc_data_prob):
+    NUM_RUNS = 10 ** 5
+    DISTRIBUTION_TOLERANCE = 10 ** (-2)
+
+    outcomes: Dict[str, int] = dict([(v, 0) for v, prob in assoc_data_prob])
+    for i in range(NUM_RUNS):
+        outcomes[proportional_choice(assoc_data_prob)] += 1
+
+    total = sum(outcomes.values())
+    for v, prob in assoc_data_prob:
+        assert outcomes[v] / total == pytest.approx(prob, rel=DISTRIBUTION_TOLERANCE)
