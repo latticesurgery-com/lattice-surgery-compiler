@@ -221,4 +221,46 @@ class TestPatchToQubitMapper:
         assert len(set(patch_ids)) == 3  # check that they are all different
 
     def test___init__(self):
-        pass
+        c = circuit.PauliOpCircuit(2)
+        c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 2)))
+        logical_computation = llops.LogicalLatticeComputation(c)
+        mapper = PatchToQubitMapper(logical_computation)
+        assert len(mapper.patch_location_to_logical_idx.keys()) == 2
+        assert set(mapper.patch_location_to_logical_idx.keys()) == set(
+            PatchToQubitMapper._get_all_operating_patches(logical_computation)
+        )
+        assert set(mapper.patch_location_to_logical_idx.values()) == set(range(2))
+
+    def test_max_num_patches_all_logical(self):
+        c = circuit.PauliOpCircuit(2)
+        c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 2)))
+        assert PatchToQubitMapper(llops.LogicalLatticeComputation(c)).max_num_patches() == 2
+
+    def test_max_num_patches_with_y_ancilla(self):
+        c = circuit.PauliOpCircuit(2)
+        c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 4)))
+        assert PatchToQubitMapper(llops.LogicalLatticeComputation(c)).max_num_patches() == 3
+
+    def test_max_num_patches_with_magic_ancilla(self):
+        c = circuit.PauliOpCircuit(2)
+        c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 8)))
+        assert PatchToQubitMapper(llops.LogicalLatticeComputation(c)).max_num_patches() == 4
+
+    def test_get_uuid(self):
+        c = circuit.PauliOpCircuit(2)
+        c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 8)))
+        mapper = PatchToQubitMapper(llops.LogicalLatticeComputation(c))
+        for i in range(4):
+            try:
+                mapper.get_uuid(i)
+            except Exception as e:
+                pytest.fail("get_uuid raised: " + repr(e))
+
+    def enumerate_patches_by_index(self):
+        c = circuit.PauliOpCircuit(2)
+        c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 8)))
+        mapper = PatchToQubitMapper(llops.LogicalLatticeComputation(c))
+        iterator = iter(mapper.enumerate_patches_by_index())
+        for i in range(4):
+            patch_idx, uuid = next(iterator)
+            assert patch_idx == i
