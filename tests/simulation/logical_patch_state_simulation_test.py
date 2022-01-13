@@ -14,12 +14,16 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
+from fractions import Fraction
 from typing import Dict, List, Tuple
 
 import pytest
 import qiskit.opflow as qkop
 
+import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
+from lsqecc.pauli_rotations import circuit
 from lsqecc.simulation.logical_patch_state_simulation import (
+    PatchToQubitMapper,
     ProjectiveMeasurement,
     circuit_add_op_to_qubit,
     proportional_choice,
@@ -188,3 +192,33 @@ def test_proportional_choice(assoc_data_prob):
     total = sum(outcomes.values())
     for v, prob in assoc_data_prob:
         assert outcomes[v] / total == pytest.approx(prob, rel=DISTRIBUTION_TOLERANCE)
+
+
+I = circuit.PauliOperator.I  # noqa: E741
+X = circuit.PauliOperator.X
+Y = circuit.PauliOperator.Y
+Z = circuit.PauliOperator.Z
+
+
+class TestPatchToQubitMapper:
+    def test__get_all_operating_patches_just_logical(self):
+        c = circuit.PauliOpCircuit(2)
+        c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 2)))
+
+        patch_ids = PatchToQubitMapper._get_all_operating_patches(
+            llops.LogicalLatticeComputation(c)
+        )
+        assert len(patch_ids) == 2
+        assert patch_ids[0] != patch_ids[1]
+
+    def test_get_all_operating_patches_logical_with_y_ancilla(self):
+        c = circuit.PauliOpCircuit(2)
+        c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 4)))
+
+        logical_computation = llops.LogicalLatticeComputation(c)
+        patch_ids = PatchToQubitMapper._get_all_operating_patches(logical_computation)
+        assert len(patch_ids) == 3
+        assert len(set(patch_ids)) == 3  # check that they are all different
+
+    def test___init__(self):
+        pass
