@@ -18,7 +18,7 @@
 import math
 import random
 import uuid
-from typing import Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import Dict, Iterable, List, Optional, Set, Tuple, TypeVar, cast
 
 import qiskit.opflow as qkop
 
@@ -30,8 +30,8 @@ from .qubit_state import DefaultSymbolicStates, SymbolicState
 
 class ConvertersToQiskit:
     @staticmethod
-    def pauli_op(op: PauliOperator) -> Optional[qkop.PrimitiveOp]:
-        known_map: Dict[PauliOperator, qkop.PrimitiveOp] = {
+    def pauli_op(op: PauliOperator) -> Optional[qkop.OperatorBase]:
+        known_map: Dict[PauliOperator, qkop.OperatorBase] = {
             PauliOperator.I: qkop.I,
             PauliOperator.X: qkop.X,
             PauliOperator.Y: qkop.Y,
@@ -45,14 +45,16 @@ class ConvertersToQiskit:
         return zero_ampl * qkop.Zero + one_ampl * qkop.One
 
 
-def circuit_add_op_to_qubit(circ: qkop.CircuitOp, op: qkop.PrimitiveOp, idx: int) -> qkop.CircuitOp:
+def circuit_add_op_to_qubit(
+    circ: qkop.OperatorBase, op: qkop.OperatorBase, idx: int
+) -> qkop.CircuitOp:
     """Take a local operator (applied to a single qubit) and apply it to the given circuit."""
-    new_op = op
-    if idx > 0:
-        new_op = (qkop.I ^ idx) ^ new_op
+    identity_padded_op = op
     if circ.num_qubits - idx - 1 > 0:
-        new_op = new_op ^ (qkop.I ^ (circ.num_qubits - idx - 1))
-    return new_op @ circ
+        identity_padded_op = (qkop.I ^ (circ.num_qubits - idx - 1)) ^ identity_padded_op
+    if idx > 0:
+        identity_padded_op = identity_padded_op ^ (qkop.I ^ idx)
+    return identity_padded_op @ circ
 
 
 class ProjectiveMeasurement:
@@ -63,27 +65,35 @@ class ProjectiveMeasurement:
             self.corresponding_eigenvalue = corresponding_eigenvalue
 
     @staticmethod
-    def borns_rule(projector: qkop.PrimitiveOp, state: qkop.OperatorBase) -> float:
+    def borns_rule(projector: qkop.OperatorBase, state: qkop.OperatorBase) -> float:
         # https://qiskit.org/documentation/tutorials/operators/01_operator_flow.html#listop
         def compute_states(s):
             return s.to_matrix_op().eval()
 
-        return qkop.StateFn(projector).adjoint().eval(compute_states(state))
+        return cast(float, qkop.StateFn(projector).adjoint().eval(compute_states(state)))
 
     @staticmethod
     def compute_outcome_state(
-        projector: qkop.PrimitiveOp, state: qkop.OperatorBase
-    ) -> Tuple[qkop.OperatorBase, float]:
-        prob = ProjectiveMeasurement.borns_rule(projector, state)
+        projector: qkop.OperatorBase, state_before_measurement: qkop.OperatorBase
+    ) -> Tuple[qkop.DictStateFn, float]:
+        prob = ProjectiveMeasurement.borns_rule(projector, state_before_measurement)
         assert prob.imag < 10 ** (-8)
         prob = prob.real
-        state = (projector @ state) / math.sqrt(prob) if prob != 0 else (projector @ state)
-        return state, prob
+        # Projective measurement by applying the projector. According to Neilsen and Chuang 2.104
+        state_after_measurement = (projector @ state_before_measurement).eval() / (
+            math.sqrt(prob) if prob > 0 else 1
+        )
+        return (
+            state_after_measurement
+            if isinstance(state_after_measurement, qkop.DictStateFn)
+            else state_after_measurement.eval().to_dict_fn(),
+            prob,
+        )
 
     @staticmethod
     def get_projectors_from_pauli_observable(
         pauli_observable: qkop.OperatorBase,
-    ) -> Tuple[qkop.PrimitiveOp, qkop.PrimitiveOp]:
+    ) -> Tuple[qkop.OperatorBase, qkop.OperatorBase]:
         eye = qkop.I ^ pauli_observable.num_qubits
         return (eye + pauli_observable) / 2, (eye - pauli_observable) / 2
 
@@ -97,15 +107,22 @@ class ProjectiveMeasurement:
 
         out = []
         for proj, eigenv in [[p_plus, +1], [p_minus, -1]]:
-            out_state, prob = ProjectiveMeasurement.compute_outcome_state(proj, state)
-            numerical_out_state = out_state.eval()
+            numerical_out_state, prob = ProjectiveMeasurement.compute_outcome_state(proj, state)
+            if isinstance(numerical_out_state, qkop.VectorStateFn) or isinstance(
+                numerical_out_state, qkop.SparseVectorStateFn
+            ):
+                numerical_out_state = numerical_out_state.to_dict_fn()
             if not isinstance(numerical_out_state, qkop.DictStateFn):
                 raise Exception(
                     "Composed ops do not eval to single state, but to " + str(numerical_out_state)
                 )
-            out.append(
-                (ProjectiveMeasurement.BinaryMeasurementOutcome(numerical_out_state, eigenv), prob)
-            )
+            if prob > 10 ** (-8):
+                out.append(
+                    (
+                        ProjectiveMeasurement.BinaryMeasurementOutcome(numerical_out_state, eigenv),
+                        prob,
+                    )
+                )
         return out
 
 
@@ -227,7 +244,7 @@ class PatchSimulator:
             self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
 
         elif isinstance(logical_op, llops.MultiBodyMeasurement):
-            pauli_op_list: List[qkop.PrimitiveOp] = []
+            pauli_op_list: List[qkop.OperatorBase] = []
 
             for j, quuid in self.mapper.enumerate_patches_by_index():
                 pauli_op_list.append(
