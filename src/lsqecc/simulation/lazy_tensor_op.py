@@ -21,6 +21,7 @@ from typing import Generic, List, Tuple, TypeVar
 import qiskit.opflow as qkop
 
 from lsqecc.simulation.logical_patch_state_simulation import tensor_list
+from lsqecc.simulation.qiskit_opflow_utils import StateSeparator
 
 
 class LazyTensorOpsNotMatchingException(Exception):
@@ -38,7 +39,7 @@ class LazyTensorOp(Generic[T]):
     operands. Has methods to apply operators so that the tensor structure is preserved."""
 
     def __init__(self, ops: List[T]):
-        self.ops = ops
+        self.ops = ops  # TODO rename to operands
 
     def apply_matching_tensors(self, lhs: "LazyTensorOp[S]", eval=True) -> "LazyTensorOp[R]":
         """Left applies the list of matching tensors to the current object"""
@@ -89,8 +90,25 @@ class LazyTensorOp(Generic[T]):
                 return i, qubit_idx - sums[i]
         raise IndexError(f"Requesting qubit index: {qubit_idx} out of range: {sums[-1]}")
 
-    def disentangle_separable_qubit(self, idx: int):
-        pass  # TODO
+    def merge_operand_with_the_next(self, target_operand_idx: int):
+        new_ops = [op for i, op in enumerate(self.ops) if i != target_operand_idx + 1]
+        new_ops[target_operand_idx] = (
+            self.ops[target_operand_idx] ^ self.ops[target_operand_idx + 1]
+        )
+        return LazyTensorOp(new_ops)
+
+    def separate_last_qubit_of_operand(self, operand_idx: int) -> bool:
+        """Returns true if the qubit was not entangled and hence the operation possible"""
+        operand = self.ops[operand_idx]
+        assert isinstance(operand, qkop.DictStateFn)
+        maybe_new_operand_from_qubit = StateSeparator.separate(operand.num_qubits - 1, operand)
+        if maybe_new_operand_from_qubit is None:
+            return False
+        self.ops[operand_idx] = StateSeparator.trace_dict_state(
+            operand, list(range(operand.num_qubits - 1))
+        )
+        self.ops.insert(operand_idx + 1, maybe_new_operand_from_qubit)
+        return True
 
     def are_possibly_entangled(self):
         pass  # TODO
