@@ -130,6 +130,7 @@ T = TypeVar("T")
 
 
 def proportional_choice(assoc_data_prob: List[Tuple[T, float]]) -> T:
+    """Used to sample measurement outcomes"""
     return random.choices(
         [val for val, prob in assoc_data_prob], weights=[prob for val, prob in assoc_data_prob], k=1
     )[0]
