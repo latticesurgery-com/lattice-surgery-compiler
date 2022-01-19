@@ -23,5 +23,5 @@ if __name__ == "__main__":
     print(c.render_ascii())
 
     print("Removed y operators:")
-    c.remove_y_operators_from_circuit()
+    c = c.get_y_free_equivalent()
     print(c.render_ascii())

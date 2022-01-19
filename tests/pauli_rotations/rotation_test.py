@@ -32,6 +32,48 @@ Y = PauliOperator.Y
 Z = PauliOperator.Z
 
 
+def test_cases_get_y_free_equivalent_rotations():
+    # TODO: Add more cases here
+    case_1 = (
+        PauliRotation.from_list([Y, I, Y, Z, Y, Y], Fraction(1, 8)),
+        [
+            PauliRotation.from_list([Z, I, I, I, I, I], Fraction(1, 4)),
+            PauliRotation.from_list([I, I, Z, I, Z, Z], Fraction(1, 4)),
+            PauliRotation.from_list([X, I, X, Z, X, X], Fraction(1, 8)),
+            PauliRotation.from_list([Z, I, I, I, I, I], Fraction(-1, 4)),
+            PauliRotation.from_list([I, I, Z, I, Z, Z], Fraction(-1, 4)),
+        ],
+    )
+    case_2 = (
+        PauliRotation.from_list([Y, I, Y, Z, Y, Y], Fraction(1, 2)),
+        [
+            PauliRotation.from_list([Z, I, I, I, I, I], Fraction(1, 4)),
+            PauliRotation.from_list([I, I, Z, I, Z, Z], Fraction(1, 4)),
+            PauliRotation.from_list([X, I, X, Z, X, X], Fraction(1, 2)),
+            PauliRotation.from_list([Z, I, I, I, I, I], Fraction(-1, 4)),
+            PauliRotation.from_list([I, I, Z, I, Z, Z], Fraction(-1, 4)),
+        ],
+    )
+    case_3 = (
+        PauliRotation.from_list([Y, Y, Y, Z], Fraction(1, 8)),
+        [
+            PauliRotation.from_list([Z, Z, Z, I], Fraction(1, 4)),
+            PauliRotation.from_list([X, X, X, Z], Fraction(1, 8)),
+            PauliRotation.from_list([Z, Z, Z, I], Fraction(-1, 4)),
+        ],
+    )
+    case_4 = (
+        PauliRotation.from_list([Y, Y, Y, Z], Fraction(-1, 4)),
+        [
+            PauliRotation.from_list([Z, Z, Z, I], Fraction(1, 4)),
+            PauliRotation.from_list([X, X, X, Z], Fraction(-1, 4)),
+            PauliRotation.from_list([Z, Z, Z, I], Fraction(-1, 4)),
+        ],
+    )
+
+    return [case_1, case_2, case_3, case_4]
+
+
 class TestPauliRotation:
     """Tests for PauliRotation"""
 
@@ -146,6 +188,38 @@ class TestPauliRotation:
     def test_to_latex(self, input, expected):
         assert input.to_latex() == expected
 
+    def test_get_y_free_equivalent_no_y_op(self):
+        r = PauliRotation.from_list([X, Z, I, Z], Fraction(1, 8))
+        assert r.get_y_free_equivalent() == [r]
+
+    @pytest.mark.parametrize("input_rotation, output", test_cases_get_y_free_equivalent_rotations())
+    def test_get_y_free_equivalent(self, input_rotation, output):
+        assert input_rotation.get_y_free_equivalent() == output
+
+
+def test_cases_get_y_free_equivalent_measurements():
+    # TODO: Add more cases here
+    case_1 = (
+        Measurement.from_list([Y, I, Y, Z, Y, Y], isNegative=False),
+        [
+            PauliRotation.from_list([Z, I, I, I, I, I], Fraction(1, 4)),
+            PauliRotation.from_list([I, I, Z, I, Z, Z], Fraction(1, 4)),
+            Measurement.from_list([X, I, X, Z, X, X], isNegative=False),
+            PauliRotation.from_list([Z, I, I, I, I, I], Fraction(-1, 4)),
+            PauliRotation.from_list([I, I, Z, I, Z, Z], Fraction(-1, 4)),
+        ],
+    )
+    case_2 = (
+        Measurement.from_list([Y, Y, Y, Z], isNegative=True),
+        [
+            PauliRotation.from_list([Z, Z, Z, I], Fraction(1, 4)),
+            Measurement.from_list([X, X, X, Z], isNegative=True),
+            PauliRotation.from_list([Z, Z, Z, I], Fraction(-1, 4)),
+        ],
+    )
+
+    return [case_1, case_2]
+
 
 class TestMeasurement:
     """Tests for Measurement class"""
@@ -233,6 +307,16 @@ class TestMeasurement:
     )
     def test_to_latex(self, input, expected):
         assert input.to_latex() == expected
+
+    def test_get_y_free_equivalent_no_y_op(self):
+        m = Measurement.from_list([X, Z, I, Z], isNegative=False)
+        assert m.get_y_free_equivalent() == [m]
+
+    @pytest.mark.parametrize(
+        "input_rotation, output", test_cases_get_y_free_equivalent_measurements()
+    )
+    def test_get_y_free_equivalent(self, input_rotation, output):
+        assert input_rotation.get_y_free_equivalent() == output
 
 
 class TestPauliProductOperation:
