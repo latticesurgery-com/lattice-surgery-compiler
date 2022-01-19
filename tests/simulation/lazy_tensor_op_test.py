@@ -149,7 +149,6 @@ class TestLazyTensorOp:
             ([qkop.I ^ qkop.I], 1, 0, 1),
             ([qkop.I, qkop.I], 1, 1, 0),
             ([qkop.I ^ qkop.I, qkop.I], 1, 0, 1),
-            ([qkop.I ^ qkop.I, qkop.I], 1, 0, 1),
             ([qkop.I ^ qkop.I ^ qkop.I], 2, 0, 2),
             ([qkop.I ^ qkop.I, qkop.I], 2, 1, 0),
             ([qkop.I, qkop.I ^ qkop.I], 2, 1, 1),

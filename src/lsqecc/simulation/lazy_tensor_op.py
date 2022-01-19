@@ -33,8 +33,9 @@ T = TypeVar("T", bound=qkop.OperatorBase)
 
 
 class LazyTensorOp(Generic[T]):
-    """Store operators such as `I otimes CNOT otimes I otimes I otimes X` as list of the tensor
-    operands. Has methods to apply operators so that the tensor structure is preserved"""
+    """Lazily evaluated tensor products.
+    Store operators such as `I otimes CNOT otimes I otimes I otimes X` as list of the tensor
+    operands. Has methods to apply operators so that the tensor structure is preserved."""
 
     def __init__(self, ops: List[T]):
         self.ops = ops
