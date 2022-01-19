@@ -231,10 +231,8 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
 
     def get_y_free_equivalent(self) -> List["PauliRotation"]:
         """Return the equivalent of current Pauli Rotation but without Y operator.
-        Only supports pi/8 rotations at the moment.
+        Supports all rotations.
         """
-        if self.rotation_amount not in (Fraction(1, 8), Fraction(-1, 8)):
-            raise NotImplementedError("Method only supports pi/8 rotations")
 
         return super().get_y_free_equivalent()
 
