@@ -126,7 +126,7 @@ class PauliOpCircuit(object):
             if circuit_has_measurements:
                 self.ops.pop()
 
-    def remove_y_operators_from_circuit(self) -> "PauliOpCircuit":
+    def get_y_free_equivalent(self) -> "PauliOpCircuit":
         """Return a Y-operator-free copy of the current circuit."""
         y_free_circuit = PauliOpCircuit(self.qubit_num, self.name)
 
