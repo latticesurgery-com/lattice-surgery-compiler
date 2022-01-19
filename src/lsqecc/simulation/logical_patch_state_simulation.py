@@ -24,6 +24,7 @@ import qiskit.opflow as qkop
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 from lsqecc.pauli_rotations import PauliOperator
+from lsqecc.simulation.lazy_tensor_op import LazyTensorOp
 
 from .qubit_state import DefaultSymbolicStates, SymbolicState
 
@@ -146,6 +147,12 @@ class PatchToQubitMapper:
     def get_idx(self, patch: uuid.UUID) -> int:
         return self.patch_location_to_logical_idx[patch]
 
+    def swap_patches(self, idx1: int, idx2: int):
+        uuid1 = self.get_uuid(idx1)
+        uuid2 = self.get_uuid(idx2)
+        self.patch_location_to_logical_idx[uuid1] = idx2
+        self.patch_location_to_logical_idx[uuid2] = idx1
+
     def max_num_patches(self) -> int:
         return len(self.patch_location_to_logical_idx)
 
@@ -186,9 +193,9 @@ class PatchSimulator:
     def __init__(self, logical_computation: llops.LogicalLatticeComputation):
         self.logical_computation = logical_computation
         self.mapper = PatchToQubitMapper(logical_computation)
-        self.logical_state: qkop.DictStateFn = self._make_initial_logical_state()
+        self.logical_state: LazyTensorOp[qkop.StateFn] = self._make_initial_logical_state()
 
-    def _make_initial_logical_state(self) -> qkop.DictStateFn:
+    def _make_initial_logical_state(self) -> LazyTensorOp[qkop.StateFn]:
         """Every patch, when initialized, is considered a new logical qubit.
         So all patch initializations and magic state requests are handled ahead of time"""
         initial_ancilla_states: Dict[uuid.UUID, SymbolicState] = dict()
@@ -212,7 +219,7 @@ class PatchSimulator:
         all_init_states = [
             get_init_state(quuid) for idx, quuid in self.mapper.enumerate_patches_by_index()
         ]
-        return tensor_list(all_init_states)
+        return LazyTensorOp(all_init_states)
 
     def apply_logical_operation(self, logical_op: llops.LogicalLatticeOperation):
         """Update the logical state"""
@@ -224,28 +231,39 @@ class PatchSimulator:
 
         if isinstance(logical_op, llops.SinglePatchMeasurement):
             measure_idx = self.mapper.get_idx(logical_op.qubit_uuid)
+            operand_idx, idx_within_operand = self.logical_state.get_idxs_of_qubit(measure_idx)
+            operand = self.logical_state.ops[operand_idx]
+
             local_observable = ConvertersToQiskit.pauli_op(logical_op.op)
-            global_observable = (
-                (qkop.I ^ measure_idx)
+            observable_global_to_operand = (
+                (qkop.I ^ idx_within_operand)
                 ^ local_observable
-                ^ (qkop.I ^ (self.mapper.max_num_patches() - measure_idx - 1))
+                ^ (qkop.I ^ (operand.num_qubits - idx_within_operand - 1))
             )
+
             distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(
-                global_observable, self.logical_state
+                observable_global_to_operand, operand
             )
             outcome: ProjectiveMeasurement.BinaryMeasurementOutcome = proportional_choice(
                 distribution
             )
-            self.logical_state = outcome.resulting_state
+            self.logical_state.ops[operand_idx] = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
 
+            if idx_within_operand == operand.num_qubits - 1:
+                self.logical_state.separate_last_qubit_of_operand(operand_idx)
+
         elif isinstance(logical_op, llops.LogicalPauli):
+            op_idx = self.mapper.get_idx(logical_op.qubit_uuid)
+            operand_idx, idx_within_operand = self.logical_state.get_idxs_of_qubit(op_idx)
+            operand = self.logical_state.ops[operand_idx]
+
             symbolic_state = circuit_add_op_to_qubit(
-                self.logical_state,
+                operand,
                 ConvertersToQiskit.pauli_op(logical_op.pauli_matrix),
-                self.mapper.get_idx(logical_op.qubit_uuid),
+                idx_within_operand,
             )
-            self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
+            self.logical_state.ops[operand_idx] = cast(qkop.StateFn, symbolic_state.eval())
 
         elif isinstance(logical_op, llops.MultiBodyMeasurement):
             pauli_op_list: List[qkop.OperatorBase] = []
@@ -261,5 +279,5 @@ class PatchSimulator:
                 )
             )
             outcome = proportional_choice(distribution)
-            self.logical_state = outcome.resulting_state
+            # self.logical_state = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
