@@ -130,6 +130,7 @@ T = TypeVar("T")
 
 
 def proportional_choice(assoc_data_prob: List[Tuple[T, float]]) -> T:
+    """Used to sample measurement outcomes"""
     return random.choices(
         [val for val, prob in assoc_data_prob], weights=[prob for val, prob in assoc_data_prob], k=1
     )[0]
@@ -163,8 +164,11 @@ class PatchToQubitMapper:
         logical_computation: llops.LogicalLatticeComputation,
     ) -> List[uuid.UUID]:
         patch_set: Set[uuid.UUID] = set()
+
+        # Add the patches used logical qubits
         patch_set.update(logical_computation.logical_qubit_uuid_map.values())
 
+        # Add the ancilla patches
         for op in logical_computation.ops:
             patch_set = patch_set.union(op.get_operating_patches())
 
