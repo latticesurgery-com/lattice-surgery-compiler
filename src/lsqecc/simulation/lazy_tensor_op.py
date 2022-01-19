@@ -39,25 +39,26 @@ class LazyTensorOp(Generic[T]):
     def __init__(self, ops: List[T]):
         self.ops = ops
 
-    def apply_matching_tensors(self, other: "LazyTensorOp[S]", eval=True) -> "LazyTensorOp[R]":
+    def apply_matching_tensors(self, lhs: "LazyTensorOp[S]", eval=True) -> "LazyTensorOp[R]":
+        """Left applies the list of matching tensors to the current object"""
         for i, op in enumerate(self.ops):
-            if op.num_qubits != other.ops[i].num_qubits:
+            if op.num_qubits != lhs.ops[i].num_qubits:
                 raise LazyTensorOpsNotMatchingException(
                     "Items in LazyTensortOp must be matching."
-                    + f"Got:\n {repr(op)}\n and\n {repr(other.ops[i])}"
+                    + f"Got:\n {repr(op)}\n and\n {repr(lhs.ops[i])}"
                 )
 
-        res = [other.ops[i] @ self.ops[i] for i in range(len(self.ops))]
+        res = [lhs.ops[i] @ self.ops[i] for i in range(len(self.ops))]
         if eval:
             res = [op.eval() for op in res]
 
         return LazyTensorOp(res)
 
     def apply_more_granular_lazy_tensor(
-        self, other: "LazyTensorOp[S]", eval=True
+        self, lhs: "LazyTensorOp[S]", eval=True
     ) -> "LazyTensorOp[R]":
-        """Apply an operator expressed as a tensor product such that each applied operators applies
-        exactly to the elements in the tensor product in this object"""
+        """Left pply an operator expressed as a tensor product such that each applied operators
+        applies exactly to the elements in the tensor product in this object"""
         other_op_idx_counter = 0
         other_as_matching_tensor: List[S] = []
 
@@ -66,8 +67,8 @@ class LazyTensorOp(Generic[T]):
             qubits_from_other_for_current_application = 0
             ops_from_other_for_current_application: List[S] = []
             while qubits_from_other_for_current_application < op.num_qubits:
-                ops_from_other_for_current_application.append(other.ops[other_op_idx_counter])
-                qubits_from_other_for_current_application += other.ops[
+                ops_from_other_for_current_application.append(lhs.ops[other_op_idx_counter])
+                qubits_from_other_for_current_application += lhs.ops[
                     other_op_idx_counter
                 ].num_qubits
                 other_op_idx_counter += 1
