@@ -32,7 +32,7 @@ from tests.simulation.numpy_matrix_assertions import (
 
 class TestLazyTensorOp:
     @pytest.mark.parametrize(
-        "first, second, expected",
+        "rhs, lhs, expected",
         [
             ([qkop.Zero], [qkop.X], [qkop.One]),
             ([qkop.Plus], [qkop.Z], [qkop.Minus]),
@@ -42,12 +42,12 @@ class TestLazyTensorOp:
     )
     def test_apply_matching_tensors(
         self,
-        first: List[qkop.OperatorBase],
-        second: List[qkop.OperatorBase],
+        rhs: List[qkop.OperatorBase],
+        lhs: List[qkop.OperatorBase],
         expected: List[qkop.OperatorBase],
     ):
-        result: LazyTensorOp[qkop.OperatorBase] = LazyTensorOp(first).apply_matching_tensors(
-            LazyTensorOp(second)
+        result: LazyTensorOp[qkop.OperatorBase] = LazyTensorOp(rhs).apply_matching_tensors(
+            LazyTensorOp(lhs)
         )
         assert len(result.ops) == len(expected)
         for i, op in enumerate(expected):
@@ -59,7 +59,7 @@ class TestLazyTensorOp:
                 assert_eq_numpy_matrices(op.to_matrix(), result.ops[i].to_matrix())
 
     @pytest.mark.parametrize(
-        "first, second",
+        "rhs, lhs",
         [
             ([qkop.I], [qkop.I ^ 2]),
             ([qkop.I ^ 2], [qkop.I]),
@@ -69,14 +69,14 @@ class TestLazyTensorOp:
     )
     def test_apply_matching_tensors_fail(
         self,
-        first: List[qkop.OperatorBase],
-        second: List[qkop.OperatorBase],
+        rhs: List[qkop.OperatorBase],
+        lhs: List[qkop.OperatorBase],
     ):
         with pytest.raises(LazyTensorOpsNotMatchingException):
-            LazyTensorOp(first).apply_matching_tensors(LazyTensorOp(second))
+            LazyTensorOp(rhs).apply_matching_tensors(LazyTensorOp(lhs))
 
     @pytest.mark.parametrize(
-        "first, second, eval, result_type",
+        "rhs, lhs, eval, result_type",
         [
             ([qkop.Zero], [qkop.X], True, qkop.DictStateFn),
             ([qkop.Zero], [qkop.X], False, qkop.ComposedOp),
@@ -84,14 +84,14 @@ class TestLazyTensorOp:
             ([qkop.X], [qkop.X], False, qkop.PauliOp),
         ],
     )
-    def test_apply_matching_tensors_eval(self, first, second, eval, result_type):
+    def test_apply_matching_tensors_eval(self, rhs, lhs, eval, result_type):
         assert isinstance(
-            LazyTensorOp(first).apply_matching_tensors(LazyTensorOp(second), eval=eval).ops[0],
+            LazyTensorOp(rhs).apply_matching_tensors(LazyTensorOp(lhs), eval=eval).ops[0],
             result_type,
         )
 
     @pytest.mark.parametrize(
-        "first, second, expected",
+        "rhs, lhs, expected",
         [
             ([qkop.Zero], [qkop.X], [qkop.One]),
             ([qkop.Plus], [qkop.Z], [qkop.Minus]),
@@ -122,13 +122,13 @@ class TestLazyTensorOp:
     )
     def test_apply_more_granular_tensors(
         self,
-        first: List[qkop.OperatorBase],
-        second: List[qkop.OperatorBase],
+        rhs: List[qkop.OperatorBase],
+        lhs: List[qkop.OperatorBase],
         expected: List[qkop.OperatorBase],
     ):
-        result: LazyTensorOp[qkop.OperatorBase] = LazyTensorOp(
-            first
-        ).apply_more_granular_lazy_tensor(LazyTensorOp(second))
+        result: LazyTensorOp[qkop.OperatorBase] = LazyTensorOp(rhs).apply_more_granular_lazy_tensor(
+            LazyTensorOp(lhs)
+        )
         assert len(result.ops) == len(expected)
         for i, op in enumerate(expected):
             if isinstance(result.ops[i], qkop.DictStateFn) or isinstance(
