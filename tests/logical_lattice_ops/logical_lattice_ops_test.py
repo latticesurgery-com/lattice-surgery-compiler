@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from lsqecc.pauli_rotations import PauliOpCircuit, PauliRotation, Measurement, PauliOperator
 
@@ -5,6 +6,8 @@ import lsqecc.simulation.qubit_state as qs
 from lsqecc.logical_lattice_ops.logical_lattice_ops import (
     AncillaQubitPatchInitialization,
     LogicalLatticeOperation,
+    LogicalPauli,
+    MagicStateRequest,
     MultiBodyMeasurement,
     SinglePatchMeasurement,
 )
@@ -46,3 +49,18 @@ class TestAncillaQubitPatchInitialization:
         state = qs.DefaultSymbolicStates.YPosEigenState
         ancilla_patch = AncillaQubitPatchInitialization(state, ancilla_uuid)
         assert ancilla_patch.get_operating_patches() == [ancilla_uuid]
+
+
+class TestLogicalPauli:
+    def test_get_operating_patches(self):
+        qubit_id = uuid.uuid4()
+        matrix = X
+        logical_pauli = LogicalPauli(qubit_id, matrix)
+        assert logical_pauli.get_operating_patches() == [qubit_id]
+
+
+class TestMagicStateRequest:
+    def test_get_operating_patches(self):
+        qubit_id = uuid.uuid4()
+        magic_state = MagicStateRequest(qubit_id)
+        assert magic_state.get_operating_patches() == [qubit_id]
