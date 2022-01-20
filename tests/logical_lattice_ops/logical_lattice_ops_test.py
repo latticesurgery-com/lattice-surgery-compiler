@@ -1,9 +1,9 @@
-from typing import Dict
-from unittest.mock import patch
 import pytest
 from lsqecc.pauli_rotations import PauliOpCircuit, PauliRotation, Measurement, PauliOperator
 
+import lsqecc.simulation.qubit_state as qs
 from lsqecc.logical_lattice_ops.logical_lattice_ops import (
+    AncillaQubitPatchInitialization,
     LogicalLatticeOperation,
     MultiBodyMeasurement,
     SinglePatchMeasurement,
@@ -38,3 +38,11 @@ class TestMultiBodyMeasurement:
         patch_operator_map = dict([(uuid.uuid4(), op) for op in multi_measurement.ops_list])
         multi_body_patch_op = MultiBodyMeasurement(patch_operator_map)
         assert multi_body_patch_op.get_operating_patches() == list(patch_operator_map.keys())
+
+
+class TestAncillaQubitPatchInitialization:
+    def test_get_operating_patches(self):
+        ancilla_uuid = uuid.uuid4()
+        state = qs.DefaultSymbolicStates.YPosEigenState
+        ancilla_patch = AncillaQubitPatchInitialization(state, ancilla_uuid)
+        assert ancilla_patch.get_operating_patches() == [ancilla_uuid]
