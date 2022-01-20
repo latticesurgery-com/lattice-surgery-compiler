@@ -1,6 +1,6 @@
-import numpy as np
+import uuid
+
 import pytest
-from lsqecc.pauli_rotations import PauliOpCircuit, PauliRotation, Measurement, PauliOperator
 
 import lsqecc.simulation.qubit_state as qs
 from lsqecc.logical_lattice_ops.logical_lattice_ops import (
@@ -11,10 +11,9 @@ from lsqecc.logical_lattice_ops.logical_lattice_ops import (
     MultiBodyMeasurement,
     SinglePatchMeasurement,
 )
-import pytest
-import uuid
+from lsqecc.pauli_rotations import Measurement, PauliOperator
 
-I = PauliOperator.I
+I = PauliOperator.I  # noqa: E741
 X = PauliOperator.X
 Y = PauliOperator.Y
 Z = PauliOperator.Z
