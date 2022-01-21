@@ -20,7 +20,6 @@ from typing import Generic, List, Tuple, TypeVar
 
 import qiskit.opflow as qkop
 
-from lsqecc.simulation.logical_patch_state_simulation import tensor_list
 from lsqecc.simulation.qiskit_opflow_utils import StateSeparator
 
 
@@ -115,3 +114,10 @@ class LazyTensorOp(Generic[T]):
 
     def get_state(self):
         pass  # TODO
+
+
+def tensor_list(input_list):
+    t = input_list[0]
+    for s in input_list[1:]:
+        t = t ^ s
+    return t
