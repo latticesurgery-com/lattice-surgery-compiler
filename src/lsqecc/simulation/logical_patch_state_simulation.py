@@ -24,7 +24,7 @@ import qiskit.opflow as qkop
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 from lsqecc.pauli_rotations import PauliOperator
-from lsqecc.simulation.lazy_tensor_op import LazyTensorOp
+from lsqecc.simulation.lazy_tensor_op import LazyTensorOp, tensor_list
 
 from .qubit_state import DefaultSymbolicStates, SymbolicState
 
@@ -180,13 +180,6 @@ class PatchToQubitMapper:
                     patch_list.append(new_patch)
 
         return patch_list
-
-
-def tensor_list(input_list):
-    t = input_list[0]
-    for s in input_list[1:]:
-        t = t ^ s
-    return t
 
 
 class PatchSimulator:
