@@ -164,5 +164,5 @@ class TestLogicalLatticeComputation:
         )
 
     def test__load_circuit(self):
-        # TODO: See if original code requires any refactoring
+        # TODO: Determine example circuits, dependent on RotationsComposer
         pass
