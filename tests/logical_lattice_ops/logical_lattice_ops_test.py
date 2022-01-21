@@ -3,6 +3,8 @@ import uuid
 from black import List
 
 import pytest
+from sympy import Si
+from lsqecc.pauli_rotations import circuit
 from lsqecc.pauli_rotations.circuit import PauliOpCircuit
 from lsqecc.pauli_rotations.rotation import PauliRotation
 
@@ -81,7 +83,7 @@ def generate_tests_num_logical_qubits():
 
     c3 = PauliOpCircuit(1)
     c3.add_pauli_block(PauliRotation.from_list([X], Fraction(-1, 4)))
-
+    c3.add_pauli_block(Measurement.from_list([Z]))
     return [(c1, 2), (c2, 4), (c3, 1)]
 
 
@@ -99,6 +101,32 @@ def generate_tests_count_magic_states():
     return [(c1, 1), (c2, 0)]
 
 
+def generate_tests_circuit_to_single_patch_measurement():
+    m1 = Measurement.from_list([X], isNegative=False)
+    m2 = Measurement.from_list([I, Z], isNegative=False)
+
+    c1 = PauliOpCircuit(1)
+    c1.add_pauli_block(m1)
+
+    c2 = PauliOpCircuit(2)
+    c2.add_pauli_block(m2)
+
+    return [(c1, m1), (c2, m2)]
+
+
+def generate_tests_circuit_to_multi_body_measurements():
+    m1 = Measurement.from_list([Z, X], isNegative=True)
+    m2 = Measurement.from_list([Z, I, I, Z], isNegative=False)
+
+    c1 = PauliOpCircuit(2)
+    c1.add_pauli_block(m1)
+
+    c2 = PauliOpCircuit(4)
+    c2.add_pauli_block(m2)
+
+    return [(c1, m1), (c2, m2)]
+
+
 class TestLogicalLatticeComputation:
     @pytest.mark.parametrize("input, expected", generate_tests_num_logical_qubits())
     def test_num_logical_qubits(self, input, expected):
@@ -109,3 +137,32 @@ class TestLogicalLatticeComputation:
     def test_count_magic_states(self, input, expected):
         logical_computation = LogicalLatticeComputation(input)
         assert logical_computation.count_magic_states() == expected
+
+    @pytest.mark.parametrize(
+        "circuit, measurement", generate_tests_circuit_to_single_patch_measurement()
+    )
+    def test_circuit_to_single_patch_measurement(
+        self, circuit: PauliOpCircuit, measurement: Measurement
+    ):
+        logical_comp = LogicalLatticeComputation(circuit)
+        patch_measurement = logical_comp.circuit_to_patch_measurement(logical_comp.circuit.ops[0])
+
+        assert isinstance(patch_measurement, SinglePatchMeasurement)
+        assert [patch_measurement.op] == list(measurement.get_ops_map().values())
+
+    @pytest.mark.parametrize(
+        "circuit, measurement", generate_tests_circuit_to_multi_body_measurements()
+    )
+    def test_circuit_to_multi_body_measurement(
+        self, circuit: PauliOpCircuit, measurement: Measurement
+    ):
+        logical_comp = LogicalLatticeComputation(circuit)
+        patch_measurement = logical_comp.circuit_to_patch_measurement(logical_comp.circuit.ops[0])
+        assert isinstance(patch_measurement, MultiBodyMeasurement)
+        assert list(patch_measurement.patch_pauli_operator_map.values()) == list(
+            measurement.get_ops_map().values()
+        )
+
+    def test__load_circuit(self):
+        # TODO: See if original code requires any refactoring
+        pass
