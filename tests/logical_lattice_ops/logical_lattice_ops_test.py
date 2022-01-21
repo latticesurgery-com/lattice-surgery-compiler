@@ -88,9 +88,7 @@ def generate_tests_count_magic_states():
     with open("assets/demo_circuits/nontrivial_state.qasm") as input_file:
         c1 = segmented_qasm_parser.parse_str(input_file.read())
 
-    with open(
-        "/home/varunseshadri/projects/lattice-surgery-compiler/assets/demo_circuits/bell_pair.qasm"
-    ) as input_file:
+    with open("assets/demo_circuits/bell_pair.qasm") as input_file:
         c2 = segmented_qasm_parser.parse_str(input_file.read())
 
     return [(c1, 1), (c2, 0)]
@@ -157,6 +155,13 @@ class TestLogicalLatticeComputation:
         assert list(patch_measurement.patch_pauli_operator_map.values()) == list(
             measurement.get_ops_map().values()
         )
+
+    def test_circuit_to_patch_measurement_type_error(self):
+        circuit = PauliOpCircuit(1)
+        circuit.add_pauli_block(PauliRotation.from_list([X], Fraction(1, 4)))
+        logical_comp = LogicalLatticeComputation(circuit)
+        with pytest.raises(TypeError):
+            logical_comp.circuit_to_patch_measurement(logical_comp.circuit.ops[0])
 
     def test__load_circuit(self):
         # TODO: Determine example circuits, dependent on RotationsComposer

@@ -118,8 +118,10 @@ class LogicalLatticeComputation:
                 self.ops.append(current_op)
 
     def circuit_to_patch_measurement(
-        self, m: Measurement
+        self, m: PauliProductOperation
     ) -> Union[SinglePatchMeasurement, MultiBodyMeasurement]:
+        if not isinstance(m, Measurement):
+            raise TypeError("Make sure the passed argument is of type Measurement")
 
         ret: Dict[uuid.UUID, PauliOperator] = dict()
         for qubit_idx in range(m.qubit_num):
