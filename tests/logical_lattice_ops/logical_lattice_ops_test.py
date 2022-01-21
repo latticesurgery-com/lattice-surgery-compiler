@@ -1,12 +1,7 @@
-from fractions import Fraction
 import uuid
-from black import List
+from fractions import Fraction
 
 import pytest
-from sympy import Si
-from lsqecc.pauli_rotations import circuit
-from lsqecc.pauli_rotations.circuit import PauliOpCircuit
-from lsqecc.pauli_rotations.rotation import PauliRotation
 
 import lsqecc.simulation.qubit_state as qs
 from lsqecc.logical_lattice_ops.logical_lattice_ops import (
@@ -19,6 +14,8 @@ from lsqecc.logical_lattice_ops.logical_lattice_ops import (
     SinglePatchMeasurement,
 )
 from lsqecc.pauli_rotations import Measurement, PauliOperator, segmented_qasm_parser
+from lsqecc.pauli_rotations.circuit import PauliOpCircuit
+from lsqecc.pauli_rotations.rotation import PauliRotation
 
 I = PauliOperator.I  # noqa: E741
 X = PauliOperator.X
@@ -88,9 +85,7 @@ def generate_tests_num_logical_qubits():
 
 
 def generate_tests_count_magic_states():
-    with open(
-        "/home/varunseshadri/projects/lattice-surgery-compiler/assets/demo_circuits/nontrivial_state.qasm"
-    ) as input_file:
+    with open("assets/demo_circuits/nontrivial_state.qasm") as input_file:
         c1 = segmented_qasm_parser.parse_str(input_file.read())
 
     with open(
