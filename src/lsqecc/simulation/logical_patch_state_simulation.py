@@ -191,6 +191,10 @@ def tensor_list(input_list):
 
 class PatchSimulator:
     def __init__(self, logical_computation: llops.LogicalLatticeComputation):
+        # TODO decouple the simulation frm the logical computation. It should be possible to do it
+        # because the logical computation is only used to construct the mapper and the initial
+        # states.
+
         self.logical_computation = logical_computation
         self.mapper = PatchToQubitMapper(logical_computation)
         self.logical_state: LazyTensorOp[qkop.StateFn] = self._make_initial_logical_state()

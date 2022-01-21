@@ -111,6 +111,17 @@ def test_add_single_operator():
     assert circuit.ops[1] == PauliRotation.from_list([I, Y, I, I], Fraction(1, 4))
 
 
+def test_from_list():
+    c = PauliOpCircuit.from_list(
+        [PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4)), Measurement.from_list([Z, Y, X, I])]
+    )
+    assert isinstance(c.ops[0], PauliRotation)
+    assert c.ops[0] == PauliRotation.from_list([X, I, Y, Z], Fraction(1, 4))
+    assert isinstance(c.ops[1], Measurement)
+    assert c.ops[1] == Measurement.from_list([Z, Y, X, I])
+    assert len(c.ops) == 2
+
+
 @pytest.mark.parametrize(
     "rotation1, rotation2",
     [
