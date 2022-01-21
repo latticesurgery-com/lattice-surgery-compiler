@@ -317,6 +317,14 @@ class PauliOpCircuit(object):
         return ret_circ
 
     @staticmethod
+    def from_list(pauli_op_list: List[PauliProductOperation]):
+        c = PauliOpCircuit(pauli_op_list[0].qubit_num)
+        for op in pauli_op_list:
+            assert c.qubit_num == op.qubit_num
+            c.add_pauli_block(op)
+        return c
+
+    @staticmethod
     def load_reversible_from_qasm_string(quasm_string: str) -> "PauliOpCircuit":
         """Load a string as if it were a QASM circuit. Only supports reversible circuits."""
 
