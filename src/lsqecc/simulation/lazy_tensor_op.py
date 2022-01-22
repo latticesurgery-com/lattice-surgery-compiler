@@ -18,9 +18,10 @@
 
 from typing import Generic, List, Tuple, TypeVar
 
+import numpy as np
 import qiskit.opflow as qkop
 
-from lsqecc.simulation.qiskit_opflow_utils import StateSeparator
+import lsqecc.simulation.qiskit_opflow_utils as qkutil
 
 
 class LazyTensorOpsNotMatchingException(Exception):
@@ -100,10 +101,15 @@ class LazyTensorOp(Generic[T]):
         """Returns true if the qubit was not entangled and hence the operation possible"""
         operand = self.ops[operand_idx]
         assert isinstance(operand, qkop.DictStateFn)
-        maybe_new_operand_from_qubit = StateSeparator.separate(operand.num_qubits - 1, operand)
+        if operand.num_qubits == 1:
+            return True
+
+        maybe_new_operand_from_qubit = qkutil.StateSeparator.separate(
+            operand.num_qubits - 1, operand
+        )
         if maybe_new_operand_from_qubit is None:
             return False
-        self.ops[operand_idx] = StateSeparator.trace_dict_state(
+        self.ops[operand_idx] = qkutil.StateSeparator.trace_dict_state(
             operand, list(range(operand.num_qubits - 1))
         )
         self.ops.insert(operand_idx + 1, maybe_new_operand_from_qubit)
@@ -114,6 +120,35 @@ class LazyTensorOp(Generic[T]):
 
     def get_state(self):
         pass  # TODO
+
+    def matches(self, other: "LazyTensorOp[S]"):
+        """Returns true iff the other tensor has matching operand number and sizes"""
+        if len(self.ops) != len(other.ops):
+            return False
+        return all([op1.num_qubits == op2.num_qubits for op1, op2 in zip(self.ops, other.ops)])
+
+    def matching_approx_eq_matrix(self, other: "LazyTensorOp[S]", atol: float = 10 ** (-8)) -> bool:
+        # TODO check is matrix
+        assert self.matches(other)
+        return all(
+            [
+                np.allclose(op1.to_matrix(), op2.to_matrix(), atol=atol)
+                for op1, op2 in zip(self.ops, other.ops)
+            ]
+        )
+
+    def matching_approx_eq_vector(self, other: "LazyTensorOp[S]", atol: float = 10 ** (-8)) -> bool:
+        # TODO check is vector
+        assert self.matches(other)
+        return all(
+            [
+                np.allclose(qkutil.to_vector(op1), qkutil.to_vector(op2), atol=atol)
+                for op1, op2 in zip(self.ops, other.ops)
+            ]
+        )
+
+    def __repr__(self):
+        return f"<LazyTensorOps ops.len={len(self.ops)} ops={self.ops}>"
 
 
 def tensor_list(input_list):
