@@ -32,6 +32,9 @@ class StateSeparator:
 
         Assumes state is separable as a DictStateFn can only represent pure states.
         """
+        if not trace_over:
+            return state.copy()
+
         input_statevector = qkinfo.Statevector(state.to_matrix())
         traced_statevector = qkinfo.partial_trace(input_statevector, trace_over).to_statevector()
         return qkop.DictStateFn(traced_statevector.to_dict())
@@ -54,6 +57,8 @@ class StateSeparator:
 
         If the selected qubit is entangled return None.
         """
+        if dict_state.num_qubits == 1 and qnum == 0:
+            return dict_state.copy()
 
         remaing_qubits = list(range(dict_state.num_qubits))
         remaing_qubits.remove(qnum)

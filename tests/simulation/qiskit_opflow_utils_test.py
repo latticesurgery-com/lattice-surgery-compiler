@@ -41,6 +41,8 @@ class TestStateSeparator:
     @pytest.mark.parametrize(
         "state, trace_over, desired_state",
         [
+            (qkop.Zero, [], qkop.Zero),
+            (qkop.Zero ^ qkop.One, [], qkop.Zero ^ qkop.One),
             (qkop.Zero ^ qkop.One, [0], qkop.Zero),
             (qkop.Zero ^ qkop.One, [1], qkop.One),
             (qkop.Zero ^ qkop.Plus, [0], qkop.Zero),
@@ -98,6 +100,8 @@ class TestStateSeparator:
     @pytest.mark.parametrize(
         "qnum, state, desired_state",
         [
+            (0, qkop.One, qkop.One),
+            (0, qkop.Zero, qkop.Zero),
             (0, qkop.Plus ^ qkop.One, qkop.One),
             (1, qkop.Plus ^ qkop.One, qkop.Plus),
             (1, qkop.Plus ^ qkop.Zero ^ qkop.One, qkop.Zero),
