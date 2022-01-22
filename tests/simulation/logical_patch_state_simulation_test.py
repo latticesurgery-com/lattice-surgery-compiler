@@ -21,8 +21,10 @@ import pytest
 import qiskit.opflow as qkop
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
-from lsqecc.pauli_rotations import circuit
+from lsqecc.pauli_rotations import circuit, rotation
+from lsqecc.simulation.lazy_tensor_op import LazyTensorOp
 from lsqecc.simulation.logical_patch_state_simulation import (
+    PatchSimulator,
     PatchToQubitMapper,
     ProjectiveMeasurement,
     circuit_add_op_to_qubit,
@@ -264,3 +266,36 @@ class TestPatchToQubitMapper:
         for i in range(4):
             patch_idx, uuid = next(iterator)
             assert patch_idx == i
+
+
+class TestPatchSimulator:
+    def test_a_single_patch_measaurement(self):
+        c = circuit.PauliOpCircuit.from_list([rotation.Measurement.from_list([Z])])
+        computation = llops.LogicalLatticeComputation(c)
+        assert isinstance(computation.ops[0], llops.SinglePatchMeasurement)
+
+        sim = PatchSimulator(computation)
+        assert sim.mapper.max_num_patches() == 1
+        assert sim.logical_state.matching_approx_eq_vector(LazyTensorOp([qkop.Zero]))
+        sim.apply_logical_operation(computation.ops[0])
+        assert sim.logical_state.matching_approx_eq_vector(LazyTensorOp([qkop.Zero]))
+
+    def test_an_x_gate(self):
+        c = rotation.PauliOpCircuit.from_list(
+            [
+                rotation.PauliRotation.from_list([X], Fraction(1, 4)),
+                rotation.PauliRotation.from_list([X], Fraction(1, 4)),
+            ]
+        )
+
+        computation = llops.LogicalLatticeComputation(c)
+        sim = PatchSimulator(computation)
+
+        assert sim.logical_computation == computation
+
+        assert sim.mapper.max_num_patches() == 2 * (  # 2 rotations
+            1 + 1  # for the logical qubit  # for the Y state ancilla
+        )
+
+        sim.apply_logical_operation(computation.ops[0])
+        sim.apply_logical_operation(computation.ops[1])
