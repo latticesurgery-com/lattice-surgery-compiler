@@ -26,13 +26,12 @@ from qiskit import QiskitError
 from lsqecc.simulation.qiskit_opflow_utils import (
     StateSeparator,
     TraceOverEntireStateException,
+    bell_pair,
     to_dict_fn,
     to_vector,
 )
 
 from .numpy_matrix_assertions import assert_eq_numpy_matrices, assert_eq_numpy_vectors
-
-bell_pair = qkop.DictStateFn({"11": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
 
 
 # The tracing functionality is delegated to qiskit we mostly check that our interface is working
