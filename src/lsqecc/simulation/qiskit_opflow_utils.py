@@ -14,12 +14,12 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
-
+import math
 from typing import Dict, List, Optional, cast
 
 import qiskit.exceptions as qkexcept
-import qiskit.opflow as qkop
 import qiskit.quantum_info as qkinfo
+from qiskit import opflow as qkop
 
 
 class TraceOverEntireStateException(Exception):
@@ -119,3 +119,6 @@ def to_vector(state: qkop.OperatorBase):
     if len(state.to_matrix().shape) == 2:
         return state.to_matrix()[0]
     return state.to_matrix()
+
+
+bell_pair = qkop.DictStateFn({"11": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
