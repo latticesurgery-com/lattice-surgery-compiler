@@ -22,6 +22,13 @@ import qiskit.opflow as qkop
 import qiskit.quantum_info as qkinfo
 
 
+class TraceOverEntireStateException(Exception):
+    def __init__(self):
+        super().__init__(
+            "Won't trace over the entire state, because it can't output a StateFn object"
+        )
+
+
 class StateSeparator:
     """Namespace for functions that deal with separating states."""
 
@@ -34,6 +41,9 @@ class StateSeparator:
         """
         if not trace_over:
             return state.copy()
+
+        if set(trace_over) == set(range(state.num_qubits)):
+            raise TraceOverEntireStateException()
 
         input_statevector = qkinfo.Statevector(state.to_matrix())
         traced_statevector = qkinfo.partial_trace(input_statevector, trace_over).to_statevector()
