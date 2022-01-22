@@ -171,3 +171,40 @@ class TestLazyTensorOp:
         ).get_idxs_of_qubit(qubit_idx)
         assert expected_index_of_tensor_operand == index_of_tensor_operand
         assert expected_index_within_tensor_operand == index_within_tensor_operand
+
+    @pytest.mark.parametrize(
+        "lhs, rhs, should_match",
+        [
+            ([qkop.Zero], [qkop.Zero], True),
+            ([qkop.Zero], [qkop.One], True),
+            ([qkop.Zero], [qkop.Zero ^ qkop.Zero], False),
+            ([qkop.Zero, qkop.Zero], [qkop.Zero, qkop.Zero], True),
+            ([qkop.Zero, qkop.Zero], [qkop.One, qkop.One], True),
+            ([qkop.Zero, qkop.Zero], [qkop.Zero ^ qkop.Zero], False),
+            ([qkop.Zero ^ qkop.Plus, qkop.Zero], [qkop.Zero ^ qkop.Zero, qkop.Minus], True),
+            ([qkop.Zero, qkop.Zero ^ qkop.Plus], [qkop.Zero ^ qkop.Plus, qkop.Minus], False),
+        ],
+    )
+    def test_matches(
+        self, lhs: List[qkop.OperatorBase], rhs: List[qkop.OperatorBase], should_match: bool
+    ):
+        assert LazyTensorOp(lhs).matches(LazyTensorOp(rhs)) == should_match
+
+    @pytest.mark.parametrize(
+        "lhs, rhs, should_match",
+        [
+            ([qkop.Zero], [qkop.Zero], True),
+            ([qkop.Zero], [qkop.One], False),
+            ([qkop.Zero], [qkop.Zero ^ qkop.Zero], False),
+            ([qkop.Zero, qkop.Zero], [qkop.Zero, qkop.Zero], True),
+            ([qkop.Zero, qkop.Zero], [qkop.One, qkop.Zero], False),
+            ([qkop.Zero, qkop.Zero], [qkop.Zero ^ qkop.Zero], False),
+            ([qkop.Zero ^ qkop.Minus, qkop.Zero], [qkop.Zero ^ qkop.Minus, qkop.Zero], True),
+            ([qkop.Zero ^ qkop.Minus, qkop.Zero], [qkop.Zero ^ qkop.Zero, qkop.Zero], False),
+            ([qkop.Zero ^ qkop.Plus, qkop.Zero], [qkop.Zero ^ qkop.Zero, qkop.Minus], False),
+        ],
+    )
+    def test_matching_approx_eq_vector(
+        self, lhs: List[qkop.OperatorBase], rhs: List[qkop.OperatorBase], should_match: bool
+    ):
+        assert LazyTensorOp(lhs).matches(LazyTensorOp(rhs)) == should_match
