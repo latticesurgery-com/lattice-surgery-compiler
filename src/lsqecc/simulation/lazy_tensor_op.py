@@ -39,7 +39,7 @@ class LazyTensorOp(Generic[T]):
     operands. Has methods to apply operators so that the tensor structure is preserved."""
 
     def __init__(self, ops: List[T]):
-        self.ops = ops  # TODO rename to operands
+        self.ops = [op for op in ops]  # TODO rename to operands
 
     def apply_matching_tensors(self, lhs: "LazyTensorOp[S]", eval=True) -> "LazyTensorOp[R]":
         """Left applies the list of matching tensors to the current object"""
