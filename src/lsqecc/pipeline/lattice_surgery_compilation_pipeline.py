@@ -14,7 +14,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
-
+import json
 from typing import List, Optional, Tuple
 
 import qiskit.visualization as qkvis
@@ -42,33 +42,38 @@ def compile_file(
 def compile_str(
     qasm_circuit: str, apply_litinski_transform: bool = True
 ) -> Tuple[List[GUISlice], str]:
-    """Returns gui slices and the text of the circuit as processed in various stages"""
+    """Returns gui slices and string JSON of compilation text)"""
     composer_class = lscc.LatticeSurgeryComputation
     layout_types = lscc.LayoutType
 
     input_circuit = segmented_qasm_parser.parse_str(qasm_circuit)
 
-    compilation_text = "Input Circuit:\n"
-
-    compilation_text += qkvis.circuit_drawer(
+    input_circuit = qkvis.circuit_drawer(
         qkcirc.QuantumCircuit.from_qasm_str(qasm_circuit)
     ).single_string()
 
-    compilation_text += "\nCircuit as Pauli rotations:\n"
-    compilation_text += input_circuit.render_ascii()
+    circuit_as_pauli_rotations = input_circuit.render_ascii()
 
     # TODO add user flag
     input_circuit = input_circuit.get_y_free_equivalent()
 
+    circuit_after_litinski_transform = ""
     if apply_litinski_transform:
         input_circuit.apply_transformation()
         input_circuit = input_circuit.get_y_free_equivalent()
-        compilation_text += "\nCircuit after the Litinski Transform:\n"
-        compilation_text += input_circuit.render_ascii()
+        circuit_after_litinski_transform = input_circuit.render_ascii()
 
     logical_computation = llops.LogicalLatticeComputation(input_circuit)
     lsc = composer_class.make_computation_with_simulation(
         logical_computation, layout_types.SimplePreDistilledStates
     )
 
-    return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text
+    compilation_text = {
+        "input_circuit": input_circuit,
+        "circuit_as_pauli_rotations": circuit_as_pauli_rotations,
+        "circuit_after_litinski_transform": circuit_after_litinski_transform,
+    }
+
+    return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), json.dumps(
+        compilation_text
+    )
