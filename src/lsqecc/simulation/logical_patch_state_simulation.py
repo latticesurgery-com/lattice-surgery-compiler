@@ -46,7 +46,7 @@ class ConvertersToQiskit:
         return zero_ampl * qkop.Zero + one_ampl * qkop.One
 
 
-def circuit_add_op_to_qubit(
+def circuit_apply_op_to_qubit(
     circ: qkop.OperatorBase, op: qkop.OperatorBase, idx: int
 ) -> qkop.CircuitOp:
     """Take a local operator (applied to a single qubit) and apply it to the given circuit."""
@@ -232,10 +232,8 @@ class PatchSimulator:
             operand = self.logical_state.ops[operand_idx]
 
             local_observable = ConvertersToQiskit.pauli_op(logical_op.op)
-            observable_global_to_operand = (
-                (qkop.I ^ idx_within_operand)
-                ^ local_observable
-                ^ (qkop.I ^ (operand.num_qubits - idx_within_operand - 1))
+            observable_global_to_operand = circuit_apply_op_to_qubit(
+                qkop.I ^ operand.num_qubits, local_observable, idx_within_operand
             )
 
             distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(
@@ -255,7 +253,7 @@ class PatchSimulator:
             operand_idx, idx_within_operand = self.logical_state.get_idxs_of_qubit(op_idx)
             operand = self.logical_state.ops[operand_idx]
 
-            symbolic_state = circuit_add_op_to_qubit(
+            symbolic_state = circuit_apply_op_to_qubit(
                 operand,
                 ConvertersToQiskit.pauli_op(logical_op.pauli_matrix),
                 idx_within_operand,

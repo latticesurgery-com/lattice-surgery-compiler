@@ -30,7 +30,7 @@ from lsqecc.simulation.logical_patch_state_simulation import (
     PatchSimulator,
     PatchToQubitMapper,
     ProjectiveMeasurement,
-    circuit_add_op_to_qubit,
+    circuit_apply_op_to_qubit,
     proportional_choice,
 )
 from lsqecc.simulation.qiskit_opflow_utils import bell_pair, to_vector
@@ -53,10 +53,10 @@ class Outcome(ProjectiveMeasurement.BinaryMeasurementOutcome):
         (qkop.Zero ^ qkop.Zero ^ qkop.Zero, qkop.X, 2, qkop.One ^ qkop.Zero ^ qkop.Zero),
     ],
 )
-def test_circuit_add_op_to_qubit(
+def test_circuit_apply_op_to_qubit(
     circuit: qkop.OperatorBase, op, idx, desired_state: qkop.OperatorBase
 ):
-    circuit_with_op_applied = circuit_add_op_to_qubit(circuit, op, idx)
+    circuit_with_op_applied = circuit_apply_op_to_qubit(circuit, op, idx)
     assert_eq_numpy_vectors(
         to_vector(circuit_with_op_applied.eval()), to_vector(desired_state.eval())
     )
@@ -337,7 +337,7 @@ class TestPatchSimulator:
             (
                 [qkop.Zero ^ qkop.Zero],
                 rotation.PauliRotation.from_list([I, X], Fraction(1, 2)),
-                [[qkop.Zero ^ qkop.One]],
+                [[qkop.One ^ qkop.Zero]],  # qubit index is in reverse of the ^ operator
             ),
         ],
     )
