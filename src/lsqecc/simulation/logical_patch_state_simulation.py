@@ -249,7 +249,7 @@ class PatchSimulator:
 
             if idx_within_operand == operand.num_qubits - 1:
                 self.logical_state.separate_last_qubit_of_operand(operand_idx)
-
+                # TODO use .permute + reindexing to detach any qubit, not just the last
         elif isinstance(logical_op, llops.LogicalPauli):
             op_idx = self.mapper.get_idx(logical_op.qubit_uuid)
             operand_idx, idx_within_operand = self.logical_state.get_idxs_of_qubit(op_idx)

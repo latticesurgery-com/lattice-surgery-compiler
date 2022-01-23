@@ -21,7 +21,10 @@ import pytest
 import qiskit.opflow as qkop
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
-from lsqecc.pauli_rotations import circuit, rotation
+from lsqecc.pauli_rotations import (  # TODO import as pauli_rotations directly
+    circuit,
+    rotation,
+)
 from lsqecc.simulation.lazy_tensor_op import LazyTensorOp
 from lsqecc.simulation.logical_patch_state_simulation import (
     PatchSimulator,
@@ -30,7 +33,7 @@ from lsqecc.simulation.logical_patch_state_simulation import (
     circuit_add_op_to_qubit,
     proportional_choice,
 )
-from lsqecc.simulation.qiskit_opflow_utils import to_vector
+from lsqecc.simulation.qiskit_opflow_utils import bell_pair, to_vector
 from tests.simulation.numpy_matrix_assertions import assert_eq_numpy_vectors
 
 
@@ -269,33 +272,90 @@ class TestPatchToQubitMapper:
 
 
 class TestPatchSimulator:
-    def test_a_single_patch_measaurement(self):
-        c = circuit.PauliOpCircuit.from_list([rotation.Measurement.from_list([Z])])
+    @pytest.mark.parametrize(
+        "circuit_op, expected_start_state",
+        [
+            (rotation.Measurement.from_list([Z]), [qkop.Zero]),
+            (rotation.Measurement.from_list([Z, I]), [qkop.Zero, qkop.Zero]),
+        ],
+    )
+    def test_initial_state(
+        self,
+        circuit_op: rotation.PauliProductOperation,
+        expected_start_state: List[qkop.OperatorBase],
+    ):
+        c = circuit.PauliOpCircuit.from_list([circuit_op])
+        sim = PatchSimulator(llops.LogicalLatticeComputation(c))
+        assert sim.logical_state.matching_approx_eq_vector(LazyTensorOp(expected_start_state))
+
+    @pytest.mark.parametrize(
+        "circuit_op, expected_final_state_possibilities",
+        [
+            (rotation.Measurement.from_list([Z]), [[qkop.Zero]]),
+            (rotation.Measurement.from_list([Z, I]), [[qkop.Zero, qkop.Zero]]),
+            (rotation.Measurement.from_list([I, Z]), [[qkop.Zero, qkop.Zero]]),
+            (rotation.Measurement.from_list([X]), [[qkop.Plus], [qkop.Minus]]),
+            (
+                rotation.Measurement.from_list([X, I]),
+                [[qkop.Plus, qkop.Zero], [qkop.Minus, qkop.Zero]],
+            ),
+        ],
+    )
+    def test_apply_logical_operation(
+        self,
+        circuit_op: rotation.PauliProductOperation,
+        expected_final_state_possibilities: List[List[qkop.OperatorBase]],
+    ):
+        c = circuit.PauliOpCircuit.from_list([circuit_op])
         computation = llops.LogicalLatticeComputation(c)
-        assert isinstance(computation.ops[0], llops.SinglePatchMeasurement)
 
         sim = PatchSimulator(computation)
-        assert sim.mapper.max_num_patches() == 1
-        assert sim.logical_state.matching_approx_eq_vector(LazyTensorOp([qkop.Zero]))
         sim.apply_logical_operation(computation.ops[0])
-        assert sim.logical_state.matching_approx_eq_vector(LazyTensorOp([qkop.Zero]))
-
-    def test_an_x_gate(self):
-        c = rotation.PauliOpCircuit.from_list(
+        assert any(
             [
-                rotation.PauliRotation.from_list([X], Fraction(1, 4)),
-                rotation.PauliRotation.from_list([X], Fraction(1, 4)),
+                sim.logical_state.matching_approx_eq_vector(LazyTensorOp(expected_final_state))
+                for expected_final_state in expected_final_state_possibilities
             ]
         )
 
+    @pytest.mark.parametrize(
+        "forced_starting_state, circuit_op, expected_final_state_possibilities",
+        [
+            # disentanglement of the last qubit
+            (
+                [bell_pair],
+                rotation.Measurement.from_list([I, X]),
+                [[qkop.Plus, qkop.Plus], [qkop.Minus, qkop.Minus]],
+            ),
+            # No disentanglement
+            (
+                [bell_pair],
+                rotation.Measurement.from_list([X, I]),
+                [[qkop.Plus ^ qkop.Plus], [qkop.Plus ^ qkop.Minus]],
+            ),
+            # Match between index within operand and
+            (
+                [qkop.Zero ^ qkop.Zero],
+                rotation.PauliRotation.from_list([I, X], Fraction(1, 2)),
+                [[qkop.Zero ^ qkop.One]],
+            ),
+        ],
+    )
+    def test_circuit_forcing_start_state(
+        self,
+        forced_starting_state: List[qkop.OperatorBase],
+        circuit_op: rotation.PauliProductOperation,
+        expected_final_state_possibilities: List[List[qkop.OperatorBase]],
+    ):
+        c = circuit.PauliOpCircuit.from_list([circuit_op])
         computation = llops.LogicalLatticeComputation(c)
+
         sim = PatchSimulator(computation)
-
-        assert sim.logical_computation == computation
-
-        assert sim.mapper.max_num_patches() == 2 * (  # 2 rotations
-            1 + 1  # for the logical qubit  # for the Y state ancilla
-        )
-
+        sim.logical_state = LazyTensorOp(forced_starting_state)
         sim.apply_logical_operation(computation.ops[0])
-        sim.apply_logical_operation(computation.ops[1])
+        assert any(
+            [
+                sim.logical_state.matching_approx_eq_vector(LazyTensorOp(expected_final_state))
+                for expected_final_state in expected_final_state_possibilities
+            ]
+        )
