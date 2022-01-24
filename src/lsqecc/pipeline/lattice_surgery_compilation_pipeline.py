@@ -46,24 +46,23 @@ def compile_str(
     composer_class = lscc.LatticeSurgeryComputation
     layout_types = lscc.LayoutType
 
-    input_circuit = segmented_qasm_parser.parse_str(qasm_circuit)
-
     input_circuit = qkvis.circuit_drawer(
         qkcirc.QuantumCircuit.from_qasm_str(qasm_circuit)
     ).single_string()
 
-    circuit_as_pauli_rotations = input_circuit.render_ascii()
+    parsed_circuit = segmented_qasm_parser.parse_str(qasm_circuit)
+    circuit_as_pauli_rotations = parsed_circuit.render_ascii()
 
     # TODO add user flag
-    input_circuit = input_circuit.get_y_free_equivalent()
+    parsed_circuit = parsed_circuit.get_y_free_equivalent()
 
     circuit_after_litinski_transform = ""
     if apply_litinski_transform:
-        input_circuit.apply_transformation()
-        input_circuit = input_circuit.get_y_free_equivalent()
-        circuit_after_litinski_transform = input_circuit.render_ascii()
+        parsed_circuit.apply_transformation()
+        parsed_circuit = parsed_circuit.get_y_free_equivalent()
+        circuit_after_litinski_transform = parsed_circuit.render_ascii()
 
-    logical_computation = llops.LogicalLatticeComputation(input_circuit)
+    logical_computation = llops.LogicalLatticeComputation(parsed_circuit)
     lsc = composer_class.make_computation_with_simulation(
         logical_computation, layout_types.SimplePreDistilledStates
     )
@@ -77,3 +76,24 @@ def compile_str(
     return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), json.dumps(
         compilation_text
     )
+
+
+# TODO move this test to the appropriate place
+circuit = """OPENQASM 2.0;
+
+include "qelib1.inc";
+
+// this is a basic quantum circuit that creates an entangled pair
+
+qreg q[2];		// create a quantum register with 2 qubits
+creg c[2]; 		// create a classical register with 2 bits
+h q[0];  		// perform Hadamard gate on one qubit
+cx q[0],q[1];  	// perform control-not gate on both qubits
+
+// an entangled state of the Bell-pair form has been created!
+
+measure q[0] -> c[0];	//measure one qubit, and put outcome in one bit
+measure q[1] -> c[1];	//measure the other qubit, and put outcome in the other bit"""
+
+a = compile_str(qasm_circuit=circuit, apply_litinski_transform=True)
+print(a)
