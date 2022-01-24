@@ -18,13 +18,14 @@
 import math
 import random
 import uuid
+from collections import deque
 from typing import Dict, Iterable, List, Optional, Tuple, TypeVar, cast
 
 import qiskit.opflow as qkop
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 from lsqecc.pauli_rotations import PauliOperator
-from lsqecc.simulation.lazy_tensor_op import LazyTensorOp, tensor_list
+from lsqecc.simulation.lazy_tensor_op import LazyTensorOp
 
 from .qubit_state import DefaultSymbolicStates, SymbolicState
 
@@ -51,6 +52,7 @@ def circuit_apply_op_to_qubit(
 ) -> qkop.CircuitOp:
     """Take a local operator (applied to a single qubit) and apply it to the given circuit."""
     identity_padded_op = op
+    # TODO check that this actually has to be reversed
     if circ.num_qubits - idx - 1 > 0:
         identity_padded_op = (qkop.I ^ (circ.num_qubits - idx - 1)) ^ identity_padded_op
     if idx > 0:
@@ -261,18 +263,60 @@ class PatchSimulator:
             self.logical_state.ops[operand_idx] = cast(qkop.StateFn, symbolic_state.eval())
 
         elif isinstance(logical_op, llops.MultiBodyMeasurement):
-            pauli_op_list: List[qkop.OperatorBase] = []
+            # Prepare the state by moving all involved operands to the front
+            self.align_state_with_pauli_op_to_first_operand(logical_op)
+            size_of_first_operand = self.logical_state.ops[0].num_qubits
 
-            for j, quuid in self.mapper.enumerate_patches_by_index():
-                pauli_op_list.append(
-                    logical_op.patch_pauli_operator_map.get(quuid, PauliOperator.I)
+            # Move
+            global_observable = qkop.I ^ size_of_first_operand
+            for patch_uuid in logical_op.get_operating_patches():
+                qubit_idx = self.mapper.get_idx(patch_uuid)
+                assert qubit_idx < size_of_first_operand
+                global_observable = circuit_apply_op_to_qubit(
+                    global_observable,
+                    ConvertersToQiskit.pauli_op(logical_op.patch_pauli_operator_map[patch_uuid]),
+                    qubit_idx,
                 )
-            global_observable = tensor_list(list(map(ConvertersToQiskit.pauli_op, pauli_op_list)))
+
             distribution = list(
                 ProjectiveMeasurement.pauli_product_measurement_distribution(
-                    global_observable, self.logical_state
+                    global_observable, self.logical_state.ops[0]
                 )
             )
             outcome = proportional_choice(distribution)
-            # self.logical_state = outcome.resulting_state
+            self.logical_state.ops[0] = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
+
+            # TODO use .permute + reindexing to separate qubits not measured
+
+    def bring_active_operands_to_front(self, logical_op: llops.MultiBodyMeasurement) -> int:
+        """Returns the number of involved operators, that are now at the front"""
+
+        involved_qubit_idxs: List[int] = [
+            self.mapper.patch_location_to_logical_idx[patch_uuid]
+            for patch_uuid in logical_op.get_operating_patches()
+        ]
+
+        involved_operand_idxs: List[int] = list(
+            set(
+                [
+                    self.logical_state.get_idxs_of_qubit(qubit_idx)[0]
+                    for qubit_idx in involved_qubit_idxs
+                ]
+            )
+        )
+        involved_operand_idxs.sort()
+
+        swap_target_counter = 0
+        operands_to_swap = deque(involved_operand_idxs)
+        while len(operands_to_swap):
+            front_of_queue = operands_to_swap.popleft()
+            self.logical_state.swap_operands(swap_target_counter, front_of_queue)
+            self.mapper.swap_patches(swap_target_counter, front_of_queue)
+            swap_target_counter += 1
+
+        return len(involved_operand_idxs)
+
+    def align_state_with_pauli_op_to_first_operand(self, logical_op: llops.MultiBodyMeasurement):
+        n_operands = self.bring_active_operands_to_front(logical_op)
+        self.logical_state.merge_the_first_n_operands(n_operands - 1)

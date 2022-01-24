@@ -196,6 +196,9 @@ class TestLazyTensorOp:
         [
             ([qkop.I, qkop.X], 0, [qkop.I ^ qkop.X]),
             ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 0, [qkop.I ^ qkop.X ^ qkop.Y, qkop.Z]),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 1, [qkop.I ^ qkop.X, qkop.Y ^ qkop.Z]),
+            ([qkop.I, qkop.X, qkop.Y, qkop.Z], 0, [qkop.I ^ qkop.X, qkop.Y, qkop.Z]),
+            ([qkop.I, qkop.X, qkop.Y, qkop.Z], 1, [qkop.I, qkop.X ^ qkop.Y, qkop.Z]),
             ([qkop.I, qkop.X, qkop.Y, qkop.Z], 2, [qkop.I, qkop.X, qkop.Y ^ qkop.Z]),
         ],
     )
@@ -210,8 +213,28 @@ class TestLazyTensorOp:
         assert expected_list == state.ops
 
     @pytest.mark.parametrize(
+        "list, operand_idx",
+        [
+            ([qkop.I, qkop.X], 1),
+            ([qkop.I, qkop.X], 2),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 2),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 3),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 100),
+        ],
+    )
+    def test_merge_operand_with_the_next_fail(
+        self,
+        list: List[qkop.OperatorBase],
+        operand_idx: int,
+    ):
+        state = LazyTensorOp(list)
+        with pytest.raises(IndexError):
+            state.merge_operand_with_the_next(operand_idx)
+
+    @pytest.mark.parametrize(
         "list, n, expected_list",
         [
+            ([qkop.I], 0, [qkop.I]),
             ([qkop.I, qkop.X], 0, [qkop.I, qkop.X]),
             ([qkop.I, qkop.X], 1, [qkop.I ^ qkop.X]),
             ([qkop.I, qkop.X, qkop.Y, qkop.Z], 0, [qkop.I, qkop.X, qkop.Y, qkop.Z]),
