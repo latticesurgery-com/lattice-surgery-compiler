@@ -256,7 +256,7 @@ class TestPatchToQubitMapper:
             except Exception as e:
                 pytest.fail("get_uuid raised: " + repr(e))
 
-    def enumerate_patches_by_index(self):
+    def test_enumerate_patches_by_index(self):
         c = circuit.PauliOpCircuit(2)
         c.add_pauli_block(circuit.PauliRotation.from_list([X, I], Fraction(1, 8)))
         mapper = PatchToQubitMapper(llops.LogicalLatticeComputation(c))

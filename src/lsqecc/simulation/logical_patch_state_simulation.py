@@ -18,7 +18,7 @@
 import math
 import random
 import uuid
-from typing import Dict, Iterable, List, Optional, Set, Tuple, TypeVar, cast
+from typing import Dict, Iterable, List, Optional, Tuple, TypeVar, cast
 
 import qiskit.opflow as qkop
 
@@ -163,16 +163,16 @@ class PatchToQubitMapper:
     def _get_all_operating_patches(
         logical_computation: llops.LogicalLatticeComputation,
     ) -> List[uuid.UUID]:
-        patch_set: Set[uuid.UUID] = set()
-
         # Add the patches used logical qubits
-        patch_set.update(logical_computation.logical_qubit_uuid_map.values())
+        patch_list = list(logical_computation.logical_qubit_uuid_map.values())
 
         # Add the ancilla patches
         for op in logical_computation.ops:
-            patch_set = patch_set.union(op.get_operating_patches())
+            for new_patch in op.get_operating_patches():
+                if new_patch not in patch_list:
+                    patch_list.append(new_patch)
 
-        return list(patch_set)
+        return patch_list
 
 
 def tensor_list(input_list):
