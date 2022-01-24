@@ -139,6 +139,25 @@ class TestLazyTensorOp:
                 assert_eq_numpy_matrices(op.to_matrix(), result.ops[i].to_matrix())
 
     @pytest.mark.parametrize(
+        "list, operand_idx1, operand_idx2, expected_list",
+        [
+            ([qkop.I, qkop.X, qkop.Y, qkop.Z], 1, 1, [qkop.I, qkop.X, qkop.Y, qkop.Z]),
+            ([qkop.I, qkop.X, qkop.Y, qkop.Z], 0, 1, [qkop.X, qkop.I, qkop.Y, qkop.Z]),
+            ([qkop.I, qkop.X ^ qkop.Y, qkop.Z], 0, 2, [qkop.Z, qkop.X ^ qkop.Y, qkop.I]),
+        ],
+    )
+    def test_swap_operands(
+        self,
+        list: List[qkop.OperatorBase],
+        operand_idx1: int,
+        operand_idx2: int,
+        expected_list: List[qkop.OperatorBase],
+    ):
+        state = LazyTensorOp(list)
+        state.swap_operands(operand_idx1, operand_idx2)
+        assert expected_list == state.ops
+
+    @pytest.mark.parametrize(
         "operators, "
         "qubit_idx, "
         "expected_index_of_tensor_operand, "
@@ -173,6 +192,45 @@ class TestLazyTensorOp:
         assert expected_index_within_tensor_operand == index_within_tensor_operand
 
     @pytest.mark.parametrize(
+        "list, operand_idx, expected_list",
+        [
+            ([qkop.I, qkop.X], 0, [qkop.I ^ qkop.X]),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 0, [qkop.I ^ qkop.X ^ qkop.Y, qkop.Z]),
+            ([qkop.I, qkop.X, qkop.Y, qkop.Z], 2, [qkop.I, qkop.X, qkop.Y ^ qkop.Z]),
+        ],
+    )
+    def test_merge_operand_with_the_next(
+        self,
+        list: List[qkop.OperatorBase],
+        operand_idx: int,
+        expected_list: List[qkop.OperatorBase],
+    ):
+        state = LazyTensorOp(list)
+        state.merge_operand_with_the_next(operand_idx)
+        assert expected_list == state.ops
+
+    @pytest.mark.parametrize(
+        "list, n, expected_list",
+        [
+            ([qkop.I, qkop.X], 0, [qkop.I, qkop.X]),
+            ([qkop.I, qkop.X], 1, [qkop.I ^ qkop.X]),
+            ([qkop.I, qkop.X, qkop.Y, qkop.Z], 0, [qkop.I, qkop.X, qkop.Y, qkop.Z]),
+            ([qkop.I, qkop.X, qkop.Y, qkop.Z], 2, [qkop.I ^ qkop.X ^ qkop.Y, qkop.Z]),
+            ([qkop.I, qkop.X, qkop.Y, qkop.Z], 3, [qkop.I ^ qkop.X ^ qkop.Y ^ qkop.Z]),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 1, [qkop.I ^ qkop.X ^ qkop.Y, qkop.Z]),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 0, [qkop.I ^ qkop.X, qkop.Y, qkop.Z]),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 1, [qkop.I ^ qkop.X ^ qkop.Y, qkop.Z]),
+            ([qkop.I ^ qkop.X, qkop.Y, qkop.Z], 2, [qkop.I ^ qkop.X ^ qkop.Y ^ qkop.Z]),
+        ],
+    )
+    def test_merge_the_first_n_operands(
+        self, list: List[qkop.OperatorBase], n: int, expected_list: List[qkop.OperatorBase]
+    ):
+        state = LazyTensorOp(list)
+        state.merge_the_first_n_operands(n)
+        assert expected_list == state.ops
+
+    @pytest.mark.parametrize(
         "lhs, rhs, should_match",
         [
             ([qkop.Zero], [qkop.Zero], True),
@@ -195,10 +253,8 @@ class TestLazyTensorOp:
         [
             ([qkop.Zero], [qkop.Zero], True),
             ([qkop.Zero], [qkop.One], False),
-            ([qkop.Zero], [qkop.Zero ^ qkop.Zero], False),
             ([qkop.Zero, qkop.Zero], [qkop.Zero, qkop.Zero], True),
             ([qkop.Zero, qkop.Zero], [qkop.One, qkop.Zero], False),
-            ([qkop.Zero, qkop.Zero], [qkop.Zero ^ qkop.Zero], False),
             ([qkop.Zero ^ qkop.Minus, qkop.Zero], [qkop.Zero ^ qkop.Minus, qkop.Zero], True),
             ([qkop.Zero ^ qkop.Minus, qkop.Zero], [qkop.Zero ^ qkop.Zero, qkop.Zero], False),
             ([qkop.Zero ^ qkop.Plus, qkop.Zero], [qkop.Zero ^ qkop.Zero, qkop.Minus], False),
@@ -207,4 +263,14 @@ class TestLazyTensorOp:
     def test_matching_approx_eq_vector(
         self, lhs: List[qkop.OperatorBase], rhs: List[qkop.OperatorBase], should_match: bool
     ):
-        assert LazyTensorOp(lhs).matches(LazyTensorOp(rhs)) == should_match
+        assert LazyTensorOp(lhs).matching_approx_eq_vector(LazyTensorOp(rhs)) == should_match
+
+    @pytest.mark.parametrize(
+        "lhs, rhs",
+        [([qkop.Zero], [qkop.Zero ^ qkop.Zero]), ([qkop.Zero, qkop.Zero], [qkop.Zero ^ qkop.Zero])],
+    )
+    def test_matching_approx_eq_vector_exception(
+        self, lhs: List[qkop.OperatorBase], rhs: List[qkop.OperatorBase]
+    ):
+        with pytest.raises(LazyTensorOpsNotMatchingException):
+            LazyTensorOp(lhs).matching_approx_eq_vector(LazyTensorOp(rhs))

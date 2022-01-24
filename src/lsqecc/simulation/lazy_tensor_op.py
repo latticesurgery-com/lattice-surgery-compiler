@@ -90,12 +90,21 @@ class LazyTensorOp(Generic[T]):
                 return i, qubit_idx - sums[i]
         raise IndexError(f"Requesting qubit index: {qubit_idx} out of range: {sums[-1]}")
 
-    def merge_operand_with_the_next(self, target_operand_idx: int):
+    def swap_operands(self, operand_idx1: int, operand_idx2: int) -> None:
+        tmp = self.ops[operand_idx2]
+        self.ops[operand_idx2] = self.ops[operand_idx1]
+        self.ops[operand_idx1] = tmp
+
+    def merge_operand_with_the_next(self, target_operand_idx: int) -> None:
         new_ops = [op for i, op in enumerate(self.ops) if i != target_operand_idx + 1]
         new_ops[target_operand_idx] = (
             self.ops[target_operand_idx] ^ self.ops[target_operand_idx + 1]
         )
-        return LazyTensorOp(new_ops)
+        self.ops = new_ops
+
+    def merge_the_first_n_operands(self, n: int) -> None:
+        for i in range(n):
+            self.merge_operand_with_the_next(0)
 
     def separate_last_qubit_of_operand(self, operand_idx: int) -> bool:
         """Returns true if the qubit was not entangled and hence the operation possible"""
@@ -139,7 +148,8 @@ class LazyTensorOp(Generic[T]):
 
     def matching_approx_eq_vector(self, other: "LazyTensorOp[S]", atol: float = 10 ** (-8)) -> bool:
         # TODO check is vector
-        assert self.matches(other)
+        if not self.matches(other):
+            raise LazyTensorOpsNotMatchingException()
         return all(
             [
                 np.allclose(qkutil.to_vector(op1), qkutil.to_vector(op2), atol=atol)
