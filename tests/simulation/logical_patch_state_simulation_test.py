@@ -331,7 +331,7 @@ class TestPatchSimulator:
             (
                 [bell_pair],
                 rotation.Measurement.from_list([X, I]),
-                [[qkop.Plus ^ qkop.Plus], [qkop.Plus ^ qkop.Minus]],
+                [[qkop.Plus ^ qkop.Plus], [qkop.Minus ^ qkop.Minus]],
             ),
             # Match between index within operand and
             (
@@ -358,4 +358,128 @@ class TestPatchSimulator:
                 sim.logical_state.matching_approx_eq_vector(LazyTensorOp(expected_final_state))
                 for expected_final_state in expected_final_state_possibilities
             ]
+        )
+
+    def _create_dummy_simulation_with_starting_state(self, forced_starting_state):
+        lazy_forced_starting_state = LazyTensorOp(forced_starting_state)
+        # Use a dummy operation to create a LogicalLatticeComputation
+        c = circuit.PauliOpCircuit.from_list(
+            [
+                rotation.PauliRotation.from_list(
+                    [X] * lazy_forced_starting_state.get_num_qubits(), Fraction(1, 2)
+                )
+            ]
+        )
+        computation = llops.LogicalLatticeComputation(c)
+        sim = PatchSimulator(computation)
+        sim.logical_state = lazy_forced_starting_state
+        return sim
+
+    @pytest.mark.parametrize(
+        "forced_starting_state, qubits_to_measure, expected_state",
+        [
+            ([qkop.Zero], [0], [qkop.Zero]),
+            ([qkop.Zero, qkop.One], [0, 1], [qkop.Zero, qkop.One]),
+            ([qkop.Zero ^ qkop.One], [0, 1], [qkop.Zero ^ qkop.One]),
+            ([qkop.Zero, qkop.One], [1], [qkop.One, qkop.Zero]),
+            ([qkop.Zero ^ qkop.One], [0], [qkop.Zero ^ qkop.One]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [0], [qkop.Zero, qkop.One, qkop.Plus]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [0, 1], [qkop.Zero, qkop.One, qkop.Plus]),
+            ([qkop.Zero ^ qkop.One, qkop.Plus], [1], [qkop.Zero ^ qkop.One, qkop.Plus]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [1, 2], [qkop.One, qkop.Plus, qkop.Zero]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [2], [qkop.Plus, qkop.One, qkop.Zero]),
+            ([qkop.Zero ^ qkop.One, qkop.Plus], [2], [qkop.Plus, qkop.Zero ^ qkop.One]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [0, 1, 2], [qkop.Zero, qkop.One, qkop.Plus]),
+        ],
+    )
+    def test_bring_active_operands_to_front(
+        self,
+        forced_starting_state: List[qkop.OperatorBase],
+        qubits_to_measure: List[int],
+        expected_state: List[qkop.OperatorBase],
+    ):
+        sim = self._create_dummy_simulation_with_starting_state(forced_starting_state)
+        sim.bring_active_operands_to_front(
+            llops.MultiBodyMeasurement(
+                dict([(sim.mapper.get_uuid(idx), qkop.X) for idx in qubits_to_measure])
+            )
+        )
+        assert expected_state == sim.logical_state.ops
+
+    @pytest.mark.parametrize(
+        "forced_starting_state, qubits_to_measure, expected_state",
+        [
+            ([qkop.Zero], [0], [qkop.Zero]),
+            ([qkop.Zero, qkop.One], [0, 1], [qkop.Zero ^ qkop.One]),
+            ([qkop.Zero ^ qkop.One], [0, 1], [qkop.Zero ^ qkop.One]),
+            ([qkop.Zero, qkop.One], [1], [qkop.One, qkop.Zero]),
+            ([qkop.Zero ^ qkop.One], [1], [qkop.Zero ^ qkop.One]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [0], [qkop.Zero, qkop.One, qkop.Plus]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [0, 1], [qkop.Zero ^ qkop.One, qkop.Plus]),
+            ([qkop.Zero ^ qkop.One, qkop.Plus], [1], [qkop.Zero ^ qkop.One, qkop.Plus]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [1, 2], [qkop.One ^ qkop.Plus, qkop.Zero]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [2], [qkop.Plus, qkop.One, qkop.Zero]),
+            ([qkop.Zero ^ qkop.One, qkop.Plus], [2], [qkop.Plus, qkop.Zero ^ qkop.One]),
+            ([qkop.Zero, qkop.One, qkop.Plus], [0, 1, 2], [qkop.Zero ^ qkop.One ^ qkop.Plus]),
+        ],
+    )
+    def test_align_state_with_pauli_op_to_first_operand(
+        self,
+        forced_starting_state: List[qkop.OperatorBase],
+        qubits_to_measure: List[int],
+        expected_state: List[qkop.OperatorBase],
+    ):
+        sim = self._create_dummy_simulation_with_starting_state(forced_starting_state)
+        sim.align_state_with_pauli_op_to_first_operand(
+            llops.MultiBodyMeasurement(
+                dict([(sim.mapper.get_uuid(idx), qkop.X) for idx in qubits_to_measure])
+            )
+        )
+        assert expected_state == sim.logical_state.ops
+
+    @pytest.mark.parametrize(
+        "forced_starting_state, multi_body_measurement_operators, expected_states",
+        [
+            ([qkop.Zero], [Z], [[qkop.Zero]]),
+            ([qkop.Zero, qkop.Zero], [Z, None], [[qkop.Zero, qkop.Zero]]),
+            ([qkop.Zero], [X], [[qkop.Plus], [qkop.Minus]]),
+            ([qkop.Zero, qkop.Zero], [Z, Z], [[qkop.Zero ^ qkop.Zero]]),
+        ],
+    )
+    def test_apply_logical_operation_multibody_measurement_with_X_gates(
+        self,
+        forced_starting_state: List[qkop.OperatorBase],
+        multi_body_measurement_operators: List[rotation.PauliOperator],
+        expected_states: List[List[qkop.OperatorBase]],
+    ):
+        sim = self._create_dummy_simulation_with_starting_state(forced_starting_state)
+
+        def make_multibody_measurement_for_sim(
+            simulator: PatchSimulator,
+        ) -> llops.MultiBodyMeasurement:
+            return llops.MultiBodyMeasurement(
+                dict(
+                    [
+                        (simulator.mapper.get_uuid(idx), op)
+                        for idx, op in enumerate(multi_body_measurement_operators)
+                        if op is not None
+                    ]
+                )
+            )
+
+        final_states_alligned_as_input = []
+        for expected_state in expected_states:
+            sim_clone = self._create_dummy_simulation_with_starting_state(expected_state)
+            sim_clone.align_state_with_pauli_op_to_first_operand(
+                make_multibody_measurement_for_sim(sim_clone)
+            )
+            final_states_alligned_as_input.append(sim_clone.logical_state)
+
+        sim.apply_logical_operation(make_multibody_measurement_for_sim(sim))
+        print(sim.logical_state)
+
+        print(final_states_alligned_as_input)
+        assert any(
+            sim.logical_state.matching_approx_eq_vector(expected)
+            for expected in final_states_alligned_as_input
         )

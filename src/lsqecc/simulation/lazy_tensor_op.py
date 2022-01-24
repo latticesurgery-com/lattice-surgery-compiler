@@ -96,6 +96,9 @@ class LazyTensorOp(Generic[T]):
         self.ops[operand_idx1] = tmp
 
     def merge_operand_with_the_next(self, target_operand_idx: int) -> None:
+        if target_operand_idx >= len(self.ops) - 1:
+            raise IndexError()
+
         new_ops = [op for i, op in enumerate(self.ops) if i != target_operand_idx + 1]
         new_ops[target_operand_idx] = (
             self.ops[target_operand_idx] ^ self.ops[target_operand_idx + 1]
@@ -156,6 +159,9 @@ class LazyTensorOp(Generic[T]):
                 for op1, op2 in zip(self.ops, other.ops)
             ]
         )
+
+    def get_num_qubits(self):
+        return sum(map(lambda x: x.num_qubits, self.ops))
 
     def __repr__(self):
         return f"<LazyTensorOps ops.len={len(self.ops)} ops={self.ops}>"
