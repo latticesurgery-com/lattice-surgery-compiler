@@ -14,7 +14,8 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
-
+import enum
+import itertools
 import math
 import random
 import uuid
@@ -24,8 +25,9 @@ from typing import Dict, Iterable, List, Optional, Tuple, TypeVar, cast
 import qiskit.opflow as qkop
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
+import lsqecc.simulation.qiskit_opflow_utils as qkutil
 from lsqecc.pauli_rotations import PauliOperator
-from lsqecc.simulation.lazy_tensor_op import LazyTensorOp
+from lsqecc.simulation.lazy_tensor_op import LazyTensorOp, tensor_list
 
 from .qubit_state import DefaultSymbolicStates, SymbolicState
 
@@ -184,14 +186,129 @@ class PatchToQubitMapper:
         return patch_list
 
 
+class SimulatorType(enum.Enum):
+    FULL_STATE_VECTOR = "FullStateVector"
+    LAZY_TENSOR = "LazyTensor"
+
+
 class PatchSimulator:
     def __init__(self, logical_computation: llops.LogicalLatticeComputation):
-        # TODO decouple the simulation frm the logical computation. It should be possible to do it
-        # because the logical computation is only used to construct the mapper and the initial
-        # states.
-
         self.logical_computation = logical_computation
         self.mapper = PatchToQubitMapper(logical_computation)
+
+    def apply_logical_operation(self, logical_op: llops.LogicalLatticeOperation):
+        raise NotImplementedError
+
+    def get_separable_states(self) -> Dict[uuid.UUID, qkop.DictStateFn]:
+        raise NotImplementedError
+
+    @staticmethod
+    def make_simulator(
+        simulator_type: SimulatorType, logical_computation: llops.LogicalLatticeComputation
+    ):
+        if simulator_type == SimulatorType.LAZY_TENSOR:
+            return LazyTensorPatchSimulator(logical_computation)
+        else:
+            return FullStateVectorPatchSimulator(logical_computation)
+
+
+class FullStateVectorPatchSimulator(PatchSimulator):
+    def __init__(self, logical_computation: llops.LogicalLatticeComputation):
+        super(FullStateVectorPatchSimulator, self).__init__(logical_computation)
+        self.logical_state: qkop.DictStateFn = self._make_initial_logical_state()
+
+    def _make_initial_logical_state(self) -> qkop.DictStateFn:
+        """Every patch, when initialized, is considered a new logical qubit.
+        So all patch initializations and magic state requests are handled ahead of time"""
+        initial_ancilla_states: Dict[uuid.UUID, SymbolicState] = dict()
+
+        def add_initial_ancilla_state(quuid, symbolic_state):
+            if initial_ancilla_states.get(quuid) is not None:
+                raise Exception("Initializing patch " + str(quuid) + " twice")
+            initial_ancilla_states[quuid] = symbolic_state
+
+        def get_init_state(quuid: uuid.UUID) -> qkop.StateFn:
+            return ConvertersToQiskit.symbolic_state(
+                initial_ancilla_states.get(quuid, DefaultSymbolicStates.Zero)
+            )
+
+        for op in self.logical_computation.ops:
+            if isinstance(op, llops.AncillaQubitPatchInitialization):
+                add_initial_ancilla_state(op.qubit_uuid, op.qubit_state)
+            elif isinstance(op, llops.MagicStateRequest):
+                add_initial_ancilla_state(op.qubit_uuid, DefaultSymbolicStates.Magic)
+
+        all_init_states = [
+            get_init_state(quuid) for idx, quuid in self.mapper.enumerate_patches_by_index()
+        ]
+        return tensor_list(all_init_states)
+
+    def apply_logical_operation(self, logical_op: llops.LogicalLatticeOperation):
+        """Update the logical state"""
+
+        if not logical_op.does_evaluate():
+            raise Exception(
+                "apply_logical_operation called with non evaluating operation :" + repr(logical_op)
+            )
+
+        if isinstance(logical_op, llops.SinglePatchMeasurement):
+            measure_idx = self.mapper.get_idx(logical_op.qubit_uuid)
+            local_observable = ConvertersToQiskit.pauli_op(logical_op.op)
+            global_observable = (
+                (qkop.I ^ measure_idx)
+                ^ local_observable
+                ^ (qkop.I ^ (self.mapper.max_num_patches() - measure_idx - 1))
+            )
+            distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(
+                global_observable, self.logical_state
+            )
+            outcome: ProjectiveMeasurement.BinaryMeasurementOutcome = proportional_choice(
+                distribution
+            )
+            self.logical_state = outcome.resulting_state
+            logical_op.set_outcome(outcome.corresponding_eigenvalue)
+
+        elif isinstance(logical_op, llops.LogicalPauli):
+            symbolic_state = circuit_apply_op_to_qubit(
+                self.logical_state,
+                ConvertersToQiskit.pauli_op(logical_op.pauli_matrix),
+                self.mapper.get_idx(logical_op.qubit_uuid),
+            )
+            self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
+
+        elif isinstance(logical_op, llops.MultiBodyMeasurement):
+            pauli_op_list: List[qkop.OperatorBase] = []
+
+            for j, quuid in self.mapper.enumerate_patches_by_index():
+                pauli_op_list.append(
+                    logical_op.patch_pauli_operator_map.get(quuid, PauliOperator.I)
+                )
+            global_observable = tensor_list(list(map(ConvertersToQiskit.pauli_op, pauli_op_list)))
+            distribution = list(
+                ProjectiveMeasurement.pauli_product_measurement_distribution(
+                    global_observable, self.logical_state
+                )
+            )
+            outcome = proportional_choice(distribution)
+            self.logical_state = outcome.resulting_state
+            logical_op.set_outcome(outcome.corresponding_eigenvalue)
+
+    def get_separable_states(self):
+        separable_states_by_index: Dict[
+            int, qkop.DictStateFn
+        ] = qkutil.StateSeparator.get_separable_qubits(self.logical_state)
+        return dict(
+            [
+                (self.mapper.get_uuid(idx), state)
+                for idx, state in separable_states_by_index.items()
+                if state is not None
+            ]
+        )
+
+
+class LazyTensorPatchSimulator(PatchSimulator):
+    def __init__(self, logical_computation: llops.LogicalLatticeComputation):
+        super(LazyTensorPatchSimulator, self).__init__(logical_computation)
         self.logical_state: LazyTensorOp[qkop.StateFn] = self._make_initial_logical_state()
 
     def _make_initial_logical_state(self) -> LazyTensorOp[qkop.StateFn]:
@@ -267,7 +384,7 @@ class PatchSimulator:
             self.align_state_with_pauli_op_to_first_operand(logical_op)
             size_of_first_operand = self.logical_state.ops[0].num_qubits
 
-            # Move
+            # Make a global observable for the operator
             global_observable = qkop.I ^ size_of_first_operand
             for patch_uuid in logical_op.get_operating_patches():
                 qubit_idx = self.mapper.get_idx(patch_uuid)
@@ -307,16 +424,52 @@ class PatchSimulator:
         )
         involved_operand_idxs.sort()
 
-        swap_target_counter = 0
+        operand_swap_target_counter = 0
         operands_to_swap = deque(involved_operand_idxs)
         while len(operands_to_swap):
             front_of_queue = operands_to_swap.popleft()
-            self.logical_state.swap_operands(swap_target_counter, front_of_queue)
-            self.mapper.swap_patches(swap_target_counter, front_of_queue)
-            swap_target_counter += 1
+
+            self.logical_state.swap_operands(operand_swap_target_counter, front_of_queue)
+
+            # Update the patch->idx map
+            operand_uuid_list: List[List[uuid.UUID]] = []
+            for operand_idx, operand_size in enumerate(self.logical_state.get_operand_sizes()):
+                begin_operand = self.logical_state.get_idx_of_first_qubit_in_operand(operand_idx)
+                end_operand = begin_operand + operand_size  # TODO refactor into get_operator_bounds
+
+                operand_uuid_list.append(
+                    [self.mapper.get_uuid(idx) for idx in range(begin_operand, end_operand)]
+                )
+
+            operand_uuid_list[operand_swap_target_counter], operand_uuid_list[front_of_queue] = (
+                operand_uuid_list[front_of_queue],
+                operand_uuid_list[operand_swap_target_counter],
+            )
+            self.mapper.patch_location_to_logical_idx = dict(
+                [
+                    (patch_uuid, idx)
+                    for idx, patch_uuid in enumerate(itertools.chain(*operand_uuid_list))
+                ]
+            )
+
+            operand_swap_target_counter += 1
 
         return len(involved_operand_idxs)
 
     def align_state_with_pauli_op_to_first_operand(self, logical_op: llops.MultiBodyMeasurement):
         n_operands = self.bring_active_operands_to_front(logical_op)
         self.logical_state.merge_the_first_n_operands(n_operands - 1)
+
+    def get_separable_states(self) -> Dict[uuid.UUID, qkop.DictStateFn]:
+
+        separable_states: Dict[uuid.UUID, qkop.DictStateFn] = {}
+
+        operand_offset = 0
+        for operand in self.logical_state.ops:
+            separable_states_by_index = qkutil.StateSeparator.get_separable_qubits(operand)
+            for idx_within_operand, state in separable_states_by_index.items():
+                patch_id = self.mapper.get_uuid(operand_offset + idx_within_operand)
+                separable_states[patch_id] = state
+            operand_offset += operand.num_qubits
+
+        return separable_states

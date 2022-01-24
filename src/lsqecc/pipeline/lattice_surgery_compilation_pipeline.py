@@ -60,7 +60,6 @@ def compile_str(
 
     # TODO add user flag
     input_circuit = input_circuit.get_y_free_equivalent()
-
     if apply_litinski_transform:
         input_circuit.apply_transformation()
         input_circuit = input_circuit.get_y_free_equivalent()

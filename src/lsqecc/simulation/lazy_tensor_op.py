@@ -78,17 +78,31 @@ class LazyTensorOp(Generic[T]):
 
         return self.apply_matching_tensors(LazyTensorOp(other_as_matching_tensor), eval=eval)
 
+    def get_operand_sizes(self) -> List[int]:
+        return list(map(lambda op: op.num_qubits, self.ops))
+
+    def get_idx_of_first_qubit_for_each_operand(self) -> List[int]:
+        first_idxs = [0]
+        for block_size in self.get_operand_sizes()[:-1]:  # skip the last
+            first_idxs.append(first_idxs[-1] + block_size)
+        return first_idxs
+
     def get_idxs_of_qubit(self, qubit_idx: int) -> Tuple[int, int]:
-        """Returns index_of_tensor_operand, index_within_tensor_operand"""
-        block_sizes = list(map(lambda op: op.num_qubits, self.ops))
-        sums = [0]
-        for block_size in block_sizes:
-            sums.append(sums[-1] + block_size)
-        print(sums)
-        for i in range(len(sums) - 1):  # skip the last sum because it would be the (n+1)-th block
-            if qubit_idx < sums[i + 1]:
-                return i, qubit_idx - sums[i]
-        raise IndexError(f"Requesting qubit index: {qubit_idx} out of range: {sums[-1]}")
+        """Returns index_of_operand, index_within_operand"""
+        operand_boundaries = self.get_idx_of_first_qubit_for_each_operand() + [
+            self.get_num_qubits()
+        ]
+        for i in range(
+            len(operand_boundaries) - 1
+        ):  # skip the last sum because it would be the (n+1)-th block
+            if qubit_idx < operand_boundaries[i + 1]:
+                return i, qubit_idx - operand_boundaries[i]
+        raise IndexError(
+            f"Requesting qubit index: {qubit_idx} out of range: {operand_boundaries[-1]}"
+        )
+
+    def get_idx_of_first_qubit_in_operand(self, operand_idx: int):
+        return self.get_idx_of_first_qubit_for_each_operand()[operand_idx]
 
     def swap_operands(self, operand_idx1: int, operand_idx2: int) -> None:
         tmp = self.ops[operand_idx2]
@@ -122,7 +136,7 @@ class LazyTensorOp(Generic[T]):
         if maybe_new_operand_from_qubit is None:
             return False
         self.ops[operand_idx] = qkutil.StateSeparator.trace_dict_state(
-            operand, list(range(operand.num_qubits - 1))
+            operand, [operand.num_qubits - 1]
         )
         self.ops.insert(operand_idx + 1, maybe_new_operand_from_qubit)
         return True

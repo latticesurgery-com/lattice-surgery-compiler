@@ -44,7 +44,6 @@ class _SliceArrayJSONEncoder(json.JSONEncoder):
         elif isinstance(obj, vac.VisualArrayCell):
             obj_with_good_keys = obj.__dict__
             obj_with_good_keys["edges"] = dict([(k.value, v) for k, v in obj.edges.items()])
-            print(obj_with_good_keys)
             return obj_with_good_keys
         elif isinstance(obj, object):
             return obj.__dict__
