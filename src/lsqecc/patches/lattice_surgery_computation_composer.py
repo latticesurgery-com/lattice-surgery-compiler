@@ -182,11 +182,10 @@ class LatticeSurgeryComputation:
         logical_computation: llops.LogicalLatticeComputation, layout_type: LayoutType
     ):
         comp = LatticeSurgeryComputation(logical_computation, layout_type)
-        sim = lps.PatchSimulator(logical_computation)
+        sim = lps.PatchSimulator.make_simulator(lps.SimulatorType.LAZY_TENSOR, logical_computation)
 
         with comp.timestep() as blank_slice:
             cast(object, blank_slice)  # no-op
-
         for logical_op in comp.logical_computation.ops:
             if logical_op.does_evaluate():
                 with comp.timestep() as slice:
@@ -413,12 +412,11 @@ class LatticeSurgeryComputationComposer:
             raise Exception("Unsupported operation %s" % repr(current_op))
 
     def set_separable_states(self, sim: lps.PatchSimulator):
-        separable_states = qo_utils.StateSeparator.get_separable_qubits(sim.logical_state)
+        separable_states = sim.get_separable_states()
         for patch in self.lattice().patches:
             if patch.patch_uuid is not None:
-                idx = sim.mapper.get_idx(patch.patch_uuid)
-                if separable_states.get(idx) is not None:
-                    alpha, beta = separable_states[idx].to_matrix()
+                if patch.patch_uuid in separable_states:
+                    alpha, beta = qo_utils.to_vector(separable_states[patch.patch_uuid])
                     if isinstance(patch.state, qs.ActiveState):
                         patch.state.next = qs.DefaultSymbolicStates.from_amplitudes(alpha, beta)
                     else:

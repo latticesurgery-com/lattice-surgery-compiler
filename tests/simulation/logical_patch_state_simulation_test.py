@@ -27,14 +27,17 @@ from lsqecc.pauli_rotations import (  # TODO import as pauli_rotations directly
 )
 from lsqecc.simulation.lazy_tensor_op import LazyTensorOp
 from lsqecc.simulation.logical_patch_state_simulation import (
-    PatchSimulator,
+    LazyTensorPatchSimulator,
     PatchToQubitMapper,
     ProjectiveMeasurement,
     circuit_apply_op_to_qubit,
     proportional_choice,
 )
 from lsqecc.simulation.qiskit_opflow_utils import bell_pair, to_vector
-from tests.simulation.numpy_matrix_assertions import assert_eq_numpy_vectors
+from tests.simulation.numpy_matrix_assertions import (
+    assert_eq_numpy_vectorable,
+    assert_eq_numpy_vectors,
+)
 
 
 # Type Alias, looking forward to PEP613 ...
@@ -271,7 +274,7 @@ class TestPatchToQubitMapper:
             assert patch_idx == i
 
 
-class TestPatchSimulator:
+class TestLazyTensorPatchSimulator:
     @pytest.mark.parametrize(
         "circuit_op, expected_start_state",
         [
@@ -285,7 +288,7 @@ class TestPatchSimulator:
         expected_start_state: List[qkop.OperatorBase],
     ):
         c = circuit.PauliOpCircuit.from_list([circuit_op])
-        sim = PatchSimulator(llops.LogicalLatticeComputation(c))
+        sim = LazyTensorPatchSimulator(llops.LogicalLatticeComputation(c))
         assert sim.logical_state.matching_approx_eq_vector(LazyTensorOp(expected_start_state))
 
     @pytest.mark.parametrize(
@@ -309,7 +312,7 @@ class TestPatchSimulator:
         c = circuit.PauliOpCircuit.from_list([circuit_op])
         computation = llops.LogicalLatticeComputation(c)
 
-        sim = PatchSimulator(computation)
+        sim = LazyTensorPatchSimulator(computation)
         sim.apply_logical_operation(computation.ops[0])
         assert any(
             [
@@ -350,7 +353,7 @@ class TestPatchSimulator:
         c = circuit.PauliOpCircuit.from_list([circuit_op])
         computation = llops.LogicalLatticeComputation(c)
 
-        sim = PatchSimulator(computation)
+        sim = LazyTensorPatchSimulator(computation)
         sim.logical_state = LazyTensorOp(forced_starting_state)
         sim.apply_logical_operation(computation.ops[0])
         assert any(
@@ -371,7 +374,7 @@ class TestPatchSimulator:
             ]
         )
         computation = llops.LogicalLatticeComputation(c)
-        sim = PatchSimulator(computation)
+        sim = LazyTensorPatchSimulator(computation)
         sim.logical_state = lazy_forced_starting_state
         return sim
 
@@ -390,6 +393,21 @@ class TestPatchSimulator:
             ([qkop.Zero, qkop.One, qkop.Plus], [2], [qkop.Plus, qkop.One, qkop.Zero]),
             ([qkop.Zero ^ qkop.One, qkop.Plus], [2], [qkop.Plus, qkop.Zero ^ qkop.One]),
             ([qkop.Zero, qkop.One, qkop.Plus], [0, 1, 2], [qkop.Zero, qkop.One, qkop.Plus]),
+            (
+                [bell_pair, qkop.Zero, qkop.One, qkop.Plus],
+                [0, 1],
+                [bell_pair, qkop.Zero, qkop.One, qkop.Plus],
+            ),
+            (
+                [bell_pair, qkop.Zero, qkop.One, qkop.Plus],
+                [1, 2],
+                [bell_pair, qkop.Zero, qkop.One, qkop.Plus],
+            ),
+            (
+                [bell_pair, qkop.Zero, qkop.One, qkop.Plus],
+                [2, 3],
+                [qkop.Zero, qkop.One, bell_pair, qkop.Plus],
+            ),
         ],
     )
     def test_bring_active_operands_to_front(
@@ -399,12 +417,16 @@ class TestPatchSimulator:
         expected_state: List[qkop.OperatorBase],
     ):
         sim = self._create_dummy_simulation_with_starting_state(forced_starting_state)
+        # TODO perform a deeper check on the uuid remapping
+        #  (e.g. by checking that the uuid->states match)
+        patches_before = sim.mapper.patch_location_to_logical_idx.keys()
         sim.bring_active_operands_to_front(
             llops.MultiBodyMeasurement(
                 dict([(sim.mapper.get_uuid(idx), qkop.X) for idx in qubits_to_measure])
             )
         )
         assert expected_state == sim.logical_state.ops
+        assert patches_before == sim.mapper.patch_location_to_logical_idx.keys()
 
     @pytest.mark.parametrize(
         "forced_starting_state, qubits_to_measure, expected_state",
@@ -455,7 +477,7 @@ class TestPatchSimulator:
         sim = self._create_dummy_simulation_with_starting_state(forced_starting_state)
 
         def make_multibody_measurement_for_sim(
-            simulator: PatchSimulator,
+            simulator: LazyTensorPatchSimulator,
         ) -> llops.MultiBodyMeasurement:
             return llops.MultiBodyMeasurement(
                 dict(
@@ -483,3 +505,34 @@ class TestPatchSimulator:
             sim.logical_state.matching_approx_eq_vector(expected)
             for expected in final_states_alligned_as_input
         )
+
+    def test_get_separable_states(self):
+        c = circuit.PauliOpCircuit.from_list([rotation.Measurement.from_list([X, I])])
+        computation = llops.LogicalLatticeComputation(c)
+
+        sim = LazyTensorPatchSimulator(computation)
+        sim.logical_state = LazyTensorOp([bell_pair])
+
+        separable_states = sim.get_separable_states()
+        assert 0 == len(separable_states)
+        sim.apply_logical_operation(computation.ops[0])
+        separable_states = sim.get_separable_states()
+        assert 2 == len(separable_states)
+
+        print(separable_states)
+        try:
+            assert_eq_numpy_vectorable(
+                qkop.Plus, separable_states[computation.logical_qubit_uuid_map[0]]
+            )
+        except AssertionError:
+            assert_eq_numpy_vectorable(
+                qkop.Minus, separable_states[computation.logical_qubit_uuid_map[0]]
+            )
+        try:
+            assert_eq_numpy_vectorable(
+                qkop.Plus, separable_states[computation.logical_qubit_uuid_map[1]]
+            )
+        except AssertionError:
+            assert_eq_numpy_vectorable(
+                qkop.Minus, separable_states[computation.logical_qubit_uuid_map[1]]
+            )

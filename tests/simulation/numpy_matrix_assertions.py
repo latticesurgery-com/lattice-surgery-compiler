@@ -17,6 +17,9 @@
 
 import numpy as np
 import pytest
+import qiskit.opflow as qkop
+
+from lsqecc.simulation.qiskit_opflow_utils import to_vector
 
 
 def assert_eq_numpy_vectors(lhs: np.array, rhs: np.array):
@@ -34,3 +37,7 @@ def assert_eq_numpy_matrices(lhs: np.array, rhs: np.array):
     for row in range(rows):
         for col in range(cols):
             assert lhs[row, col] == pytest.approx(rhs[row, col])
+
+
+def assert_eq_numpy_vectorable(lhs: qkop.OperatorBase, rhs: qkop.OperatorBase):
+    return assert_eq_numpy_vectors(to_vector(lhs), to_vector(rhs))
