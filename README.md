@@ -28,7 +28,7 @@ Our long term vision is to have an end to end lattice surgery compiler. We want 
 <!-- end -->
 
 <p align="center">
-  <img alt="backers" src="https://user-images.githubusercontent.com/36427091/150938385-b0099f77-fd7b-4666-95b6-a7610ec6c9de.png" />
+  <img alt="backers" height="70px" src="https://user-images.githubusercontent.com/36427091/150938385-b0099f77-fd7b-4666-95b6-a7610ec6c9de.png" />
 </p>
 
 ## Background 
