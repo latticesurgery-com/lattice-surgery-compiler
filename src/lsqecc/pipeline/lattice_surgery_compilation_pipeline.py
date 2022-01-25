@@ -62,19 +62,19 @@ def compile_str(
         parsed_circuit = parsed_circuit.get_y_free_equivalent()
         circuit_after_litinski_transform = parsed_circuit.render_ascii()
 
-    logical_computation = llops.LogicalLatticeComputation(parsed_circuit)
-    lsc = composer_class.make_computation_with_simulation(
-        logical_computation, layout_types.SimplePreDistilledStates
-    )
-
     compilation_text = {
         "input_circuit": input_circuit,
         "circuit_as_pauli_rotations": circuit_as_pauli_rotations,
         "circuit_after_litinski_transform": circuit_after_litinski_transform,
     }
 
+    logical_computation = llops.LogicalLatticeComputation(parsed_circuit)
+    lsc = composer_class.make_computation_with_simulation(
+        logical_computation, layout_types.SimplePreDistilledStates
+    )
+
     return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), json.dumps(
-        compilation_text
+        obj=compilation_text, ensure_ascii=False
     )
 
 
