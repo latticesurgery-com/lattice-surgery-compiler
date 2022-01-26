@@ -96,7 +96,7 @@ def generate_tests_count_magic_states():
 
 def generate_tests_circuit_to_single_patch_measurement():
     m1 = Measurement.from_list([X], isNegative=False)
-    m2 = Measurement.from_list([I, Z], isNegative=False)
+    m2 = Measurement.from_list([I, Z], isNegative=True)
 
     c1 = PauliOpCircuit(1)
     c1.add_pauli_block(m1)
@@ -142,6 +142,7 @@ class TestLogicalLatticeComputation:
 
         assert isinstance(patch_measurement, SinglePatchMeasurement)
         assert [patch_measurement.op] == list(measurement.get_ops_map().values())
+        assert patch_measurement.isNegative == measurement.isNegative
 
     @pytest.mark.parametrize(
         "circuit, measurement", generate_tests_circuit_to_multi_body_measurements()
@@ -155,6 +156,7 @@ class TestLogicalLatticeComputation:
         assert list(patch_measurement.patch_pauli_operator_map.values()) == list(
             measurement.get_ops_map().values()
         )
+        assert patch_measurement.isNegative == measurement.isNegative
 
     def test_circuit_to_patch_measurement_type_error(self):
         circuit = PauliOpCircuit(1)
