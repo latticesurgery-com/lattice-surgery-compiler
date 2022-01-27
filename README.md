@@ -27,6 +27,10 @@ Our long term vision is to have an end to end lattice surgery compiler. We want 
 
 <!-- end -->
 
+<p align="center">
+  <img alt="backers" height="70px" src="https://user-images.githubusercontent.com/36427091/150938385-b0099f77-fd7b-4666-95b6-a7610ec6c9de.png" />
+</p>
+
 ## Background 
 A proposed solution to mitigate the occurrence of errors in quantum computers are the so-called quantum error correcting codes (QECC). Specifically we focus on the protocol of lattice surgery, which is based on the prominent methodology of surface codes. A natural question relates to how these techniques can be employed to systematically obtain fault tolerant logical qubits from less reliable ones. Recent work has focused on building compilers that translate a logical quantum circuit to a much larger error corrected one, with the output circuit performing the computation specified by the logical circuit with QECCs [[1]](#1)[[2]](#2). 
 
