@@ -42,6 +42,6 @@ def estimate_resources(
 
     return EstimatedResources(
         physical_qubit_rows=slices[0].getRows() * code_distance,
-        physical_qubit_cols=slices[0].getRows() * code_distance,
+        physical_qubit_cols=slices[0].getCols() * code_distance,
         time_ms=len(slices) * error_decoding_time_ms * decoding_cycles_by_code_distance_multiplier,
     )
