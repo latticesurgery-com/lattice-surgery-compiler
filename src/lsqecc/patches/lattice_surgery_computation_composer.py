@@ -23,7 +23,6 @@ from typing import Dict, List, Optional, Tuple, cast
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 import lsqecc.patches.patches as patches
 import lsqecc.simulation.logical_patch_state_simulation as lps
-import lsqecc.simulation.qiskit_opflow_utils as qo_utils
 import lsqecc.simulation.qubit_state as qs
 
 from . import ancilla_region_routing as ancilla_region_routing
@@ -171,6 +170,7 @@ class LatticeSurgeryComputation:
 
         self._initialize_layout(SimplePreDistilledStatesLayoutInitializer(self.num_qubits))
 
+        # TODO rename y_eigenstates
         self.ancilla_locations = [(j, 2) for j in range(self.num_qubits)]
         self.composer.lattice().min_cols = 2 * self.num_qubits
         self.composer.lattice().min_rows = 3
@@ -178,14 +178,17 @@ class LatticeSurgeryComputation:
         self._init_simple_magic_state_array(self.logical_computation.count_magic_states())
 
     @staticmethod
-    def make_computation_with_simulation(
-        logical_computation: llops.LogicalLatticeComputation, layout_type: LayoutType
+    def make_computation(
+        logical_computation: llops.LogicalLatticeComputation,
+        layout_type: LayoutType,
+        simulation_type: lps.SimulatorType = lps.SimulatorType.FULL_STATE_VECTOR,
     ):
         comp = LatticeSurgeryComputation(logical_computation, layout_type)
-        sim = lps.PatchSimulator.make_simulator(lps.SimulatorType.LAZY_TENSOR, logical_computation)
+        sim = lps.PatchSimulator.make_simulator(simulation_type, logical_computation)
 
         with comp.timestep() as blank_slice:
             cast(object, blank_slice)  # no-op
+
         for logical_op in comp.logical_computation.ops:
             if logical_op.does_evaluate():
                 with comp.timestep() as slice:
@@ -413,13 +416,16 @@ class LatticeSurgeryComputationComposer:
 
     def set_separable_states(self, sim: lps.PatchSimulator):
         separable_states = sim.get_separable_states()
+
         for patch in self.lattice().patches:
             if patch.patch_uuid is not None:
                 if patch.patch_uuid in separable_states:
-                    alpha, beta = qo_utils.to_vector(separable_states[patch.patch_uuid])
+                    symbolic_state = qs.DefaultSymbolicStates.from_maybe_state_fn(
+                        separable_states[patch.patch_uuid]
+                    )
                     if isinstance(patch.state, qs.ActiveState):
-                        patch.state.next = qs.DefaultSymbolicStates.from_amplitudes(alpha, beta)
+                        patch.state.next = symbolic_state
                     else:
-                        patch.state = qs.DefaultSymbolicStates.from_amplitudes(alpha, beta)
+                        patch.state = symbolic_state
                 else:
                     patch.state = qs.EntangledState()

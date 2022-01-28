@@ -151,12 +151,6 @@ class PatchToQubitMapper:
     def get_idx(self, patch: uuid.UUID) -> int:
         return self.patch_location_to_logical_idx[patch]
 
-    def swap_patches(self, idx1: int, idx2: int):
-        uuid1 = self.get_uuid(idx1)
-        uuid2 = self.get_uuid(idx2)
-        self.patch_location_to_logical_idx[uuid1] = idx2
-        self.patch_location_to_logical_idx[uuid2] = idx1
-
     def max_num_patches(self) -> int:
         return len(self.patch_location_to_logical_idx)
 
@@ -189,6 +183,7 @@ class PatchToQubitMapper:
 class SimulatorType(enum.Enum):
     FULL_STATE_VECTOR = "FullStateVector"
     LAZY_TENSOR = "LazyTensor"
+    NOOP = "NoOp"
 
 
 class PatchSimulator:
@@ -199,7 +194,8 @@ class PatchSimulator:
     def apply_logical_operation(self, logical_op: llops.LogicalLatticeOperation):
         raise NotImplementedError
 
-    def get_separable_states(self) -> Dict[uuid.UUID, qkop.DictStateFn]:
+    def get_separable_states(self) -> Dict[uuid.UUID, Optional[qkop.DictStateFn]]:
+        """None is for unknown state, regardless of separability"""
         raise NotImplementedError
 
     @staticmethod
@@ -208,6 +204,8 @@ class PatchSimulator:
     ):
         if simulator_type == SimulatorType.LAZY_TENSOR:
             return LazyTensorPatchSimulator(logical_computation)
+        elif simulator_type == SimulatorType.NOOP:
+            return NoOpSimulator(logical_computation)
         else:
             return FullStateVectorPatchSimulator(logical_computation)
 
@@ -293,7 +291,7 @@ class FullStateVectorPatchSimulator(PatchSimulator):
             self.logical_state = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
 
-    def get_separable_states(self):
+    def get_separable_states(self) -> Dict[uuid.UUID, Optional[qkop.DictStateFn]]:
         separable_states_by_index: Dict[
             int, qkop.DictStateFn
         ] = qkutil.StateSeparator.get_separable_qubits(self.logical_state)
@@ -473,3 +471,16 @@ class LazyTensorPatchSimulator(PatchSimulator):
             operand_offset += operand.num_qubits
 
         return separable_states
+
+
+class NoOpSimulator(PatchSimulator):
+    def __init__(self, logical_computation: llops.LogicalLatticeComputation):
+        super().__init__(logical_computation)
+
+    def apply_logical_operation(self, logical_op: llops.LogicalLatticeOperation):
+        pass  # No-op
+
+    def get_separable_states(self) -> Dict[uuid.UUID, Optional[qkop.DictStateFn]]:
+        return dict(
+            [(patch_uuid, None) for patch_uuid in self.mapper.patch_location_to_logical_idx.keys()]
+        )
