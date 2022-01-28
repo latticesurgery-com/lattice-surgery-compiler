@@ -25,6 +25,7 @@ import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 import lsqecc.patches.lattice_surgery_computation_composer as lscc
 import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 from lsqecc.lattice_array import sparse_lattice_to_array
+from lsqecc.resource_estimation.resource_estimator import estimate_resources
 
 GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells
 
@@ -70,5 +71,8 @@ def compile_str(
     lsc = composer_class.make_computation_with_simulation(
         logical_computation, layout_types.SimplePreDistilledStates
     )
+
+    # TODO| when compilation stages are supported, remove the 'Circuit|' from the text
+    compilation_text += "\nCircuit| " + estimate_resources(lsc.composer.getSlices()).render_ascii()
 
     return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text
