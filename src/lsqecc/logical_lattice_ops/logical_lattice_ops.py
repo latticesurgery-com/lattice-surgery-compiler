@@ -276,6 +276,12 @@ class PiOverFourCorrectionCondition(coc.EvaluationCondition):
         if not self.multi_body_measurement.does_evaluate():
             return False
 
+        if (
+            self.multi_body_measurement.get_outcome() is None
+            or self.ancilla_measurement.get_outcome() is None
+        ):
+            return True  # Always evaluate an op when no simulation is present
+
         out = (
             self.multi_body_measurement.get_outcome() * self.ancilla_measurement.get_outcome() == -1
         )
@@ -293,6 +299,9 @@ class PiOverEightCorrectionConditionPiOverFour(coc.EvaluationCondition):
         if not self.multi_body_measurement.does_evaluate():
             return False
 
+        if self.multi_body_measurement.get_outcome() is None:
+            return True  # Always evaluate an op when no simulation is present
+
         out = self.multi_body_measurement.get_outcome() == -1
         if self.invert:
             out = not out
@@ -306,5 +315,8 @@ class PiOverEightCorrectionConditionPiOverTwo(coc.EvaluationCondition):
     def does_evaluate(self):
         if not self.ancilla_measurement.does_evaluate():
             return False
+
+        if self.ancilla_measurement.get_outcome() is None:
+            return True  # Always evaluate an op when no simulation is present
 
         return self.ancilla_measurement.get_outcome() == -1

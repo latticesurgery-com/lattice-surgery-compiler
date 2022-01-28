@@ -24,6 +24,7 @@ import lsqecc.lattice_array.visual_array_cell as vac
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 import lsqecc.patches.lattice_surgery_computation_composer as lscc
 import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
+import lsqecc.simulation.logical_patch_state_simulation as lssim
 from lsqecc.lattice_array import sparse_lattice_to_array
 from lsqecc.resource_estimation.resource_estimator import estimate_resources
 
@@ -33,15 +34,21 @@ __all__ = ["compile_file", "GUISlice"]
 
 
 def compile_file(
-    circuit_file_name: str, apply_litinski_transform: bool = True
+    circuit_file_name: str,
+    apply_litinski_transform: bool = True,
+    simulation_type: lssim.SimulatorType = lssim.SimulatorType.FULL_STATE_VECTOR,
 ) -> Tuple[List[GUISlice], str]:
     """DEPRECATED. compile_str"""
     with open(circuit_file_name) as input_file:
-        return compile_str(input_file.read(), apply_litinski_transform)
+        return compile_str(
+            input_file.read(), apply_litinski_transform, simulation_type=simulation_type
+        )
 
 
 def compile_str(
-    qasm_circuit: str, apply_litinski_transform: bool = True
+    qasm_circuit: str,
+    apply_litinski_transform: bool = True,
+    simulation_type: lssim.SimulatorType = lssim.SimulatorType.FULL_STATE_VECTOR,
 ) -> Tuple[List[GUISlice], str]:
     """Returns gui slices and the text of the circuit as processed in various stages"""
     composer_class = lscc.LatticeSurgeryComputation
@@ -60,6 +67,7 @@ def compile_str(
 
     # TODO add user flag
     input_circuit = input_circuit.get_y_free_equivalent()
+
     if apply_litinski_transform:
         input_circuit.apply_transformation()
         input_circuit = input_circuit.get_y_free_equivalent()
@@ -67,8 +75,8 @@ def compile_str(
         compilation_text += input_circuit.render_ascii()
 
     logical_computation = llops.LogicalLatticeComputation(input_circuit)
-    lsc = composer_class.make_computation_with_simulation(
-        logical_computation, layout_types.SimplePreDistilledStates
+    lsc = composer_class.make_computation(
+        logical_computation, layout_types.SimplePreDistilledStates, simulation_type=simulation_type
     )
 
     # TODO| when compilation stages are supported, remove the 'Circuit|' from the text
