@@ -340,7 +340,7 @@ class LazyTensorPatchSimulator(PatchSimulator):
 
         if not logical_op.does_evaluate():
             raise Exception(
-                "apply_logical_operation called with non evaluating operation :" + repr(logical_op)
+                f"apply_logical_operation called with non evaluating operation: {repr(logical_op)}"
             )
 
         if isinstance(logical_op, llops.SinglePatchMeasurement):
@@ -412,14 +412,9 @@ class LazyTensorPatchSimulator(PatchSimulator):
             for patch_uuid in logical_op.get_operating_patches()
         ]
 
-        involved_operand_idxs: List[int] = list(
-            set(
-                [
-                    self.logical_state.get_idxs_of_qubit(qubit_idx)[0]
-                    for qubit_idx in involved_qubit_idxs
-                ]
-            )
-        )
+        involved_operand_idxs: List[int] = [
+            self.logical_state.get_idxs_of_qubit(qubit_idx)[0] for qubit_idx in involved_qubit_idxs
+        ]
         involved_operand_idxs.sort()
 
         operand_swap_target_counter = 0
