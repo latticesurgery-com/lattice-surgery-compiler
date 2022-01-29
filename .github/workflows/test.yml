@@ -23,7 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    
+      with:
+        submodules: recursive
+    - name: Make OpenSurgery into a package
+        run: |
+          touch src/lsqecc/external/opensurgery/__init__.py
+
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
@@ -44,6 +49,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Make OpenSurgery into a package
+      run: |
+        touch src/lsqecc/external/opensurgery/__init__.py
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -62,6 +72,7 @@ jobs:
     
     - name: Test with pytest
       run: |
+        ls src/lsqecc/external/opensurgery
         if [[ ${{ matrix.python-version }} == '3.9' ]]; then
           pytest --cov=lsqecc --cov-report=term --cov-report=xml;
         else 
