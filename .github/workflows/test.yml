@@ -26,8 +26,8 @@ jobs:
       with:
         submodules: recursive
     - name: Make OpenSurgery into a package
-        run: |
-          touch src/lsqecc/external/opensurgery/__init__.py
+      run: |
+        touch src/lsqecc/external/opensurgery/__init__.py
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
