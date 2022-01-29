@@ -261,6 +261,9 @@ class LatticeSurgeryComputation:
         patch.set_uuid(patch_uuid)
         return patch
 
+    def get_t_count(self):
+        return self.logical_computation.count_magic_states()
+
 
 class LatticeSurgeryComputationComposer:
     def __init__(self, computation: LatticeSurgeryComputation, initial_layout: patches.Lattice):

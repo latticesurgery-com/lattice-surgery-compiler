@@ -73,6 +73,6 @@ def compile_str(
     )
 
     # TODO| when compilation stages are supported, remove the 'Circuit|' from the text
-    compilation_text += "\nCircuit| " + estimate_resources(lsc.composer.getSlices()).render_ascii()
+    compilation_text += "\nCircuit| " + estimate_resources(lsc).render_ascii()
 
     return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text

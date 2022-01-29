@@ -1,0 +1,3 @@
+[submodule "src/lsqecc/external/opensurgery"]
+	path = src/lsqecc/external/opensurgery
+	url = https://github.com/alexandrupaler/opensurgery.git
