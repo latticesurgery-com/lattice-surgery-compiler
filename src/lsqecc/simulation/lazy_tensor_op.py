@@ -39,7 +39,7 @@ class LazyTensorOp(Generic[T]):
     operands. Has methods to apply operators so that the tensor structure is preserved."""
 
     def __init__(self, ops: List[T]):
-        self.ops = [op for op in ops]  # TODO rename to operands
+        self.ops = ops[:]  # TODO rename to operands
 
     def apply_matching_tensors(self, lhs: "LazyTensorOp[S]", eval=True) -> "LazyTensorOp[R]":
         """Left applies the list of matching tensors to the current object"""
@@ -105,9 +105,10 @@ class LazyTensorOp(Generic[T]):
         return self.get_idx_of_first_qubit_for_each_operand()[operand_idx]
 
     def swap_operands(self, operand_idx1: int, operand_idx2: int) -> None:
-        tmp = self.ops[operand_idx2]
-        self.ops[operand_idx2] = self.ops[operand_idx1]
-        self.ops[operand_idx1] = tmp
+        self.ops[operand_idx2], self.ops[operand_idx1] = (
+            self.ops[operand_idx1],
+            self.ops[operand_idx2],
+        )
 
     def merge_operand_with_the_next(self, target_operand_idx: int) -> None:
         if target_operand_idx >= len(self.ops) - 1:
