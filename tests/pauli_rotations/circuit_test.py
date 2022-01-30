@@ -1,9 +1,10 @@
 from fractions import Fraction
+from typing import List
 
 import pytest
 
 from lsqecc.pauli_rotations.circuit import PauliOpCircuit, PauliOperator, PauliRotation
-from lsqecc.pauli_rotations.rotation import Measurement
+from lsqecc.pauli_rotations.rotation import Measurement, PauliProductOperation
 
 from .generate_tests_circuit import (
     generate_tests_are_commuting,
@@ -109,6 +110,70 @@ def test_add_single_operator():
 
     circuit.add_single_operator(1, Y, Fraction(1, 4), 1)
     assert circuit.ops[1] == PauliRotation.from_list([I, Y, I, I], Fraction(1, 4))
+
+
+@pytest.mark.parametrize(
+    "input_circuit_blocks, expected_output_circuit_blocks",
+    [
+        (
+            [PauliRotation.from_list([X], Fraction(1, 2))],
+            [PauliRotation.from_list([X], Fraction(1, 2))],
+        ),
+        (
+            [PauliRotation.from_list([X], Fraction(1, 4))],
+            [PauliRotation.from_list([X], Fraction(1, 4))],
+        ),
+        (
+            [PauliRotation.from_list([X], Fraction(1, 8))],
+            [PauliRotation.from_list([X], Fraction(1, 8))],
+        ),
+        ([Measurement.from_list([X])], [Measurement.from_list([X])]),
+        (
+            [PauliRotation.from_list([Y], Fraction(1, 2))],
+            [
+                PauliRotation.from_list([Z], Fraction(1, 4)),
+                PauliRotation.from_list([X], Fraction(1, 2)),
+                PauliRotation.from_list([Z], Fraction(-1, 4)),
+            ],
+        ),
+        (
+            [PauliRotation.from_list([Y], Fraction(1, 4))],
+            [
+                PauliRotation.from_list([Z], Fraction(1, 4)),
+                PauliRotation.from_list([X], Fraction(1, 4)),
+                PauliRotation.from_list([Z], Fraction(-1, 4)),
+            ],
+        ),
+        (
+            [PauliRotation.from_list([Y], Fraction(1, 8))],
+            [
+                PauliRotation.from_list([Z], Fraction(1, 4)),
+                PauliRotation.from_list([X], Fraction(1, 8)),
+                PauliRotation.from_list([Z], Fraction(-1, 4)),
+            ],
+        ),
+        (
+            [Measurement.from_list([Y])],
+            [
+                PauliRotation.from_list([Z], Fraction(1, 4)),
+                Measurement.from_list([X]),
+                PauliRotation.from_list([Z], Fraction(-1, 4)),
+            ],
+        ),
+    ],
+)
+def test_get_y_free_equivalent(
+    input_circuit_blocks: List[PauliProductOperation],
+    expected_output_circuit_blocks: List[PauliProductOperation],
+):
+    c = PauliOpCircuit(input_circuit_blocks[0].qubit_num)
+    for b in input_circuit_blocks:
+        c.add_pauli_block(b)
+
+    output_circuit = c.get_y_free_equivalent()
+    assert len(output_circuit.ops) == len(expected_output_circuit_blocks)
+    for i, expected_block in enumerate(expected_output_circuit_blocks):
+        assert output_circuit.ops[i] == expected_block
 
 
 @pytest.mark.parametrize(
