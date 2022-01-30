@@ -72,7 +72,6 @@ jobs:
     
     - name: Test with pytest
       run: |
-        ls src/lsqecc/external/opensurgery
         if [[ ${{ matrix.python-version }} == '3.9' ]]; then
           pytest --cov=lsqecc --cov-report=term --cov-report=xml;
         else 
