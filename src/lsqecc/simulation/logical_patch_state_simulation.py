@@ -349,12 +349,12 @@ class LazyTensorPatchSimulator(PatchSimulator):
             operand = self.logical_state.ops[operand_idx]
 
             local_observable = ConvertersToQiskit.pauli_op(logical_op.op)
-            observable_global_to_operand = circuit_apply_op_to_qubit(
+            operand_wide_observable = circuit_apply_op_to_qubit(
                 qkop.I ^ operand.num_qubits, local_observable, idx_within_operand
             )
 
             distribution = ProjectiveMeasurement.pauli_product_measurement_distribution(
-                observable_global_to_operand, operand
+                operand_wide_observable, operand
             )
             outcome: ProjectiveMeasurement.BinaryMeasurementOutcome = proportional_choice(
                 distribution
@@ -383,19 +383,19 @@ class LazyTensorPatchSimulator(PatchSimulator):
             size_of_first_operand = self.logical_state.ops[0].num_qubits
 
             # Make a global observable for the operator
-            global_observable = qkop.I ^ size_of_first_operand
+            operand_wide_observable = qkop.I ^ size_of_first_operand
             for patch_uuid in logical_op.get_operating_patches():
                 qubit_idx = self.mapper.get_idx(patch_uuid)
                 assert qubit_idx < size_of_first_operand
-                global_observable = circuit_apply_op_to_qubit(
-                    global_observable,
+                operand_wide_observable = circuit_apply_op_to_qubit(
+                    operand_wide_observable,
                     ConvertersToQiskit.pauli_op(logical_op.patch_pauli_operator_map[patch_uuid]),
                     qubit_idx,
                 )
 
             distribution = list(
                 ProjectiveMeasurement.pauli_product_measurement_distribution(
-                    global_observable, self.logical_state.ops[0]
+                    operand_wide_observable, self.logical_state.ops[0]
                 )
             )
             outcome = proportional_choice(distribution)
