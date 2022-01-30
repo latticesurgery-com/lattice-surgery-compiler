@@ -186,6 +186,9 @@ class PauliProductOperation(ABC):
 
         return left_rotations + [y_free_block] + right_rotations
 
+    def has_y(self):
+        return any(op == PauliOperator.Y for op in self.ops_list)
+
 
 class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
     """Class for representing a Pauli Product Rotation Block."""
