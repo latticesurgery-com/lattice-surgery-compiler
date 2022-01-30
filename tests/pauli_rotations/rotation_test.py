@@ -221,6 +221,19 @@ def test_cases_get_y_free_equivalent_measurements():
     return [case_1, case_2]
 
 
+@pytest.mark.parametrize(
+    "block, has_y",
+    [
+        (PauliRotation.from_list([I, X, Z], Fraction(1, 8)), False),
+        (PauliRotation.from_list([Y, X, Z], Fraction(1, 8)), True),
+        (Measurement.from_list([I, X, Z]), False),
+        (Measurement.from_list([Y, X, Z]), True),
+    ],
+)
+def test_has_y(block: PauliProductOperation, has_y: bool):
+    assert block.has_y() == has_y
+
+
 class TestMeasurement:
     """Tests for Measurement class"""
 

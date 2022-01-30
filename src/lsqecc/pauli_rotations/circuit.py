@@ -131,12 +131,7 @@ class PauliOpCircuit(object):
         y_free_circuit = PauliOpCircuit(self.qubit_num, self.name)
 
         for block in self.ops:
-            if isinstance(block, Measurement) or (
-                cast(PauliRotation, block).rotation_amount in {Fraction(1, 8), Fraction(-1, 8)}
-            ):
-                y_free_circuit.ops.extend(block.get_y_free_equivalent())
-            else:
-                y_free_circuit.add_pauli_block(copy.deepcopy(block))
+            y_free_circuit.ops.extend(block.get_y_free_equivalent())
 
         return y_free_circuit
 
