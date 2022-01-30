@@ -415,6 +415,7 @@ class LazyTensorPatchSimulator(PatchSimulator):
         involved_operand_idxs: List[int] = [
             self.logical_state.get_idxs_of_qubit(qubit_idx)[0] for qubit_idx in involved_qubit_idxs
         ]
+        involved_operand_idxs = list(set(involved_operand_idxs))  # Remove duplicates
         involved_operand_idxs.sort()
 
         operand_swap_target_counter = 0
