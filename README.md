@@ -41,7 +41,7 @@ This program handles a portion of the logical to physical compilation. It takes 
 Part of our process is inspired by Litinski's Game of Surface Codes [[4]](#4). In particular, we leverage the idea of using Pauli rotations as an intermediate representation to get to abstract lattice surgery instructions and to remove stabilizer operations.
 
 ## Status
-The compiler is deployed in alpha at https://latticesurgery.com
+The compiler is deployed in alpha at [latticesurgery.com](https://latticesurgery.com).
 
 ## Contributing and Development set up
 
