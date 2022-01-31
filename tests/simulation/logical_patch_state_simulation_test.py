@@ -182,7 +182,7 @@ class TestProjectiveMeasurement:
     ],
 )
 def test_proportional_choice(assoc_data_prob):
-    NUM_RUNS = 10 ** 5
+    NUM_RUNS = 10**5
     DISTRIBUTION_TOLERANCE = 10 ** (-1)
 
     outcomes: Dict[str, int] = dict([(v, 0) for v, prob in assoc_data_prob])

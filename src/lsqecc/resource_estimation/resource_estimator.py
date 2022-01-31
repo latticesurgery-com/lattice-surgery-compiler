@@ -54,7 +54,7 @@ def estimate_resources(
     computation: lscc.LatticeSurgeryComputation,
     # Device features
     code_distance: int = 7,  # NOTE: this value matches the 7 in qentiana
-    error_decoding_time_ns: float = (10 ** 3),
+    error_decoding_time_ns: float = (10**3),
     decoding_time_by_code_distance_multiplier: float = 1,
     physical_error_rate: float = 0.001,  # As expressed in quentiana, TODO find units
 ):
@@ -73,7 +73,7 @@ def estimate_resources(
     qentiana = Qentiana(ex1.props)
 
     # Core is the part of the lattice where the patches for logical qubits are
-    e.core_space_qubits = layout_slice.getRows() * layout_slice.getCols() * code_distance ** 2
+    e.core_space_qubits = layout_slice.getRows() * layout_slice.getCols() * code_distance**2
     e.core_timesteps = len(slices)
     e.core_time_ns = (
         len(slices)
