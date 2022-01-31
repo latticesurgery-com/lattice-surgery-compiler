@@ -14,7 +14,11 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
-
+import cProfile
+import io
+import os
+import pstats
+from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 import qiskit.visualization as qkvis
@@ -79,3 +83,37 @@ def compile_str(
     )
 
     return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text
+
+
+@dataclass
+class CompilationResult:
+    slices: List[GUISlice]
+    compilation_text: str
+    profiling_text: Optional[str]
+
+
+def compile_str_with_profile(
+    qasm_input: str,
+    profile_lines_to_print=20,
+    apply_litinski_transform: bool = True,
+    simulation_type: lssim.SimulatorType = lssim.SimulatorType.FULL_STATE_VECTOR,
+) -> CompilationResult:
+
+    profiler = cProfile.Profile()
+    profiler.enable()
+
+    slices, compilation_text = compile_str(
+        qasm_input,
+        apply_litinski_transform=apply_litinski_transform,
+        simulation_type=simulation_type,
+    )
+
+    profiler.disable()
+
+    s = io.StringIO()
+    sortby = pstats.SortKey.CUMULATIVE
+    ps = pstats.Stats(profiler, stream=s).sort_stats(sortby)
+    ps.print_stats(profile_lines_to_print)
+    profiling_text = s.getvalue().replace(os.getcwd(), ".")
+
+    return CompilationResult(slices, compilation_text, profiling_text)
