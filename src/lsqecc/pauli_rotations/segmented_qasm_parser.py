@@ -85,11 +85,7 @@ class _SegmentedQASMParser:
         gates_as_qasm = qiskit.qasm.node.Program(segment).qasm()
 
         text_qasm_program_wrapper = (
-            "OPENQASM 2.0;\n"
-            + 'include "qelib1.inc";\n'
-            + self.qreg.qasm()
-            + "\n"
-            + gates_as_qasm
+            "OPENQASM 2.0;\n" + 'include "qelib1.inc";\n' + self.qreg.qasm() + "\n" + gates_as_qasm
         )
         # Feeding text_qasm_program_wrapper directly to pyzx qould cause it to complain because
         # gates_as_qasm, being generated directly from the AST, has extra parentheses pyzx doesn't
