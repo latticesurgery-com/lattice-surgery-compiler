@@ -325,10 +325,10 @@ class PauliOpCircuit(object):
         return c
 
     @staticmethod
-    def load_reversible_from_qasm_string(quasm_string: str) -> "PauliOpCircuit":
+    def load_reversible_from_qasm_string(qasm_string: str) -> "PauliOpCircuit":
         """Load a string as if it were a QASM circuit. Only supports reversible circuits."""
 
-        pyzx_circ = zx.Circuit.from_qasm(quasm_string)
+        pyzx_circ = zx.Circuit.from_qasm(qasm_string)
         ret_circ = PauliOpCircuit.load_from_pyzx(pyzx_circ)
 
         return ret_circ
