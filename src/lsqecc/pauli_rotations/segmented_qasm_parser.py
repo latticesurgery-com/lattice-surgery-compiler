@@ -82,16 +82,18 @@ class _SegmentedQASMParser:
     def reversible_segment_to_circuit(
         self, segment: List[qiskit.qasm.node.node.Node]
     ) -> PauliOpCircuit:
-        program_wrapper_node = qiskit.qasm.node.Program(segment)
-        text_qasm_program_wrapper = (
-            "OPENQASM 2.0;\n"
-            + 'include "qelib1.inc";\n'
-            + self.qreg.qasm()
-            + "\n"
-            + program_wrapper_node.qasm()
-        )
+        gates_as_qasm = qiskit.qasm.node.Program(segment).qasm()
 
-        return PauliOpCircuit.load_reversible_from_qasm_string(text_qasm_program_wrapper)
+        text_qasm_program_wrapper = (
+            "OPENQASM 2.0;\n" + 'include "qelib1.inc";\n' + self.qreg.qasm() + "\n" + gates_as_qasm
+        )
+        # Feeding text_qasm_program_wrapper directly to pyzx qould cause it to complain because
+        # gates_as_qasm, being generated directly from the AST, has extra parentheses pyzx doesn't
+        # like. So we feeding it back to qiskit we remove those extra parentheses
+        # TODO try avoid this step by going directly to circuit
+        c = qiskit.QuantumCircuit.from_qasm_str(text_qasm_program_wrapper)
+
+        return PauliOpCircuit.load_reversible_from_qasm_string(c.qasm())
 
     def if_node_to_circuit(self, node: qiskit.qasm.node.if_.If):
         raise NotImplementedError  # TODO
