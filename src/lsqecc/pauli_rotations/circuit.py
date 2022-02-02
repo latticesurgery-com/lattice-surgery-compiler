@@ -21,6 +21,10 @@ from typing import List, cast
 
 import pyzx as zx
 
+from qiskit import QuantumCircuit
+from qiskit.quantum_info import Operator
+from qiskit.compiler import transpile
+
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
 
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
@@ -255,7 +259,7 @@ class PauliOpCircuit(object):
         return ret_val > 0
 
     @staticmethod
-    def load_from_pyzx(circuit) -> "PauliOpCircuit":
+    def load_from_pyzx(circuit:zx.Circuit) -> "PauliOpCircuit":
         """Generate circuit from PyZX Circuit
 
         Returns:
@@ -267,8 +271,6 @@ class PauliOpCircuit(object):
 
         basic_circ = circuit.to_basic_gates()
         ret_circ = PauliOpCircuit(basic_circ.qubits, circuit.name)
-
-        gate_missed = 0
 
         for gate in basic_circ.gates:
             # print("Original Gate:", gate)
@@ -309,11 +311,8 @@ class PauliOpCircuit(object):
                 ret_circ.add_single_operator(gate.target, Z, Fraction(-1, 4))
 
             else:
-                gate_missed += 1
-                print("Failed to convert gate:", gate)
+                raise Exception(f"Failed to convert gate {gate}")
 
-        print("Conversion completed")
-        print("Gate Missed: ", gate_missed)
         return ret_circ
 
     @staticmethod
