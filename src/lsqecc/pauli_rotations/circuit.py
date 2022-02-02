@@ -21,11 +21,7 @@ from typing import List, cast
 
 import pyzx as zx
 
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Operator
-from qiskit.compiler import transpile
-
-from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
+from lsqecc.utils import phase_frac_to_latex
 
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
 
@@ -89,11 +85,11 @@ class PauliOpCircuit(object):
         rotation_amount: Fraction,
         index: int = None,
     ) -> None:
-        """Add a single Pauli operator rotation (I, X, Z, Y) to the circuit.
+        """Add a single Pauli operator rotation (X, Z, Y) to the circuit.
 
         Args:
             qubit (int): Targeted qubit
-            operator_type (PauliOperator): Operator type (I, X, Y, Z)
+            operator_type (PauliOperator): Operator type (X, Y, Z)
             index (int, optional): Index location. Default: end of the circuit
         """
 
@@ -138,6 +134,20 @@ class PauliOpCircuit(object):
             y_free_circuit.ops.extend(block.get_y_free_equivalent())
 
         return y_free_circuit
+
+    def get_basic_form(self) -> "PauliOpCircuit":
+        """
+        Returns a circuit where all pauli rotations are either by pi/2, pi/4 or pi/8
+        """
+        ret_circuit = PauliOpCircuit(self.qubit_num, self.name)
+        for op in self.ops:
+            if isinstance(op, Measurement):
+                ret_circuit.add_pauli_block(op)
+            else:
+                assert isinstance(op, PauliRotation)
+                for new_op in op.get_basic_form_decomposition():
+                    ret_circuit.add_pauli_block(new_op)
+        return ret_circuit
 
     def _swap_adjacent_commuting_blocks(self, index: int) -> None:
         """
@@ -259,7 +269,7 @@ class PauliOpCircuit(object):
         return ret_val > 0
 
     @staticmethod
-    def load_from_pyzx(circuit:zx.Circuit) -> "PauliOpCircuit":
+    def load_from_pyzx(circuit: zx.Circuit) -> "PauliOpCircuit":
         """Generate circuit from PyZX Circuit
 
         Returns:
@@ -276,16 +286,10 @@ class PauliOpCircuit(object):
             # print("Original Gate:", gate)
 
             if isinstance(gate, zx.circuit.ZPhase):
-                pauli_rot = decompose_pi_fraction(gate.phase / 2)
-                for rotation in pauli_rot:
-                    if rotation != Fraction(1, 1):
-                        ret_circ.add_single_operator(gate.target, Z, rotation)
+                ret_circ.add_single_operator(gate.target, Z, gate.phase / 2)
 
             elif isinstance(gate, zx.circuit.XPhase):
-                pauli_rot = decompose_pi_fraction(gate.phase / 2)
-                for rotation in pauli_rot:
-                    if rotation != Fraction(1, 1):
-                        ret_circ.add_single_operator(gate.target, X, rotation)
+                ret_circ.add_single_operator(gate.target, X, gate.phase / 2)
 
             elif isinstance(gate, zx.circuit.HAD):
                 ret_circ.add_single_operator(gate.target, X, Fraction(1, 4))
