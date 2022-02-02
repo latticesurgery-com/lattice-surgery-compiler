@@ -22,7 +22,7 @@ from fractions import Fraction
 from typing import Dict, List, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
-from lsqecc.utils import phase_frac_to_latex
+from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
 
 
 class PauliOperator(Enum):
@@ -217,6 +217,32 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
 
     def __hash__(self) -> int:
         return hash(hash(self.rotation_amount) + hash(tuple(self.ops_list)))
+
+    def to_basic_form_approximation(self) -> List["PauliRotation"]:
+        """Get an approximation in terms of pi/2, pi/4 and pi/8"""
+        # TODO use SK
+        axis = list(filter(lambda op: op != PauliOperator.I, self.ops_list))
+        if len(axis) != 1:
+            raise Exception("Can only approximate single qubit rotations")
+
+        if axis == PauliOperator.X:
+            raise NotImplementedError(f"decompose X rotation by {self.rotation_amount}")
+        elif axis == PauliOperator.Z:
+            raise NotImplementedError(f"decompose Z rotation by {self.rotation_amount}")
+        raise Exception(f"Unsupported axis of rotation {axis}")
+
+    def get_basic_form_decomposition(self) -> List["PauliRotation"]:
+        if self.rotation_amount.denominator == 1:
+            return []  # don't need to do anything because exp(-i*pi*P) = I
+        elif self.rotation_amount.denominator in {2, 4, 8}:
+            fractions_with_unit_numerator = decompose_pi_fraction(self.rotation_amount)
+            output_rotations = []
+            for unit_rotation_amount in fractions_with_unit_numerator:
+                new_rotation = copy.deepcopy(self)
+                new_rotation.rotation_amount = unit_rotation_amount
+                output_rotations.append(new_rotation)
+        else:
+            return self.to_basic_form_approximation()
 
     def to_latex(self) -> str:
         return f"{super().to_latex()}_{{{phase_frac_to_latex(self.rotation_amount)}}}"
