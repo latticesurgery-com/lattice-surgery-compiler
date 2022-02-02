@@ -16,13 +16,27 @@
 # USA
 
 import copy
+import math
 from abc import ABC, abstractmethod
 from enum import Enum
 from fractions import Fraction
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
+from lsqecc.external.opensurgery.prepare_circuit import PrepareCircuit
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
+
+
+def _make_PrepareCircuit_instance() -> PrepareCircuit:
+    obj = PrepareCircuit()
+    obj.initialise_skc()
+    return obj
+
+
+# Wrap as a singleton
+class GlobalCircuitPreparator:
+
+    instance: PrepareCircuit = _make_PrepareCircuit_instance()
 
 
 class PauliOperator(Enum):
@@ -220,16 +234,25 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
 
     def to_basic_form_approximation(self) -> List["PauliRotation"]:
         """Get an approximation in terms of pi/2, pi/4 and pi/8"""
-        # TODO use SK
-        axis = list(filter(lambda op: op != PauliOperator.I, self.ops_list))
-        if len(axis) != 1:
+        axis_list = list(filter(lambda op: op != PauliOperator.I, self.ops_list))
+        if len(axis_list) != 1:
             raise Exception("Can only approximate single qubit rotations")
+        axis = axis_list[0]
+
+        angle_in_radians = float(self.rotation_amount) * math.pi
+        skc_axis: Optional[Tuple[int, int, int]] = None  # set below
 
         if axis == PauliOperator.X:
+            # TODO test. See comment in OpenSurgery's PrepareCircuit.decompose_SK_on_gate
             raise NotImplementedError(f"decompose X rotation by {self.rotation_amount}")
         elif axis == PauliOperator.Z:
-            raise NotImplementedError(f"decompose Z rotation by {self.rotation_amount}")
-        raise Exception(f"Unsupported axis of rotation {axis}")
+            skc_axis = (0, 0, 1)
+        else:
+            raise Exception(f"Unsupported axis of rotation {axis}")
+
+        print(GlobalCircuitPreparator.instance.decompose_SK_on_gate(angle_in_radians, skc_axis))
+        # a string of 6000+ Ts and Hs ... need a better way to deal with it
+        raise NotImplementedError
 
     def get_basic_form_decomposition(self) -> List["PauliRotation"]:
         if self.rotation_amount.denominator == 1:
