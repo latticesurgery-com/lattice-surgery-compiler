@@ -280,6 +280,57 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
             r.change_single_op(i, op)
         return r
 
+    @staticmethod
+    def from_fractional_phase(
+        num_qubits: int, target_qubit: int, phase_type: PauliOperator, phase: Fraction
+    ):
+        return PauliRotation.from_list(
+            [PauliOperator.I] * target_qubit
+            + [phase_type]
+            + [PauliOperator.I] * (num_qubits - target_qubit - 1),
+            rotation=phase / 2,
+        )
+
+    @staticmethod
+    def hadamard(num_qubits: int, target_qubit: int) -> List["PauliRotation"]:
+        return [
+            PauliRotation.from_fractional_phase(
+                num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)
+            ),
+            PauliRotation.from_fractional_phase(
+                num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)
+            ),
+            PauliRotation.from_fractional_phase(
+                num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)
+            ),
+        ]
+
+    @staticmethod
+    def cnot(num_qubits: int, control_qubit: int, target_qubit: int) -> List["PauliRotation"]:
+        entangling_op = PauliRotation(num_qubits, Fraction(1, 4))
+        correct_control = PauliRotation(num_qubits, Fraction(-1, 4))
+        correct_target = PauliRotation(num_qubits, Fraction(-1, 4))
+        entangling_op.change_single_op(control_qubit, PauliOperator.Z)
+        entangling_op.change_single_op(target_qubit, PauliOperator.X)
+
+        correct_control.change_single_op(control_qubit, PauliOperator.Z)
+        correct_target.change_single_op(control_qubit, PauliOperator.X)
+
+        return [entangling_op, correct_control, correct_target]
+
+    @staticmethod
+    def cz(num_qubits: int, control_qubit: int, target_qubit: int) -> List["PauliRotation"]:
+        entangling_op = PauliRotation(num_qubits, Fraction(1, 4))
+        correct_control = PauliRotation(num_qubits, Fraction(-1, 4))
+        correct_target = PauliRotation(num_qubits, Fraction(-1, 4))
+        entangling_op.change_single_op(control_qubit, PauliOperator.Z)
+        entangling_op.change_single_op(target_qubit, PauliOperator.Z)
+
+        correct_control.change_single_op(control_qubit, PauliOperator.Z)
+        correct_target.change_single_op(control_qubit, PauliOperator.Z)
+
+        return [entangling_op, correct_control, correct_target]
+
 
 class Measurement(PauliProductOperation, coc.ConditionalOperation):
     """Representing a Pauli Product Measurement Block"""

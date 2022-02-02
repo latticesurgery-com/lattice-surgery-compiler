@@ -17,7 +17,7 @@
 
 import copy
 from fractions import Fraction
-from typing import List, cast
+from typing import List, Sequence, cast
 
 import pyzx as zx
 
@@ -77,6 +77,11 @@ class PauliOpCircuit(object):
             index = len(self)
 
         self.ops.insert(index, new_block)
+
+    def add_pauli_blocks(self, block_list: Sequence[PauliProductOperation]):
+        """Adds blocks at the end of the circuit"""
+        for block in block_list:
+            self.add_pauli_block(block)
 
     def add_single_operator(
         self,
@@ -283,36 +288,29 @@ class PauliOpCircuit(object):
         ret_circ = PauliOpCircuit(basic_circ.qubits, circuit.name)
 
         for gate in basic_circ.gates:
-            # print("Original Gate:", gate)
 
             if isinstance(gate, zx.circuit.ZPhase):
-                ret_circ.add_single_operator(gate.target, Z, gate.phase / 2)
-
+                ret_circ.add_pauli_block(
+                    PauliRotation.from_fractional_phase(
+                        ret_circ.qubit_num, gate.target, Z, gate.phase
+                    )
+                )
             elif isinstance(gate, zx.circuit.XPhase):
-                ret_circ.add_single_operator(gate.target, X, gate.phase / 2)
-
+                ret_circ.add_pauli_block(
+                    PauliRotation.from_fractional_phase(
+                        ret_circ.qubit_num, gate.target, X, gate.phase
+                    )
+                )
             elif isinstance(gate, zx.circuit.HAD):
-                ret_circ.add_single_operator(gate.target, X, Fraction(1, 4))
-                ret_circ.add_single_operator(gate.target, Z, Fraction(1, 4))
-                ret_circ.add_single_operator(gate.target, X, Fraction(1, 4))
-
+                ret_circ.add_pauli_blocks(PauliRotation.hadamard(ret_circ.qubit_num, gate.target))
             elif isinstance(gate, zx.circuit.CNOT):
-                temp = PauliRotation(ret_circ.qubit_num, Fraction(1, 4))
-                temp.change_single_op(gate.control, Z)
-                temp.change_single_op(gate.target, X)
-                ret_circ.add_pauli_block(temp)
-
-                ret_circ.add_single_operator(gate.control, Z, Fraction(-1, 4))
-                ret_circ.add_single_operator(gate.target, X, Fraction(-1, 4))
-
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.cnot(ret_circ.qubit_num, gate.control, gate.target)
+                )
             elif isinstance(gate, zx.circuit.CZ):
-                temp = PauliRotation(ret_circ.qubit_num, Fraction(1, 4))
-                temp.change_single_op(gate.control, Z)
-                temp.change_single_op(gate.target, Z)
-                ret_circ.add_pauli_block(temp)
-
-                ret_circ.add_single_operator(gate.control, Z, Fraction(-1, 4))
-                ret_circ.add_single_operator(gate.target, Z, Fraction(-1, 4))
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.cz(ret_circ.qubit_num, gate.control, gate.target)
+                )
 
             else:
                 raise Exception(f"Failed to convert gate {gate}")
