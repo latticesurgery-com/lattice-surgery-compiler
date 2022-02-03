@@ -20,6 +20,13 @@ Make sure to check out our [code of conduct](https://github.com/latticesurgery-c
 
 ### Set up of the compiler library
 This development environment uses Python >3.9
+
+Clone the repository with:
+
+`git clone --recursive`
+
+(If you've already cloned without `--recursive` just run `git submodule update --init`)
+
 In the project's root folder, create pip virtual environment with: 
 
 `$ python -m venv ./venv`
