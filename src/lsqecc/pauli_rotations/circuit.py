@@ -17,7 +17,7 @@
 
 import copy
 from fractions import Fraction
-from typing import List, Sequence, cast
+from typing import List, Optional, Sequence, cast
 
 import pyzx as zx
 
@@ -152,6 +152,35 @@ class PauliOpCircuit(object):
                 assert isinstance(op, PauliRotation)
                 for new_op in op.get_basic_form_decomposition():
                     ret_circuit.add_pauli_block(new_op)
+        return ret_circuit
+
+    def group_rotations_with_the_same_axis(self):
+        ret_circuit = PauliOpCircuit(self.qubit_num, self.name)
+
+        accumulator: Optional[PauliRotation] = None
+
+        for op in self.ops:
+            if isinstance(op, PauliRotation):
+                if accumulator is None:
+                    accumulator = copy.deepcopy(op)
+                else:
+                    if op.ops_list == accumulator.ops_list:
+                        accumulator.rotation_amount += op.rotation_amount
+                    else:
+                        ret_circuit.add_pauli_block(accumulator)
+                        accumulator = copy.deepcopy(op)
+
+            elif isinstance(accumulator, Measurement):
+                if accumulator is not None:
+                    ret_circuit.add_pauli_block(accumulator)
+                    accumulator = None
+                ret_circuit.add_pauli_block(op)
+            else:
+                raise Exception(f"Not expecting: {op}")
+
+        if accumulator is not None:
+            ret_circuit.add_pauli_block(accumulator)
+
         return ret_circuit
 
     def _swap_adjacent_commuting_blocks(self, index: int) -> None:
@@ -347,6 +376,16 @@ class PauliOpCircuit(object):
             list(
                 filter(
                     lambda r: isinstance(r, PauliRotation) and r.rotation_amount == rotation_amount,
+                    self.ops,
+                )
+            )
+        )
+
+    def count_direct_magic_states(self):
+        return len(
+            list(
+                filter(
+                    lambda r: isinstance(r, PauliRotation) and r.rotation_amount.denominator == 8,
                     self.ops,
                 )
             )
