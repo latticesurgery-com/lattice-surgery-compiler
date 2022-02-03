@@ -1,4 +1,10 @@
 
+import sys
+
+import cProfile
+
+sys.path.append("../benchmark")
+
 
 from typing import List, Optional, Tuple
 
@@ -13,6 +19,8 @@ import lsqecc.simulation.logical_patch_state_simulation as lssim
 from lsqecc.lattice_array import sparse_lattice_to_array
 from lsqecc.resource_estimation.resource_estimator import estimate_resources
 
+import cprofile_pretty_printer
+
 GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells
 
 
@@ -25,7 +33,8 @@ rz(pi/8) q[0];
 """
 
 
-if __name__ == "__main__":
+
+def run_pipeline():
     composer_class = lscc.LatticeSurgeryComputation
     layout_types = lscc.LayoutType
 
@@ -65,6 +74,9 @@ if __name__ == "__main__":
 
 
     logical_computation = llops.LogicalLatticeComputation(input_circuit)
+    print("Made logical computation")
+
+    print("Making slices:")
     lsc = composer_class.make_computation(
         logical_computation, layout_types.SimplePreDistilledStates, simulation_type=lssim.SimulatorType.NOOP
     )
@@ -72,4 +84,13 @@ if __name__ == "__main__":
     # TODO| when compilation stages are supported, remove the 'Circuit|' from the text
     print("\nCircuit| " + estimate_resources(lsc).render_ascii())
 
+
+if __name__ == "__main__":
+    with cProfile.Profile() as profiler:
+        try:
+            run_pipeline()
+        except KeyboardInterrupt:
+            pass
+
+    print(cprofile_pretty_printer.pretty_print(profiler))
 
