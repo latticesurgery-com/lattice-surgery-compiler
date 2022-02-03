@@ -29,20 +29,6 @@ from lsqecc.resource_estimation.resource_estimator import estimate_resources
 
 GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells
 
-__all__ = ["compile_file", "GUISlice"]
-
-
-def compile_file(
-    circuit_file_name: str,
-    apply_litinski_transform: bool = True,
-    simulation_type: lssim.SimulatorType = lssim.SimulatorType.FULL_STATE_VECTOR,
-) -> Tuple[List[GUISlice], dict, str]:
-    """DEPRECATED. compile_str"""
-    with open(circuit_file_name) as input_file:
-        return compile_str(
-            input_file.read(), apply_litinski_transform, simulation_type=simulation_type
-        )
-
 
 def compile_str(
     qasm_circuit: str,
