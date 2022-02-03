@@ -41,17 +41,23 @@ class LogicalLatticeOperation(coc.ConditionalOperation):
 
 
 class SinglePatchMeasurement(LogicalLatticeOperation, coc.HasPauliEigenvalueOutcome):
-    def __init__(self, qubit_uuid: uuid.UUID, op: PauliOperator):
+    def __init__(
+        self, qubit_uuid: uuid.UUID, op: PauliOperator, isNegative: Optional[bool] = False
+    ):
         self.qubit_uuid = qubit_uuid
         self.op = op
+        self.isNegative = isNegative
 
     def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]
 
 
 class MultiBodyMeasurement(LogicalLatticeOperation, coc.HasPauliEigenvalueOutcome):
-    def __init__(self, patch_pauli_operator_map: Dict[uuid.UUID, PauliOperator]):
+    def __init__(
+        self, patch_pauli_operator_map: Dict[uuid.UUID, PauliOperator], isNegative: bool = False
+    ):
         self.patch_pauli_operator_map = patch_pauli_operator_map
+        self.isNegative = isNegative
 
     def get_operating_patches(self) -> List[uuid.UUID]:
         return list(self.patch_pauli_operator_map.keys())
@@ -118,8 +124,10 @@ class LogicalLatticeComputation:
                 self.ops.append(current_op)
 
     def circuit_to_patch_measurement(
-        self, m: Measurement
+        self, m: PauliProductOperation
     ) -> Union[SinglePatchMeasurement, MultiBodyMeasurement]:
+        if not isinstance(m, Measurement):
+            raise TypeError("Make sure the passed argument is of type Measurement")
 
         ret: Dict[uuid.UUID, PauliOperator] = dict()
         for qubit_idx in range(m.qubit_num):
@@ -127,8 +135,8 @@ class LogicalLatticeComputation:
                 ret[self.logical_qubit_uuid_map[qubit_idx]] = m.get_op(qubit_idx)
 
         if len(ret) == 1:
-            return SinglePatchMeasurement(next(iter(ret)), ret[next(iter(ret))])
-        return MultiBodyMeasurement(ret)
+            return SinglePatchMeasurement(next(iter(ret)), ret[next(iter(ret))], m.isNegative)
+        return MultiBodyMeasurement(ret, m.isNegative)
 
     def num_logical_qubits(self) -> int:
         return len(self.logical_qubit_uuid_map)
@@ -268,6 +276,12 @@ class PiOverFourCorrectionCondition(coc.EvaluationCondition):
         if not self.multi_body_measurement.does_evaluate():
             return False
 
+        if (
+            self.multi_body_measurement.get_outcome() is None
+            or self.ancilla_measurement.get_outcome() is None
+        ):
+            return True  # Always evaluate an op when no simulation is present
+
         out = (
             self.multi_body_measurement.get_outcome() * self.ancilla_measurement.get_outcome() == -1
         )
@@ -285,6 +299,9 @@ class PiOverEightCorrectionConditionPiOverFour(coc.EvaluationCondition):
         if not self.multi_body_measurement.does_evaluate():
             return False
 
+        if self.multi_body_measurement.get_outcome() is None:
+            return True  # Always evaluate an op when no simulation is present
+
         out = self.multi_body_measurement.get_outcome() == -1
         if self.invert:
             out = not out
@@ -298,5 +315,8 @@ class PiOverEightCorrectionConditionPiOverTwo(coc.EvaluationCondition):
     def does_evaluate(self):
         if not self.ancilla_measurement.does_evaluate():
             return False
+
+        if self.ancilla_measurement.get_outcome() is None:
+            return True  # Always evaluate an op when no simulation is present
 
         return self.ancilla_measurement.get_outcome() == -1

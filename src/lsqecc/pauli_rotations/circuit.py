@@ -131,12 +131,7 @@ class PauliOpCircuit(object):
         y_free_circuit = PauliOpCircuit(self.qubit_num, self.name)
 
         for block in self.ops:
-            if isinstance(block, Measurement) or (
-                cast(PauliRotation, block).rotation_amount in {Fraction(1, 8), Fraction(-1, 8)}
-            ):
-                y_free_circuit.ops.extend(block.get_y_free_equivalent())
-            else:
-                y_free_circuit.add_pauli_block(copy.deepcopy(block))
+            y_free_circuit.ops.extend(block.get_y_free_equivalent())
 
         return y_free_circuit
 
@@ -320,6 +315,14 @@ class PauliOpCircuit(object):
         print("Conversion completed")
         print("Gate Missed: ", gate_missed)
         return ret_circ
+
+    @staticmethod
+    def from_list(pauli_op_list: List[PauliProductOperation]):
+        c = PauliOpCircuit(pauli_op_list[0].qubit_num)
+        for op in pauli_op_list:
+            assert c.qubit_num == op.qubit_num
+            c.add_pauli_block(op)
+        return c
 
     @staticmethod
     def load_reversible_from_qasm_string(quasm_string: str) -> "PauliOpCircuit":

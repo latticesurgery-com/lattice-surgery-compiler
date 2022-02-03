@@ -1,13 +1,16 @@
 # Lattice Surgery Compiler
-[![Unitary Fund](https://img.shields.io/badge/Supported%20By-UNITARY%20FUND-brightgreen.svg?style=for-the-badge)](http://unitary.fund)
+[![Test](https://github.com/latticesurgery-com/lattice-surgery-compiler/actions/workflows/test.yml/badge.svg)](https://github.com/latticesurgery-com/lattice-surgery-compiler/actions/workflows/test.yml)
+[![Documentation Status](https://readthedocs.org/projects/lattice-surgery-compiler/badge/?version=latest)](https://lattice-surgery-compiler.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/latticesurgery-com/lattice-surgery-compiler/branch/dev/graph/badge.svg?token=7SSY2AY2QN)](https://codecov.io/gh/latticesurgery-com/lattice-surgery-compiler)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Unitary Fund](https://img.shields.io/badge/Supported%20By-Unitary%20Fund-FFFF00.svg)](https://unitary.fund)
 
 <!-- start -->
 
-Compile logical circuits to lattice surgery operations on a surface code lattice and visualize. [Project Status](
+[![LSC Logo](https://user-images.githubusercontent.com/46719079/150657000-8e83c649-84a8-431b-aab0-d44d847e5a24.png)](https://latticesurgery.com)
+
+Compile logical circuits to lattice surgery operations on a surface code lattice and visualize. Currently in active development. See [Project Status](
 https://github.com/latticesurgery-com/general-issue-tracker/issues/3).
-
-![image](https://user-images.githubusercontent.com/36427091/104856854-98ca5600-58c9-11eb-9599-286c1d5a4736.png)
-
 
 ## Overview
 A compiler that takes a QASM circuit and turns it into abstract lattice surgery instructions.
@@ -15,14 +18,18 @@ A compiler that takes a QASM circuit and turns it into abstract lattice surgery 
 Our long term vision is to have an end to end lattice surgery compiler. We want it to be able to take a manually programmed circuit and ouput a large error corrected circuit, that performs the same computation with many more qubits and a higher degree of accuracy.
 
 ### Features:
-* Web-based patch visualizer that shows a computation happening on a surface code lattice (in picture). Try it at https://latticesurgery.com.
-* HTTP Service to compile qasm circuits
-* Data representation for Pauli rotations and abstract lattice surgery operations
-* QASM to lattice surgery patch compiler 
-* Remove stabilizer operations from the input circuit
-* Simulation of patch computations
+* Web-based patch visualizer that shows a computation happening on a surface code lattice (in picture). Try it at [latticesurgery.com](https://latticesurgery.com).
+* HTTP Service to compile qasm circuits.
+* Data representation for Pauli rotations and abstract lattice surgery operations.
+* QASM to lattice surgery patch compiler.
+* Remove stabilizer operations from the input circuit.
+* Simulation of patch computations.
 
 <!-- end -->
+
+<p align="center">
+  <img alt="backers" height="70px" src="https://user-images.githubusercontent.com/36427091/150938385-b0099f77-fd7b-4666-95b6-a7610ec6c9de.png" />
+</p>
 
 ## Background 
 A proposed solution to mitigate the occurrence of errors in quantum computers are the so-called quantum error correcting codes (QECC). Specifically we focus on the protocol of lattice surgery, which is based on the prominent methodology of surface codes. A natural question relates to how these techniques can be employed to systematically obtain fault tolerant logical qubits from less reliable ones. Recent work has focused on building compilers that translate a logical quantum circuit to a much larger error corrected one, with the output circuit performing the computation specified by the logical circuit with QECCs [[1]](#1)[[2]](#2). 
@@ -34,7 +41,7 @@ This program handles a portion of the logical to physical compilation. It takes 
 Part of our process is inspired by Litinski's Game of Surface Codes [[4]](#4). In particular, we leverage the idea of using Pauli rotations as an intermediate representation to get to abstract lattice surgery instructions and to remove stabilizer operations.
 
 ## Status
-This project is under very active development. We hope to see in the very near future an operabe release. Currently we have visualization of lattice surgery operations and input circuit handling.
+The compiler is deployed in alpha at [latticesurgery.com](https://latticesurgery.com).
 
 ## Contributing and Development set up
 

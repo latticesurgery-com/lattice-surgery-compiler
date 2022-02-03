@@ -151,7 +151,6 @@ class PauliProductOperation(ABC):
             ]
         )
 
-    @abstractmethod
     def get_y_free_equivalent(self):
         """Return the equivalent of current block but without Y operator."""
         y_op_indices = list()
@@ -186,6 +185,9 @@ class PauliProductOperation(ABC):
         right_rotations.append(PauliRotation.from_list(new_rotation_ops, Fraction(-1, 4)))
 
         return left_rotations + [y_free_block] + right_rotations
+
+    def has_y(self):
+        return any(op == PauliOperator.Y for op in self.ops_list)
 
 
 class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
@@ -228,13 +230,6 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         for i, op in enumerate(pauli_ops):
             r.change_single_op(i, op)
         return r
-
-    def get_y_free_equivalent(self) -> List["PauliRotation"]:
-        """Return the equivalent of current Pauli Rotation but without Y operator.
-        Supports all rotations.
-        """
-
-        return super().get_y_free_equivalent()
 
 
 class Measurement(PauliProductOperation, coc.ConditionalOperation):
@@ -280,7 +275,3 @@ class Measurement(PauliProductOperation, coc.ConditionalOperation):
             m.change_single_op(i, op)
 
         return m
-
-    def get_y_free_equivalent(self) -> List[PauliProductOperation]:
-        """Return the equivalent of current Measurement block but without Y operator."""
-        return super().get_y_free_equivalent()

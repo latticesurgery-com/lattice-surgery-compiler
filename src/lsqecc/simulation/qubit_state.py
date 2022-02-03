@@ -19,7 +19,11 @@ from __future__ import annotations
 
 import cmath
 import enum
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
+
+import qiskit.opflow as qkop
+
+import lsqecc.simulation.qiskit_opflow_utils as qkutil
 
 if TYPE_CHECKING:
     from lsqecc.pauli_rotations import PauliOperator
@@ -157,3 +161,16 @@ class DefaultSymbolicStates:
         elif s == DefaultSymbolicStates.Magic:
             return cmath.sqrt(2) / 2, cmath.exp(1j * cmath.pi / 4) / cmath.sqrt(2)
         raise NotImplementedError
+
+    @staticmethod
+    def from_state_fn(state: qkop.StateFn) -> SymbolicState:
+        alpha, beta = qkutil.to_vector(state)
+        return DefaultSymbolicStates.from_amplitudes(alpha, beta)
+
+    @staticmethod
+    def from_maybe_state_fn(state: Optional[qkop.StateFn]) -> SymbolicState:
+        return (
+            DefaultSymbolicStates.from_state_fn(state)
+            if state is not None
+            else DefaultSymbolicStates.UnknownState
+        )

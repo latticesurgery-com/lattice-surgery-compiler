@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 import math
-from typing import Dict, cast
+from typing import Dict, List, cast
 
 import numpy as np
 import pytest
@@ -23,11 +23,15 @@ import qiskit.opflow as qkop
 import qiskit.quantum_info as qkinfo
 from qiskit import QiskitError
 
-from lsqecc.simulation.qiskit_opflow_utils import StateSeparator, to_dict_fn, to_vector
+from lsqecc.simulation.qiskit_opflow_utils import (
+    StateSeparator,
+    TraceOverEntireStateException,
+    bell_pair,
+    to_dict_fn,
+    to_vector,
+)
 
 from .numpy_matrix_assertions import assert_eq_numpy_matrices, assert_eq_numpy_vectors
-
-bell_pair = qkop.DictStateFn({"11": 1 / math.sqrt(2), "00": 1 / math.sqrt(2)})
 
 
 # The tracing functionality is delegated to qiskit we mostly check that our interface is working
@@ -41,6 +45,8 @@ class TestStateSeparator:
     @pytest.mark.parametrize(
         "state, trace_over, desired_state",
         [
+            (qkop.Zero, [], qkop.Zero),
+            (qkop.Zero ^ qkop.One, [], qkop.Zero ^ qkop.One),
             (qkop.Zero ^ qkop.One, [0], qkop.Zero),
             (qkop.Zero ^ qkop.One, [1], qkop.One),
             (qkop.Zero ^ qkop.Plus, [0], qkop.Zero),
@@ -64,6 +70,19 @@ class TestStateSeparator:
     def test_trace_dict_state_fail(self):
         with pytest.raises(QiskitError):
             StateSeparator.trace_dict_state(bell_pair, [1])
+
+    @pytest.mark.parametrize(
+        "state, trace_over",
+        [
+            (qkop.Zero, [0]),
+            (qkop.Zero ^ qkop.One, [0, 1]),
+        ],
+    )
+    def test_trace_over_dict_state_all_qubits(
+        self, state: qkop.OperatorBase, trace_over: List[int]
+    ):
+        with pytest.raises(TraceOverEntireStateException):
+            StateSeparator.trace_dict_state(cast(qkop.DictStateFn, state.eval()), trace_over)
 
     @pytest.mark.parametrize(
         "state, trace_over, desired_state",
@@ -98,6 +117,8 @@ class TestStateSeparator:
     @pytest.mark.parametrize(
         "qnum, state, desired_state",
         [
+            (0, qkop.One, qkop.One),
+            (0, qkop.Zero, qkop.Zero),
             (0, qkop.Plus ^ qkop.One, qkop.One),
             (1, qkop.Plus ^ qkop.One, qkop.Plus),
             (1, qkop.Plus ^ qkop.Zero ^ qkop.One, qkop.Zero),

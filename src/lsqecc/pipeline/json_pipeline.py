@@ -44,7 +44,6 @@ class _SliceArrayJSONEncoder(json.JSONEncoder):
         elif isinstance(obj, vac.VisualArrayCell):
             obj_with_good_keys = obj.__dict__
             obj_with_good_keys["edges"] = dict([(k.value, v) for k, v in obj.edges.items()])
-            print(obj_with_good_keys)
             return obj_with_good_keys
         elif isinstance(obj, object):
             return obj.__dict__
@@ -78,8 +77,14 @@ def handle(json_request: str) -> JsonResponse:
             else True
         )
 
-        slices, compilation_text = compile_str(request_data["circuit"], apply_litinski_transform)
-        respnse_body = {"slices": slices, "compilation_text": compilation_text}
+        slices, compilation_stages, compilation_text = compile_str(
+            request_data["circuit"], apply_litinski_transform
+        )
+        respnse_body = {
+            "slices": slices,
+            "compilation_stages": compilation_stages,
+            "compilation_text": compilation_text,
+        }
 
         return JsonResponse(200, _SliceArrayJSONEncoder().encode(respnse_body))
     else:
