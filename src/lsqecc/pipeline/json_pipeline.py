@@ -20,7 +20,7 @@ import json
 
 import lsqecc.lattice_array.visual_array_cell as vac
 
-from .lattice_surgery_compilation_pipeline import compile_str
+from .lattice_surgery_compilation_pipeline import Compilation
 
 
 class JsonResponse:
@@ -77,7 +77,7 @@ def handle(json_request: str) -> JsonResponse:
             else True
         )
 
-        slices, compilation_stages, compilation_text = compile_str(
+        slices, compilation_stages, compilation_text = Compilation().compile_str(
             request_data["circuit"], apply_litinski_transform
         )
         respnse_body = {

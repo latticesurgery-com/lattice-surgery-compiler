@@ -14,4 +14,15 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
-# import pytest
+from lsqecc.pipeline.lattice_surgery_compilation_pipeline import Compilation
+
+
+def test_compilation_stages():
+    expected_compilation_stages = [
+        "circuit",
+        "circuit_as_pauli_rotations",
+        "circuit_after_litinski_transform",
+        "resource_estimation",
+    ]
+    actual_compilation_stages = Compilation().stages()
+    assert expected_compilation_stages == actual_compilation_stages
