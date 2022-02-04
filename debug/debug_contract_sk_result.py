@@ -81,8 +81,7 @@ def run_pipeline():
         logical_computation, layout_types.SimplePreDistilledStates, simulation_type=lssim.SimulatorType.NOOP
     )
 
-    # TODO| when compilation stages are supported, remove the 'Circuit|' from the text
-    print("\nCircuit| " + estimate_resources(lsc).render_ascii())
+    print("\nResources:" + estimate_resources(lsc).render_ascii())
 
 
 if __name__ == "__main__":
