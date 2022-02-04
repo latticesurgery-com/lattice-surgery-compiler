@@ -30,14 +30,16 @@ from lsqecc.resource_estimation.resource_estimator import estimate_resources
 GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells
 
 
+class Stage:
+    def __init__(self, name: str, body: str):
+        self.name = name
+        self.body = body
+
+
 class Compilation:
-    def stages(self) -> List[str]:
-        return [
-            "circuit",
-            "circuit_as_pauli_rotations",
-            "circuit_after_litinski_transform",
-            "resource_estimation",
-        ]
+    def stages(self, stages: List[Stage]) -> dict:
+        stages_dict = {stage.name: stage.body for stage in stages}
+        return stages_dict
 
     def compile_str(
         self,
