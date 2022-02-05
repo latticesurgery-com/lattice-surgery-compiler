@@ -20,23 +20,32 @@ import math
 from abc import ABC, abstractmethod
 from enum import Enum
 from fractions import Fraction
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
-from lsqecc.external.opensurgery.prepare_circuit import PrepareCircuit
 from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
+from src.lsqecc.utils import is_power_of_two
 
 
-def _make_PrepareCircuit_instance() -> PrepareCircuit:
-    obj = PrepareCircuit()
-    obj.initialise_skc()
-    return obj
+def _read_cached_rotation_decomposition() -> List[str]:
+    """Reads the rotations saved in a cached file and loads them to memory so
+    we don't have to re read the file for each rotation converted"""
+    with open("./assets/cached_phase_rotation_approximations.txt") as f:
+        lines = f.readlines()
+        lines = [line.strip() for line in lines[1:]]
+        return [row.split(" ")[1] for row in lines]
 
 
 # Wrap as a singleton
-class GlobalCircuitPreparator:
+class CachedRotationApproximations:
+    instance: List[str] = _read_cached_rotation_decomposition()
 
-    instance: PrepareCircuit = _make_PrepareCircuit_instance()
+    @staticmethod
+    def get_pi_over_2_to_the_n_rz_gate(n: int) -> str:
+        """Parameter n is the argument pi/2^n as passed to the rz gate.
+        Note that a Z_{theta} rotation is a 2*theta rz gate
+        """
+        return CachedRotationApproximations.instance[n]
 
 
 class PauliOperator(Enum):
@@ -234,32 +243,41 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
 
     def to_basic_form_approximation(self) -> List["PauliRotation"]:
         """Get an approximation in terms of pi/2, pi/4 and pi/8"""
+
+        if not is_power_of_two(self.rotation_amount.denominator):
+            raise Exception("Can only approximate pi/2^n rotations")
+
+        approximation_gates = CachedRotationApproximations.get_pi_over_2_to_the_n_rz_gate(
+            # -1 because of the theta/2 convention of the rz gate
+            int(math.log2(self.rotation_amount.denominator))
+            - 1
+        )
+
         axis_list = list(filter(lambda op: op != PauliOperator.I, self.ops_list))
         if len(axis_list) != 1:
             raise Exception("Can only approximate single qubit rotations")
         axis = axis_list[0]
-        qubit_idx = self.ops_list.index(axis)
-
-        angle_in_radians = float(self.rotation_amount) * math.pi
-        skc_axis: Optional[Tuple[int, int, int]] = None  # set below
 
         if axis == PauliOperator.X:
-            # TODO test. See comment in OpenSurgery's PrepareCircuit.decompose_SK_on_gate
-            raise NotImplementedError(f"decompose X rotation by {self.rotation_amount}")
+            approximation_gates = "H" + approximation_gates + "H"
         elif axis == PauliOperator.Z:
-            skc_axis = (0, 0, 1)
+            pass
         else:
             raise Exception(f"Unsupported axis of rotation {axis}")
 
-        sk_gates = GlobalCircuitPreparator.instance.decompose_SK_on_gate(angle_in_radians, skc_axis)
         rotations = []
-        for gate in sk_gates:
-            if gate == "T":
+        qubit_idx = self.ops_list.index(axis)
+        for gate in approximation_gates:
+            if gate == "S":
+                rotations.append(PauliRotation.s(self.qubit_num, qubit_idx))
+            elif gate == "T":
                 rotations.append(PauliRotation.t(self.qubit_num, qubit_idx))
+            elif gate == "X":
+                rotations.append(PauliRotation.x(self.qubit_num, qubit_idx))
             elif gate == "H":
                 rotations.extend(PauliRotation.hadamard(self.qubit_num, qubit_idx))
             else:
-                raise Exception(f"SK decomposition returned unexpected gate: {gate}")
+                raise Exception(f"Cannot decompose gate: {gate}")
 
         return rotations
 
@@ -306,6 +324,18 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
     def t(num_qubits: int, target_qubit: int):
         return PauliRotation.from_fractional_phase(
             num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 4)
+        )
+
+    @staticmethod
+    def s(num_qubits: int, target_qubit: int):
+        return PauliRotation.from_fractional_phase(
+            num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)
+        )
+
+    @staticmethod
+    def x(num_qubits: int, target_qubit: int):
+        return PauliRotation.from_fractional_phase(
+            num_qubits, target_qubit, PauliOperator.X, Fraction(1, 1)
         )
 
     @staticmethod
