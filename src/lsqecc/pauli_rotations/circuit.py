@@ -131,12 +131,12 @@ class PauliOpCircuit(object):
             if circuit_has_measurements:
                 self.ops.pop()
 
-    def get_y_free_equivalent(self) -> "PauliOpCircuit":
+    def to_y_free_equivalent(self) -> "PauliOpCircuit":
         """Return a Y-operator-free copy of the current circuit."""
         y_free_circuit = PauliOpCircuit(self.qubit_num, self.name)
 
         for block in self.ops:
-            y_free_circuit.ops.extend(block.get_y_free_equivalent())
+            y_free_circuit.ops.extend(block.to_y_free_equivalent())
 
         return y_free_circuit
 
@@ -150,7 +150,7 @@ class PauliOpCircuit(object):
                 ret_circuit.add_pauli_block(op)
             else:
                 assert isinstance(op, PauliRotation)
-                for new_op in op.get_basic_form_decomposition():
+                for new_op in op.to_basic_form_decomposition():
                     ret_circuit.add_pauli_block(new_op)
         return ret_circuit
 

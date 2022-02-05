@@ -66,11 +66,11 @@ def compile_str(
     compilation_text += input_circuit.render_ascii()
 
     # TODO add user flag
-    input_circuit = input_circuit.get_y_free_equivalent()
+    input_circuit = input_circuit.to_y_free_equivalent()
 
     if apply_litinski_transform:
         input_circuit.apply_transformation()
-        input_circuit = input_circuit.get_y_free_equivalent()
+        input_circuit = input_circuit.to_y_free_equivalent()
         compilation_text += "\nCircuit after the Litinski Transform:\n"
         compilation_text += input_circuit.render_ascii()
 

@@ -38,7 +38,7 @@ if __name__ == "__main__":
     compilation_text += input_circuit.render_ascii()
 
     # TODO add user flag
-    input_circuit = input_circuit.get_y_free_equivalent()
+    input_circuit = input_circuit.to_y_free_equivalent()
 
     logical_computation = llops.LogicalLatticeComputation(input_circuit)
     lsc = lscc.LatticeSurgeryComputation.make_computation_with_simulation(

@@ -190,11 +190,11 @@ class TestPauliRotation:
 
     def test_get_y_free_equivalent_no_y_op(self):
         r = PauliRotation.from_list([X, Z, I, Z], Fraction(1, 8))
-        assert r.get_y_free_equivalent() == [r]
+        assert r.to_y_free_equivalent() == [r]
 
     @pytest.mark.parametrize("input_rotation, output", test_cases_get_y_free_equivalent_rotations())
     def test_get_y_free_equivalent(self, input_rotation, output):
-        assert input_rotation.get_y_free_equivalent() == output
+        assert input_rotation.to_y_free_equivalent() == output
 
 
 def test_cases_get_y_free_equivalent_measurements():
@@ -323,13 +323,13 @@ class TestMeasurement:
 
     def test_get_y_free_equivalent_no_y_op(self):
         m = Measurement.from_list([X, Z, I, Z], isNegative=False)
-        assert m.get_y_free_equivalent() == [m]
+        assert m.to_y_free_equivalent() == [m]
 
     @pytest.mark.parametrize(
         "input_rotation, output", test_cases_get_y_free_equivalent_measurements()
     )
     def test_get_y_free_equivalent(self, input_rotation, output):
-        assert input_rotation.get_y_free_equivalent() == output
+        assert input_rotation.to_y_free_equivalent() == output
 
 
 class TestPauliProductOperation:

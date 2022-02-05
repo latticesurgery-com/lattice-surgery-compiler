@@ -69,7 +69,7 @@ def run_pipeline():
 
 
     print("\nY free equivalent:\n")
-    input_circuit = input_circuit.get_y_free_equivalent()
+    input_circuit = input_circuit.to_y_free_equivalent()
     print(input_circuit.render_ascii())
 
 

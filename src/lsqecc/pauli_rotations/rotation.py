@@ -174,7 +174,7 @@ class PauliProductOperation(ABC):
             ]
         )
 
-    def get_y_free_equivalent(self):
+    def to_y_free_equivalent(self):
         """Return the equivalent of current block but without Y operator."""
         y_op_indices = list()
         y_free_block = copy.deepcopy(self)
@@ -281,7 +281,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
 
         return rotations
 
-    def get_basic_form_decomposition(self) -> List["PauliRotation"]:
+    def to_basic_form_decomposition(self) -> List["PauliRotation"]:
         if self.rotation_amount.denominator == 1:
             return []  # don't need to do anything because exp(-i*pi*P) = I
         elif self.rotation_amount.denominator in {2, 4, 8}:

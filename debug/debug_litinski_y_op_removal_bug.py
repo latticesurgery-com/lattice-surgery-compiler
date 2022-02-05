@@ -48,13 +48,13 @@ if __name__ == "__main__":
     # TODO add user flag
     print("input")
     print(input_circuit.render_ascii())
-    input_circuit = input_circuit.get_y_free_equivalent()
+    input_circuit = input_circuit.to_y_free_equivalent()
     print("removed y")
     print(input_circuit.render_ascii())
     input_circuit.apply_transformation()
     print("done litinski")
     print(input_circuit.render_ascii())
-    input_circuit = input_circuit.get_y_free_equivalent()
+    input_circuit = input_circuit.to_y_free_equivalent()
     print("removed y again")
     print(input_circuit.render_ascii())
 
