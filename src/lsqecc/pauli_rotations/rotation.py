@@ -269,13 +269,13 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         qubit_idx = self.ops_list.index(axis)
         for gate in approximation_gates:
             if gate == "S":
-                rotations.append(PauliRotation.s(self.qubit_num, qubit_idx))
+                rotations.append(PauliRotation.from_s_gate(self.qubit_num, qubit_idx))
             elif gate == "T":
-                rotations.append(PauliRotation.t(self.qubit_num, qubit_idx))
+                rotations.append(PauliRotation.from_t_gate(self.qubit_num, qubit_idx))
             elif gate == "X":
-                rotations.append(PauliRotation.x(self.qubit_num, qubit_idx))
+                rotations.append(PauliRotation.from_x_gate(self.qubit_num, qubit_idx))
             elif gate == "H":
-                rotations.extend(PauliRotation.hadamard(self.qubit_num, qubit_idx))
+                rotations.extend(PauliRotation.from_hadamard_gate(self.qubit_num, qubit_idx))
             else:
                 raise Exception(f"Cannot decompose gate: {gate}")
 
@@ -310,9 +310,11 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         return r
 
     @staticmethod
-    def from_fractional_phase(
+    def from_rz_gate(
         num_qubits: int, target_qubit: int, phase_type: PauliOperator, phase: Fraction
     ):
+        """Note that the convetion for rz is different from our pauli rotation convention.
+        So an rz(theta) is theta/2 Z rotation in our formalism"""
         return PauliRotation.from_list(
             [PauliOperator.I] * target_qubit
             + [phase_type]
@@ -321,39 +323,29 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         )
 
     @staticmethod
-    def t(num_qubits: int, target_qubit: int):
-        return PauliRotation.from_fractional_phase(
-            num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 4)
-        )
+    def from_t_gate(num_qubits: int, target_qubit: int):
+        return PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 4))
 
     @staticmethod
-    def s(num_qubits: int, target_qubit: int):
-        return PauliRotation.from_fractional_phase(
-            num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)
-        )
+    def from_s_gate(num_qubits: int, target_qubit: int):
+        return PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2))
 
     @staticmethod
-    def x(num_qubits: int, target_qubit: int):
-        return PauliRotation.from_fractional_phase(
-            num_qubits, target_qubit, PauliOperator.X, Fraction(1, 1)
-        )
+    def from_x_gate(num_qubits: int, target_qubit: int):
+        return PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 1))
 
     @staticmethod
-    def hadamard(num_qubits: int, target_qubit: int) -> List["PauliRotation"]:
+    def from_hadamard_gate(num_qubits: int, target_qubit: int) -> List["PauliRotation"]:
         return [
-            PauliRotation.from_fractional_phase(
-                num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)
-            ),
-            PauliRotation.from_fractional_phase(
-                num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)
-            ),
-            PauliRotation.from_fractional_phase(
-                num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)
-            ),
+            PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)),
+            PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)),
+            PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)),
         ]
 
     @staticmethod
-    def cnot(num_qubits: int, control_qubit: int, target_qubit: int) -> List["PauliRotation"]:
+    def from_cnot_gate(
+        num_qubits: int, control_qubit: int, target_qubit: int
+    ) -> List["PauliRotation"]:
         entangling_op = PauliRotation(num_qubits, Fraction(1, 4))
         correct_control = PauliRotation(num_qubits, Fraction(-1, 4))
         correct_target = PauliRotation(num_qubits, Fraction(-1, 4))
@@ -366,7 +358,9 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         return [entangling_op, correct_control, correct_target]
 
     @staticmethod
-    def cz(num_qubits: int, control_qubit: int, target_qubit: int) -> List["PauliRotation"]:
+    def from_cz_gate(
+        num_qubits: int, control_qubit: int, target_qubit: int
+    ) -> List["PauliRotation"]:
         entangling_op = PauliRotation(num_qubits, Fraction(1, 4))
         correct_control = PauliRotation(num_qubits, Fraction(-1, 4))
         correct_target = PauliRotation(num_qubits, Fraction(-1, 4))
