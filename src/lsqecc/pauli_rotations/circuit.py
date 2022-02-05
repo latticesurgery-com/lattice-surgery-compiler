@@ -320,11 +320,11 @@ class PauliOpCircuit(object):
 
             if isinstance(gate, zx.circuit.ZPhase):
                 ret_circ.add_pauli_block(
-                    PauliRotation.from_rz_gate(ret_circ.qubit_num, gate.target, Z, gate.phase)
+                    PauliRotation.from_r_gate(ret_circ.qubit_num, gate.target, Z, gate.phase)
                 )
             elif isinstance(gate, zx.circuit.XPhase):
                 ret_circ.add_pauli_block(
-                    PauliRotation.from_rz_gate(ret_circ.qubit_num, gate.target, X, gate.phase)
+                    PauliRotation.from_r_gate(ret_circ.qubit_num, gate.target, X, gate.phase)
                 )
             elif isinstance(gate, zx.circuit.HAD):
                 ret_circ.add_pauli_blocks(

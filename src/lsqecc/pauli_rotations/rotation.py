@@ -310,10 +310,8 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         return r
 
     @staticmethod
-    def from_rz_gate(
-        num_qubits: int, target_qubit: int, phase_type: PauliOperator, phase: Fraction
-    ):
-        """Note that the convetion for rz is different from our pauli rotation convention.
+    def from_r_gate(num_qubits: int, target_qubit: int, phase_type: PauliOperator, phase: Fraction):
+        """Note that the convetion for rz and rx is different from our pauli rotation convention.
         So an rz(theta) is theta/2 Z rotation in our formalism"""
         return PauliRotation.from_list(
             [PauliOperator.I] * target_qubit
@@ -324,22 +322,22 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
 
     @staticmethod
     def from_t_gate(num_qubits: int, target_qubit: int):
-        return PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 4))
+        return PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 4))
 
     @staticmethod
     def from_s_gate(num_qubits: int, target_qubit: int):
-        return PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2))
+        return PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2))
 
     @staticmethod
     def from_x_gate(num_qubits: int, target_qubit: int):
-        return PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 1))
+        return PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 1))
 
     @staticmethod
     def from_hadamard_gate(num_qubits: int, target_qubit: int) -> List["PauliRotation"]:
         return [
-            PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)),
-            PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)),
-            PauliRotation.from_rz_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)),
+            PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)),
+            PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)),
+            PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)),
         ]
 
     @staticmethod
