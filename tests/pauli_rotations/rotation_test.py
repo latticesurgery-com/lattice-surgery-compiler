@@ -170,6 +170,293 @@ class TestPauliRotation:
         assert hash(a) != hash(b)
 
     @pytest.mark.parametrize(
+        "num_qubits, target_qubit, phase_type, phase, expected_rotation",
+        [
+            (1, 0, PauliOperator.Z, Fraction(1, 1), PauliRotation.from_list([Z], Fraction(1, 2))),
+            (1, 0, PauliOperator.X, Fraction(1, 1), PauliRotation.from_list([X], Fraction(1, 2))),
+            (1, 0, PauliOperator.Z, Fraction(1, 2), PauliRotation.from_list([Z], Fraction(1, 4))),
+            (1, 0, PauliOperator.Z, Fraction(1, 4), PauliRotation.from_list([Z], Fraction(1, 8))),
+            (1, 0, PauliOperator.Z, Fraction(1, 8), PauliRotation.from_list([Z], Fraction(1, 16))),
+            (1, 0, PauliOperator.Z, Fraction(1, 17), PauliRotation.from_list([Z], Fraction(1, 34))),
+            (
+                2,
+                0,
+                PauliOperator.X,
+                Fraction(1, 1),
+                PauliRotation.from_list([X, I], Fraction(1, 2)),
+            ),
+            (
+                2,
+                1,
+                PauliOperator.X,
+                Fraction(1, 1),
+                PauliRotation.from_list([I, X], Fraction(1, 2)),
+            ),
+            (
+                3,
+                1,
+                PauliOperator.X,
+                Fraction(1, 1),
+                PauliRotation.from_list([I, X, I], Fraction(1, 2)),
+            ),
+        ],
+    )
+    def test_from_r_gate(
+        self,
+        num_qubits: int,
+        target_qubit: int,
+        phase_type: PauliOperator,
+        phase: Fraction,
+        expected_rotation: PauliRotation,
+    ):
+        assert (
+            PauliRotation.from_r_gate(num_qubits, target_qubit, phase_type, phase)
+            == expected_rotation
+        )
+
+    @pytest.mark.parametrize(
+        "num_qubits, target_qubit, expected_rotation",
+        [
+            (1, 0, PauliRotation.from_list([Z], Fraction(1, 8))),
+            (2, 0, PauliRotation.from_list([Z, I], Fraction(1, 8))),
+            (2, 1, PauliRotation.from_list([I, Z], Fraction(1, 8))),
+            (3, 1, PauliRotation.from_list([I, Z, I], Fraction(1, 8))),
+        ],
+    )
+    def test_from_t_gate(
+        self, num_qubits: int, target_qubit: int, expected_rotation: PauliRotation
+    ):
+        assert PauliRotation.from_t_gate(num_qubits, target_qubit) == expected_rotation
+
+    @pytest.mark.parametrize(
+        "num_qubits, target_qubit, expected_rotation",
+        [
+            (1, 0, PauliRotation.from_list([Z], Fraction(1, 4))),
+            (2, 0, PauliRotation.from_list([Z, I], Fraction(1, 4))),
+            (2, 1, PauliRotation.from_list([I, Z], Fraction(1, 4))),
+            (3, 1, PauliRotation.from_list([I, Z, I], Fraction(1, 4))),
+        ],
+    )
+    def test_from_s_gate(
+        self, num_qubits: int, target_qubit: int, expected_rotation: PauliRotation
+    ):
+        assert PauliRotation.from_s_gate(num_qubits, target_qubit) == expected_rotation
+
+    @pytest.mark.parametrize(
+        "num_qubits, target_qubit, expected_rotations",
+        [
+            (
+                1,
+                0,
+                [
+                    PauliRotation.from_list([Z], Fraction(1, 4)),
+                    PauliRotation.from_list([X], Fraction(1, 4)),
+                    PauliRotation.from_list([Z], Fraction(1, 4)),
+                ],
+            ),
+            (
+                2,
+                0,
+                [
+                    PauliRotation.from_list([Z, I], Fraction(1, 4)),
+                    PauliRotation.from_list([X, I], Fraction(1, 4)),
+                    PauliRotation.from_list([Z, I], Fraction(1, 4)),
+                ],
+            ),
+            (
+                2,
+                1,
+                [
+                    PauliRotation.from_list([I, Z], Fraction(1, 4)),
+                    PauliRotation.from_list([I, X], Fraction(1, 4)),
+                    PauliRotation.from_list([I, Z], Fraction(1, 4)),
+                ],
+            ),
+            (
+                3,
+                1,
+                [
+                    PauliRotation.from_list([I, Z, I], Fraction(1, 4)),
+                    PauliRotation.from_list([I, X, I], Fraction(1, 4)),
+                    PauliRotation.from_list([I, Z, I], Fraction(1, 4)),
+                ],
+            ),
+        ],
+    )
+    def test_from_hadamard_gate(
+        self, num_qubits: int, target_qubit: int, expected_rotations: PauliRotation
+    ):
+        assert PauliRotation.from_hadamard_gate(num_qubits, target_qubit) == expected_rotations
+
+    @pytest.mark.parametrize(
+        "num_qubits, target_qubit, expected_rotation",
+        [
+            (1, 0, PauliRotation.from_list([X], Fraction(1, 2))),
+            (2, 0, PauliRotation.from_list([X, I], Fraction(1, 2))),
+            (2, 1, PauliRotation.from_list([I, X], Fraction(1, 2))),
+            (3, 1, PauliRotation.from_list([I, X, I], Fraction(1, 2))),
+        ],
+    )
+    def test_from_x_gate(
+        self, num_qubits: int, target_qubit: int, expected_rotation: PauliRotation
+    ):
+        assert PauliRotation.from_x_gate(num_qubits, target_qubit) == expected_rotation
+
+    @pytest.mark.parametrize(
+        "num_qubits, control_qubit, target_qubit, expected_rotations",
+        [
+            (
+                2,
+                0,
+                1,
+                [
+                    PauliRotation.from_list([Z, X], Fraction(1, 4)),
+                    PauliRotation.from_list([Z, I], Fraction(-1, 4)),
+                    PauliRotation.from_list([I, X], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                2,
+                1,
+                0,
+                [
+                    PauliRotation.from_list([X, Z], Fraction(1, 4)),
+                    PauliRotation.from_list([I, Z], Fraction(-1, 4)),
+                    PauliRotation.from_list([X, I], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                3,
+                0,
+                1,
+                [
+                    PauliRotation.from_list([Z, X, I], Fraction(1, 4)),
+                    PauliRotation.from_list([Z, I, I], Fraction(-1, 4)),
+                    PauliRotation.from_list([I, X, I], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                3,
+                1,
+                2,
+                [
+                    PauliRotation.from_list([I, Z, X], Fraction(1, 4)),
+                    PauliRotation.from_list([I, Z, I], Fraction(-1, 4)),
+                    PauliRotation.from_list([I, I, X], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                3,
+                0,
+                2,
+                [
+                    PauliRotation.from_list([Z, I, X], Fraction(1, 4)),
+                    PauliRotation.from_list([Z, I, I], Fraction(-1, 4)),
+                    PauliRotation.from_list([I, I, X], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                3,
+                2,
+                0,
+                [
+                    PauliRotation.from_list([X, I, Z], Fraction(1, 4)),
+                    PauliRotation.from_list([I, I, Z], Fraction(-1, 4)),
+                    PauliRotation.from_list([X, I, I], Fraction(-1, 4)),
+                ],
+            ),
+        ],
+    )
+    def test_from_cnot_gate(
+        self,
+        num_qubits: int,
+        control_qubit: int,
+        target_qubit: int,
+        expected_rotations: PauliRotation,
+    ):
+        assert (
+            PauliRotation.from_cnot_gate(num_qubits, control_qubit, target_qubit)
+            == expected_rotations
+        )
+
+    @pytest.mark.parametrize(
+        "num_qubits, control_qubit, target_qubit, expected_rotations",
+        [
+            (
+                2,
+                0,
+                1,
+                [
+                    PauliRotation.from_list([Z, Z], Fraction(1, 4)),
+                    PauliRotation.from_list([Z, I], Fraction(-1, 4)),
+                    PauliRotation.from_list([I, Z], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                2,
+                1,
+                0,
+                [
+                    PauliRotation.from_list([Z, Z], Fraction(1, 4)),
+                    PauliRotation.from_list([I, Z], Fraction(-1, 4)),
+                    PauliRotation.from_list([Z, I], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                3,
+                0,
+                1,
+                [
+                    PauliRotation.from_list([Z, Z, I], Fraction(1, 4)),
+                    PauliRotation.from_list([Z, I, I], Fraction(-1, 4)),
+                    PauliRotation.from_list([I, Z, I], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                3,
+                1,
+                2,
+                [
+                    PauliRotation.from_list([I, Z, Z], Fraction(1, 4)),
+                    PauliRotation.from_list([I, Z, I], Fraction(-1, 4)),
+                    PauliRotation.from_list([I, I, Z], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                3,
+                0,
+                2,
+                [
+                    PauliRotation.from_list([Z, I, Z], Fraction(1, 4)),
+                    PauliRotation.from_list([Z, I, I], Fraction(-1, 4)),
+                    PauliRotation.from_list([I, I, Z], Fraction(-1, 4)),
+                ],
+            ),
+            (
+                3,
+                2,
+                0,
+                [
+                    PauliRotation.from_list([Z, I, Z], Fraction(1, 4)),
+                    PauliRotation.from_list([I, I, Z], Fraction(-1, 4)),
+                    PauliRotation.from_list([Z, I, I], Fraction(-1, 4)),
+                ],
+            ),
+        ],
+    )
+    def test_from_cz_gate(
+        self,
+        num_qubits: int,
+        control_qubit: int,
+        target_qubit: int,
+        expected_rotations: PauliRotation,
+    ):
+        assert (
+            PauliRotation.from_cz_gate(num_qubits, control_qubit, target_qubit)
+            == expected_rotations
+        )
+
+    @pytest.mark.parametrize(
         "input, expected",
         [
             (PauliRotation.from_list([Y], Fraction(1, 2)), r"(Y)_{\frac{\pi}{2}}"),

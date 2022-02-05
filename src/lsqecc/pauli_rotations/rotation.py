@@ -311,7 +311,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
 
     @staticmethod
     def from_r_gate(num_qubits: int, target_qubit: int, phase_type: PauliOperator, phase: Fraction):
-        """Note that the convetion for rz and rx is different from our pauli rotation convention.
+        """Note that the convention for rz and rx is different from our pauli rotation convention.
         So an rz(theta) is theta/2 Z rotation in our formalism"""
         return PauliRotation.from_list(
             [PauliOperator.I] * target_qubit
@@ -335,9 +335,9 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
     @staticmethod
     def from_hadamard_gate(num_qubits: int, target_qubit: int) -> List["PauliRotation"]:
         return [
-            PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)),
             PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)),
             PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.X, Fraction(1, 2)),
+            PauliRotation.from_r_gate(num_qubits, target_qubit, PauliOperator.Z, Fraction(1, 2)),
         ]
 
     @staticmethod
@@ -351,7 +351,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         entangling_op.change_single_op(target_qubit, PauliOperator.X)
 
         correct_control.change_single_op(control_qubit, PauliOperator.Z)
-        correct_target.change_single_op(control_qubit, PauliOperator.X)
+        correct_target.change_single_op(target_qubit, PauliOperator.X)
 
         return [entangling_op, correct_control, correct_target]
 
@@ -366,7 +366,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         entangling_op.change_single_op(target_qubit, PauliOperator.Z)
 
         correct_control.change_single_op(control_qubit, PauliOperator.Z)
-        correct_target.change_single_op(control_qubit, PauliOperator.Z)
+        correct_target.change_single_op(target_qubit, PauliOperator.Z)
 
         return [entangling_op, correct_control, correct_target]
 
