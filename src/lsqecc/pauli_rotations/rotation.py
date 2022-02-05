@@ -279,9 +279,11 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
             else:
                 raise Exception(f"Cannot decompose gate: {gate}")
 
+        # Note that it might be possible to simplify these a little further
         return rotations
 
     def to_basic_form_decomposition(self) -> List["PauliRotation"]:
+        """Express in terms of pi/2, pi/4 and pi/8"""
         if self.rotation_amount.denominator == 1:
             return []  # don't need to do anything because exp(-i*pi*P) = I
         elif self.rotation_amount.denominator in {2, 4, 8}:

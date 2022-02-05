@@ -16,6 +16,7 @@
 # USA
 
 from fractions import Fraction
+from typing import List
 
 import pytest
 
@@ -168,6 +169,73 @@ class TestPauliRotation:
         a = PauliRotation.from_list(*rotation1)
         b = PauliRotation.from_list(*rotation2)
         assert hash(a) != hash(b)
+
+    @pytest.mark.parametrize(
+        "rotation, expected_decomposition",
+        [
+            (PauliRotation.from_list([X], Fraction(1, 1)), []),
+            (PauliRotation.from_list([X], Fraction(2, 1)), []),
+            (
+                PauliRotation.from_list([X], Fraction(1, 4)),
+                [PauliRotation.from_list([X], Fraction(1, 4))],
+            ),
+            (
+                PauliRotation.from_list([X], Fraction(3, 4)),
+                [
+                    PauliRotation.from_list([X], Fraction(1, 2)),
+                    PauliRotation.from_list([X], Fraction(1, 4)),
+                ],
+            ),
+            (
+                PauliRotation.from_list([X], Fraction(7, 8)),
+                [
+                    PauliRotation.from_list([X], Fraction(1, 2)),
+                    PauliRotation.from_list([X], Fraction(1, 4)),
+                    PauliRotation.from_list([X], Fraction(1, 8)),
+                ],
+            ),
+            (
+                PauliRotation.from_list([X], Fraction(15, 8)),
+                [
+                    PauliRotation.from_list([X], Fraction(1, 2)),
+                    PauliRotation.from_list([X], Fraction(1, 4)),
+                    PauliRotation.from_list([X], Fraction(1, 8)),
+                ],
+            ),
+        ],
+    )
+    def test_to_basic_form_decomposition_cancel_out(
+        self, rotation: PauliRotation, expected_decomposition: List[PauliRotation]
+    ):
+        assert rotation.to_basic_form_decomposition() == expected_decomposition
+
+    def test_to_basic_form_decomposition_with_approximation(self, snapshot):
+        snapshot.assert_match(
+            repr(PauliRotation.from_list([Z], Fraction(1, 16)).to_basic_form_decomposition()),
+            "list_repr.txt",
+        )
+
+    @pytest.mark.parametrize(
+        "rotation",
+        [
+            PauliRotation.from_list([Z], Fraction(1, 2)),
+            PauliRotation.from_list([X], Fraction(1, 2)),
+            PauliRotation.from_list([Z], Fraction(1, 4)),
+            PauliRotation.from_list([X], Fraction(1, 8)),
+            PauliRotation.from_list([Z], Fraction(1, 8)),
+            PauliRotation.from_list([Z], Fraction(1, 16)),
+            PauliRotation.from_list([X], Fraction(1, 16)),
+            PauliRotation.from_list([I, Z], Fraction(1, 16)),
+            PauliRotation.from_list([Z, I], Fraction(1, 16)),
+            PauliRotation.from_list([Z], Fraction(1, 2**30)),
+        ],
+    )
+    def test_to_basic_form_approximation(self, rotation: PauliRotation, snapshot):
+        snapshot.assert_match(repr(rotation.to_basic_form_approximation()), "list_repr.txt")
+
+    def test_to_basic_form_arbitrary_angle(self):
+        with pytest.raises(Exception):
+            PauliRotation.from_list([X], Fraction(1, 3)).to_basic_form_approximation()
 
     @pytest.mark.parametrize(
         "num_qubits, target_qubit, phase_type, phase, expected_rotation",
