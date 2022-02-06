@@ -6,6 +6,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.a
 
 # Distribution / packaging
 .Python
@@ -15,7 +16,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -94,3 +94,8 @@ cython_debug/
 .idea
 *.iws
 out/
+
+### CMAKE Files ###
+CMakeFiles/
+*.cmake
+CMakeCache.txt

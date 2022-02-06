@@ -1,3 +1,6 @@
 [submodule "src/lsqecc/external/opensurgery"]
 	path = src/lsqecc/external/opensurgery
 	url = https://github.com/alexandrupaler/opensurgery.git
+[submodule "src/lsqecc/lib/external/pybind11"]
+	path = src/lsqecc/lib/external/pybind11
+	url = https://github.com/pybind/pybind11.git
