@@ -4,3 +4,6 @@
 [submodule "src/lsqecc/lib/external/pybind11"]
 	path = src/lsqecc/lib/external/pybind11
 	url = https://github.com/pybind/pybind11.git
+[submodule "src/lsqecc/lib/external/eigen"]
+	path = src/lsqecc/lib/external/eigen
+	url = https://github.com/libigl/eigen.git
