@@ -290,6 +290,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
             fractions_with_unit_numerator = decompose_pi_fraction(self.rotation_amount)
             output_rotations = []
             for unit_rotation_amount in fractions_with_unit_numerator:
+                # Discard rotations by pi because they have no effect
                 if unit_rotation_amount.denominator != 1:
                     new_rotation = copy.deepcopy(self)
                     new_rotation.rotation_amount = unit_rotation_amount
