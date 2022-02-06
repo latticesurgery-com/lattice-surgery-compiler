@@ -64,6 +64,11 @@ To run the entire testsuite:
 To run a particular test:
 ```pytest tests/path/to/file.py```
 
+If you update a snapshot test run:
+```pytest --snapshot-update```
+
+Will say `AssertionError: Snapshot directory was modified`, but that's expected.
+
 ### Building the Docs
 
 We generate docs from docstrings and `.md` files. Our CI pipeline already builds the docs and provides a preview for every PR, but you can preview the docs on you local machine by following the steps below.
