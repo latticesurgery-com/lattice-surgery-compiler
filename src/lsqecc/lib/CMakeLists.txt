@@ -7,7 +7,7 @@ project(lsqecc)
 ####################################################
 # General configuration
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wfatal-errors -Wall -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -Wfatal-errors -Wall -pedantic")
 set(CMAKE_CXX_STANDARD 20)
 
 
@@ -19,17 +19,17 @@ find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(PythonLibs)
 include_directories(/usr/include/python3.10)
 
+include_directories(external/ordered-map/include)
 add_subdirectory(external/pybind11)
 
 ###################################################
 # Library setup
 
-message(STATUS ${PYTHON_LIBRARIES})
-
 add_library(
         lsqecclib
         "${PROJECT_SOURCE_DIR}/src/patches/fast_patch_computation.cpp"
-)
+        "${PROJECT_SOURCE_DIR}/src/logical_lattice_ops/logical_lattice_ops.cpp"
+        src/patches/patches.cpp src/patches/slice.cpp)
 
 set(INCLUDE_DIRS
         "${PROJECT_SOURCE_DIR}/include"
@@ -74,8 +74,9 @@ enable_testing()
 # lib
 add_executable(
         lsqecc_tests
+        tests/main.cpp
         tests/patches/fast_patch_computation.cpp
-)
+        tests/logical_lattice_ops/logical_lattice_ops.cpp)
 target_link_libraries(lsqecc_tests
         lsqecclib
         gtest
@@ -89,5 +90,5 @@ add_custom_command(
         TARGET lsqecc_tests
         COMMENT "Run lsqecc_tests"
         POST_BUILD
-        COMMAND ${PROJECT_BINARY_DIR}/lsqecc_tests
+        COMMAND valgrind ${PROJECT_BINARY_DIR}/lsqecc_tests
 )

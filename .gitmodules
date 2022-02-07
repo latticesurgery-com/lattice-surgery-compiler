@@ -7,3 +7,6 @@
 [submodule "src/lsqecc/lib/external/eigen"]
 	path = src/lsqecc/lib/external/eigen
 	url = https://github.com/libigl/eigen.git
+[submodule "src/lsqecc/lib/external/ordered-map"]
+	path = src/lsqecc/lib/external/ordered-map
+	url = https://github.com/Tessil/ordered-map.git

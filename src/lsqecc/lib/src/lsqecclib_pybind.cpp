@@ -4,7 +4,6 @@
 
 int fast_make_computation(int i)
 {
-    lsqecc::make_computation();
     return 10*i;
 }
 
