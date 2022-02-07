@@ -23,8 +23,7 @@ from fractions import Fraction
 from typing import Dict, List, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
-from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
-from src.lsqecc.utils import is_power_of_two
+from lsqecc.utils import decompose_pi_fraction, is_power_of_two, phase_frac_to_latex
 
 
 def _read_cached_rotation_decomposition() -> List[str]:
