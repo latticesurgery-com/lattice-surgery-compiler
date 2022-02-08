@@ -15,15 +15,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
-from dataclasses import asdict, dataclass
-from typing import Union
+from dataclasses import dataclass
 
-import lsqecc.patches.lattice_surgery_computation_composer as lscc
-from lsqecc.logical_lattice_ops import logical_lattice_ops as llops
 from lsqecc.external.opensurgery.resanalysis.cube_to_physical import Qentiana
 from lsqecc.external.opensurgery.resanalysis.experiment import (
     Experiment as OpenSurgeryExperiment,
 )
+from lsqecc.logical_lattice_ops import logical_lattice_ops as llops
 
 
 @dataclass
@@ -31,17 +29,15 @@ class ResourceEstimationConfig:
     # From qentiana:
     # target_error_per_T_gate = 1 / (self.parameters["safety_factor"] * local_t_count)
     # TODO why do we prefer to specify it in this way, instead of a global target error rate?
-    safety_factor:float = 99
-    physical_error_rate:float = 0.001
-    surface_code_cycle_time_ns:float = 1000 # from open surgery
-    prefer_depth_over_t_count = True # TODO decide
+    safety_factor: float = 99
+    physical_error_rate: float = 0.001
+    prefer_depth_over_t_count = True  # TODO decide
+
 
 @dataclass
 class ResourcesEstimatedFromLLOPS:
-    space_time_volume_d_cubes: int = 0  # computed by giving Quentiana data from the logical lattice ops
-    code_distance:int = 7 # update from
-    time_ns: float = 0
-    # TODO what elese do we want
+    code_distance: int = 7  # update from
+    time_secs: float = 0
 
 
 #
@@ -50,14 +46,14 @@ class ResourcesEstimatedFromLLOPS:
 # Left some TODOs
 #
 def estimate_from_logical_lattice_computation(
-        logical_lattice_computation: llops.LogicalLatticeComputation,
-        config: ResourceEstimationConfig) -> ResourcesEstimatedFromLLOPS:
+    logical_lattice_computation: llops.LogicalLatticeComputation, config: ResourceEstimationConfig
+) -> ResourcesEstimatedFromLLOPS:
 
     # Set up Qentiana with all of its parameters
     ex1 = OpenSurgeryExperiment()
 
     # Computation related:
-    ex1.props["footprint"] = logical_lattice_computation.circuit.qubit_num # i.e. logical qubits
+    ex1.props["footprint"] = logical_lattice_computation.circuit.qubit_num  # i.e. logical qubits
     ex1.props["depth_units"] = len(logical_lattice_computation.ops)
     ex1.props["t_count"] = logical_lattice_computation.count_magic_states()
 
@@ -68,8 +64,6 @@ def estimate_from_logical_lattice_computation(
 
     qentiana = Qentiana(ex1.props)
 
-    # Compute things
-    qentiana.compute_physical_resources()
+    results = qentiana.compute_physical_resources()
 
-    # NOW FILL IN:
-    return ResourcesEstimatedFromLLOPS()
+    return ResourcesEstimatedFromLLOPS(code_distance=results["distance"], time_secs=results["time"])
