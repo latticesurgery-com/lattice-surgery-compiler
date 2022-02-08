@@ -27,7 +27,7 @@ import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 import lsqecc.simulation.logical_patch_state_simulation as lssim
 from lsqecc import utils
 from lsqecc.lattice_array import sparse_lattice_to_array
-from lsqecc.resource_estimation.slice_resource_estimator import estimate_resources
+from lsqecc.resource_estimation import llops_resource_estimator
 
 GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells
 
@@ -81,6 +81,9 @@ def compile_str(
     )
 
     # TODO| when compilation stages are supported, remove the 'Circuit|' from the text
-    compilation_text += "\nCircuit| " + utils.dataclass_render_ascii(estimate_resources(lsc))
+    compilation_text += (
+        "\nCircuit. Estimated resources needed for computation:\n"
+        + utils.dataclass_render_ascii(llops_resource_estimator.estimate(lsc))
+    )
 
     return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text

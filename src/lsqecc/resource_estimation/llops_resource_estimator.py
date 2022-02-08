@@ -45,7 +45,7 @@ class ResourcesEstimatedFromLLOPS:
 #
 # Left some TODOs
 #
-def estimate_from_logical_lattice_computation(
+def estimate(
     logical_lattice_computation: llops.LogicalLatticeComputation,
     config: ResourceEstimationConfig = ResourceEstimationConfig(),
 ) -> ResourcesEstimatedFromLLOPS:
