@@ -46,7 +46,8 @@ class ResourcesEstimatedFromLLOPS:
 # Left some TODOs
 #
 def estimate_from_logical_lattice_computation(
-    logical_lattice_computation: llops.LogicalLatticeComputation, config: ResourceEstimationConfig
+    logical_lattice_computation: llops.LogicalLatticeComputation,
+    config: ResourceEstimationConfig = ResourceEstimationConfig(),
 ) -> ResourcesEstimatedFromLLOPS:
 
     # Set up Qentiana with all of its parameters

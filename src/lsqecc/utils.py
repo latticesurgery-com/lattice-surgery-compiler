@@ -16,6 +16,7 @@
 # USA
 
 import math
+from dataclasses import asdict, dataclass
 from fractions import Fraction
 
 
@@ -62,3 +63,9 @@ def phase_frac_to_latex(phi: Fraction):
 
 def is_power_of_two(n: int) -> bool:
     return (n & (n - 1) == 0) and n != 0
+
+
+def dataclass_render_ascii(self) -> str:
+    return "Estimated resources needed for computation:\n" + "\n".join(
+        [f"{name.replace('_',' ')}: {value}" for name, value in asdict(self).items()]
+    )

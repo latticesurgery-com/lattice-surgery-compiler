@@ -44,11 +44,6 @@ class ResourcesEstimatedFromSlices:
     time_ms: float = 0.0
     total_space_time_volume_ns_qubits: float = 0
 
-    def render_ascii(self) -> str:
-        return "Estimated resources needed for computation:\n" + "\n".join(
-            [f"{name.replace('_',' ')}: {value}" for name, value in asdict(self).items()]
-        )
-
 
 def estimate_resources(
     computation: lscc.LatticeSurgeryComputation,
@@ -67,7 +62,7 @@ def estimate_resources(
     ex1.props["footprint"] = layout_slice.getRows() * layout_slice.getCols()
     ex1.props["depth_units"] = len(slices)
     ex1.props["physical_error_rate"] = physical_error_rate
-    ex1.props["safety_factor"] = 99 # 1% error rate.
+    ex1.props["safety_factor"] = 99  # 1% error rate.
     ex1.props["t_count"] = computation.get_t_count()
     ex1.props["prefer_depth_over_t_count"] = True
     qentiana = Qentiana(ex1.props)
@@ -92,10 +87,11 @@ def estimate_resources(
     # Distillation box sizes are computed from quentiana
     qentiana_footprint: Union[str, int] = qentiana.compute_footprint_distillation_qubits()
     assert isinstance(qentiana_footprint, int)
-    e.distillation_box_space_qubits = qentiana_footprint # if (isinstance(qentiana_footprint,int)) else 1000
+    e.distillation_box_space_qubits = (
+        qentiana_footprint  # if (isinstance(qentiana_footprint,int)) else 1000
+    )
     qentiana.compute_distillation_box_distance()
     e.distillation_box_time_ns = qentiana.dist_box_dimensions["depth_distance"]
-
 
     # Total Distillation values
     e.distillation_box_volume = e.distillation_box_time_ns * e.distillation_box_space_qubits
