@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Union
 
 import lsqecc.patches.lattice_surgery_computation_composer as lscc

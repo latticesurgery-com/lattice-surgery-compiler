@@ -16,7 +16,7 @@
 # USA
 
 import math
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from fractions import Fraction
 
 
