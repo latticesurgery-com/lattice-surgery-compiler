@@ -26,7 +26,7 @@ from lsqecc.external.opensurgery.resanalysis.experiment import (
 
 
 @dataclass
-class EstimatedResources:
+class ResourcesEstimatedFromSlices:
     t_count: int = 0
 
     core_space_qubits: int = 0
@@ -56,21 +56,24 @@ def estimate_resources(
     code_distance: int = 7,  # NOTE: this value matches the 7 in qentiana
     error_decoding_time_ns: float = (10**3),
     decoding_time_by_code_distance_multiplier: float = 1,
-    physical_error_rate: float = 0.001,  # As expressed in quentiana, TODO find units
+    physical_error_rate: float = 0.0001,  # As expressed in quentiana, TODO find units
 ):
     slices = computation.composer.getSlices()
     layout_slice = slices[0]
-    e = EstimatedResources()  # Result
+    e = ResourcesEstimatedFromSlices()  # Result
 
     # Set up Qentiana
     ex1 = OpenSurgeryExperiment()
     ex1.props["footprint"] = layout_slice.getRows() * layout_slice.getCols()
     ex1.props["depth_units"] = len(slices)
     ex1.props["physical_error_rate"] = physical_error_rate
-    ex1.props["safety_factor"] = 99
+    ex1.props["safety_factor"] = 99 # 1% error rate.
     ex1.props["t_count"] = computation.get_t_count()
     ex1.props["prefer_depth_over_t_count"] = True
     qentiana = Qentiana(ex1.props)
+
+    qentiana.compute_physical_resources()
+    # Gives all the numbers
 
     # Core is the part of the lattice where the patches for logical qubits are
     e.core_space_qubits = layout_slice.getRows() * layout_slice.getCols() * code_distance**2
@@ -89,9 +92,10 @@ def estimate_resources(
     # Distillation box sizes are computed from quentiana
     qentiana_footprint: Union[str, int] = qentiana.compute_footprint_distillation_qubits()
     assert isinstance(qentiana_footprint, int)
-    e.distillation_box_space_qubits = qentiana_footprint
+    e.distillation_box_space_qubits = qentiana_footprint # if (isinstance(qentiana_footprint,int)) else 1000
     qentiana.compute_distillation_box_distance()
     e.distillation_box_time_ns = qentiana.dist_box_dimensions["depth_distance"]
+
 
     # Total Distillation values
     e.distillation_box_volume = e.distillation_box_time_ns * e.distillation_box_space_qubits

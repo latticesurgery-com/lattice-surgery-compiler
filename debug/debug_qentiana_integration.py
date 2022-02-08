@@ -9,7 +9,7 @@ import lsqecc.patches.lattice_surgery_computation_composer as lscc
 import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 import lsqecc.simulation.logical_patch_state_simulation as lssim
 from lsqecc.lattice_array import sparse_lattice_to_array
-from lsqecc.resource_estimation.resource_estimator import estimate_resources
+from lsqecc.resource_estimation.slice_resource_estimator import estimate_resources
 SAMPLE_CIRCUIT = """
 OPENQASM 2.0;
 include "qelib1.inc";
@@ -37,16 +37,14 @@ if __name__ == "__main__":
     compilation_text += "\nCircuit as Pauli rotations:\n"
     compilation_text += input_circuit.render_ascii()
 
-    # TODO add user flag
     input_circuit = input_circuit.to_y_free_equivalent()
 
     logical_computation = llops.LogicalLatticeComputation(input_circuit)
-    lsc = lscc.LatticeSurgeryComputation.make_computation_with_simulation(
-        logical_computation, lscc.LayoutType.SimplePreDistilledStates
+    lsc = lscc.LatticeSurgeryComputation.make_computation(
+        logical_computation, lscc.LayoutType.SimplePreDistilledStates, lssim.SimulatorType.NOOP
     )
 
-    # TODO| when compilation stages are supported, remove the 'Circuit|' from the text
-    compilation_text += "\nCircuit| " + estimate_resources(lsc).render_ascii()
+    compilation_text += "\nEstimated Resources:\n" + estimate_resources(lsc).render_ascii()
 
     print(compilation_text)
 
