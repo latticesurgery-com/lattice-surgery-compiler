@@ -23,21 +23,15 @@ from fractions import Fraction
 from typing import Dict, List, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
+from lsqecc.pauli_rotations.pi_over_2_to_the_n_rz_gate_approximations import (
+    get_pi_over_2_to_the_n_rz_gate,
+)
 from lsqecc.utils import decompose_pi_fraction, is_power_of_two, phase_frac_to_latex
-
-
-def _read_cached_rotation_decomposition() -> List[str]:
-    """Reads the rotations saved in a cached file and loads them to memory so
-    we don't have to re read the file for each rotation converted"""
-    with open("./assets/cached_phase_rotation_approximations.txt") as f:
-        lines = f.readlines()
-        lines = [line.strip() for line in lines[1:]]
-        return [row.split(" ")[1] for row in lines]
 
 
 # Wrap as a singleton
 class CachedRotationApproximations:
-    instance: List[str] = _read_cached_rotation_decomposition()
+    instance: List[str] = get_pi_over_2_to_the_n_rz_gate
 
     @staticmethod
     def get_pi_over_2_to_the_n_rz_gate(n: int) -> str:
