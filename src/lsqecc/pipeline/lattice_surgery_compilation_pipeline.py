@@ -81,9 +81,11 @@ def compile_str(
     )
 
     # TODO| when compilation stages are supported, remove the 'Circuit|' from the text
-    compilation_text += (
-        "\nCircuit. Estimated resources needed for computation:\n"
-        + utils.dataclass_render_ascii(llops_resource_estimator.estimate(lsc))
-    )
+    estimate = llops_resource_estimator.estimate(lsc)
+    if estimate is not None:
+        compilation_text += (
+            "\nCircuit. Estimated resources needed for computation:\n"
+            + utils.dataclass_render_ascii(estimate)
+        )
 
     return list(map(sparse_lattice_to_array, lsc.composer.getSlices())), compilation_text

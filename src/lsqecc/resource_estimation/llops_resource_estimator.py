@@ -16,6 +16,7 @@
 # USA
 
 from dataclasses import dataclass
+from typing import Optional
 
 from lsqecc.external.opensurgery.resanalysis.cube_to_physical import Qentiana
 from lsqecc.external.opensurgery.resanalysis.experiment import (
@@ -48,7 +49,7 @@ class ResourcesEstimatedFromLLOPS:
 def estimate(
     logical_lattice_computation: llops.LogicalLatticeComputation,
     config: ResourceEstimationConfig = ResourceEstimationConfig(),
-) -> ResourcesEstimatedFromLLOPS:
+) -> Optional[ResourcesEstimatedFromLLOPS]:
 
     # Set up Qentiana with all of its parameters
     ex1 = OpenSurgeryExperiment()
@@ -65,6 +66,10 @@ def estimate(
 
     qentiana = Qentiana(ex1.props)
 
-    results = qentiana.compute_physical_resources()
-
-    return ResourcesEstimatedFromLLOPS(code_distance=results["distance"], time_secs=results["time"])
+    try:
+        results = qentiana.compute_physical_resources()
+        return ResourcesEstimatedFromLLOPS(
+            code_distance=results["distance"], time_secs=results["time"]
+        )
+    except TypeError:
+        return None
