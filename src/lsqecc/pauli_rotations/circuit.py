@@ -17,11 +17,11 @@
 
 import copy
 from fractions import Fraction
-from typing import List, cast
+from typing import List, Optional, Sequence, cast
 
 import pyzx as zx
 
-from lsqecc.utils import decompose_pi_fraction, phase_frac_to_latex
+from lsqecc.utils import phase_frac_to_latex
 
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
 
@@ -78,6 +78,11 @@ class PauliOpCircuit(object):
 
         self.ops.insert(index, new_block)
 
+    def add_pauli_blocks(self, block_list: Sequence[PauliProductOperation]):
+        """Adds blocks at the end of the circuit"""
+        for block in block_list:
+            self.add_pauli_block(block)
+
     def add_single_operator(
         self,
         qubit: int,
@@ -85,11 +90,11 @@ class PauliOpCircuit(object):
         rotation_amount: Fraction,
         index: int = None,
     ) -> None:
-        """Add a single Pauli operator rotation (I, X, Z, Y) to the circuit.
+        """Add a single Pauli operator rotation (X, Z, Y) to the circuit.
 
         Args:
             qubit (int): Targeted qubit
-            operator_type (PauliOperator): Operator type (I, X, Y, Z)
+            operator_type (PauliOperator): Operator type (X, Y, Z)
             index (int, optional): Index location. Default: end of the circuit
         """
 
@@ -126,14 +131,57 @@ class PauliOpCircuit(object):
             if circuit_has_measurements:
                 self.ops.pop()
 
-    def get_y_free_equivalent(self) -> "PauliOpCircuit":
+    def to_y_free_equivalent(self) -> "PauliOpCircuit":
         """Return a Y-operator-free copy of the current circuit."""
         y_free_circuit = PauliOpCircuit(self.qubit_num, self.name)
 
         for block in self.ops:
-            y_free_circuit.ops.extend(block.get_y_free_equivalent())
+            y_free_circuit.ops.extend(block.to_y_free_equivalent())
 
         return y_free_circuit
+
+    def get_basic_form(self) -> "PauliOpCircuit":
+        """
+        Returns a circuit where all pauli rotations are either by pi/2, pi/4 or pi/8
+        """
+        ret_circuit = PauliOpCircuit(self.qubit_num, self.name)
+        for op in self.ops:
+            if isinstance(op, Measurement):
+                ret_circuit.add_pauli_block(op)
+            else:
+                assert isinstance(op, PauliRotation)
+                for new_op in op.to_basic_form_decomposition():
+                    ret_circuit.add_pauli_block(new_op)
+        return ret_circuit
+
+    def group_rotations_with_the_same_axis(self):
+        ret_circuit = PauliOpCircuit(self.qubit_num, self.name)
+
+        accumulator: Optional[PauliRotation] = None
+
+        for op in self.ops:
+            if isinstance(op, PauliRotation):
+                if accumulator is None:
+                    accumulator = copy.deepcopy(op)
+                else:
+                    if op.ops_list == accumulator.ops_list:
+                        accumulator.rotation_amount += op.rotation_amount
+                    else:
+                        ret_circuit.add_pauli_block(accumulator)
+                        accumulator = copy.deepcopy(op)
+
+            elif isinstance(accumulator, Measurement):
+                if accumulator is not None:
+                    ret_circuit.add_pauli_block(accumulator)
+                    accumulator = None
+                ret_circuit.add_pauli_block(op)
+            else:
+                raise Exception(f"Not expecting: {op}")
+
+        if accumulator is not None:
+            ret_circuit.add_pauli_block(accumulator)
+
+        return ret_circuit
 
     def _swap_adjacent_commuting_blocks(self, index: int) -> None:
         """
@@ -255,7 +303,7 @@ class PauliOpCircuit(object):
         return ret_val > 0
 
     @staticmethod
-    def load_from_pyzx(circuit) -> "PauliOpCircuit":
+    def load_from_pyzx(circuit: zx.Circuit) -> "PauliOpCircuit":
         """Generate circuit from PyZX Circuit
 
         Returns:
@@ -268,52 +316,32 @@ class PauliOpCircuit(object):
         basic_circ = circuit.to_basic_gates()
         ret_circ = PauliOpCircuit(basic_circ.qubits, circuit.name)
 
-        gate_missed = 0
-
         for gate in basic_circ.gates:
-            # print("Original Gate:", gate)
 
             if isinstance(gate, zx.circuit.ZPhase):
-                pauli_rot = decompose_pi_fraction(gate.phase / 2)
-                for rotation in pauli_rot:
-                    if rotation != Fraction(1, 1):
-                        ret_circ.add_single_operator(gate.target, Z, rotation)
-
+                ret_circ.add_pauli_block(
+                    PauliRotation.from_r_gate(ret_circ.qubit_num, gate.target, Z, gate.phase)
+                )
             elif isinstance(gate, zx.circuit.XPhase):
-                pauli_rot = decompose_pi_fraction(gate.phase / 2)
-                for rotation in pauli_rot:
-                    if rotation != Fraction(1, 1):
-                        ret_circ.add_single_operator(gate.target, X, rotation)
-
+                ret_circ.add_pauli_block(
+                    PauliRotation.from_r_gate(ret_circ.qubit_num, gate.target, X, gate.phase)
+                )
             elif isinstance(gate, zx.circuit.HAD):
-                ret_circ.add_single_operator(gate.target, X, Fraction(1, 4))
-                ret_circ.add_single_operator(gate.target, Z, Fraction(1, 4))
-                ret_circ.add_single_operator(gate.target, X, Fraction(1, 4))
-
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_hadamard_gate(ret_circ.qubit_num, gate.target)
+                )
             elif isinstance(gate, zx.circuit.CNOT):
-                temp = PauliRotation(ret_circ.qubit_num, Fraction(1, 4))
-                temp.change_single_op(gate.control, Z)
-                temp.change_single_op(gate.target, X)
-                ret_circ.add_pauli_block(temp)
-
-                ret_circ.add_single_operator(gate.control, Z, Fraction(-1, 4))
-                ret_circ.add_single_operator(gate.target, X, Fraction(-1, 4))
-
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_cnot_gate(ret_circ.qubit_num, gate.control, gate.target)
+                )
             elif isinstance(gate, zx.circuit.CZ):
-                temp = PauliRotation(ret_circ.qubit_num, Fraction(1, 4))
-                temp.change_single_op(gate.control, Z)
-                temp.change_single_op(gate.target, Z)
-                ret_circ.add_pauli_block(temp)
-
-                ret_circ.add_single_operator(gate.control, Z, Fraction(-1, 4))
-                ret_circ.add_single_operator(gate.target, Z, Fraction(-1, 4))
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_cz_gate(ret_circ.qubit_num, gate.control, gate.target)
+                )
 
             else:
-                gate_missed += 1
-                print("Failed to convert gate:", gate)
+                raise Exception(f"Failed to convert gate {gate}")
 
-        print("Conversion completed")
-        print("Gate Missed: ", gate_missed)
         return ret_circ
 
     @staticmethod
@@ -325,10 +353,10 @@ class PauliOpCircuit(object):
         return c
 
     @staticmethod
-    def load_reversible_from_qasm_string(quasm_string: str) -> "PauliOpCircuit":
+    def load_reversible_from_qasm_string(qasm_string: str) -> "PauliOpCircuit":
         """Load a string as if it were a QASM circuit. Only supports reversible circuits."""
 
-        pyzx_circ = zx.Circuit.from_qasm(quasm_string)
+        pyzx_circ = zx.Circuit.from_qasm(qasm_string)
         ret_circ = PauliOpCircuit.load_from_pyzx(pyzx_circ)
 
         return ret_circ
@@ -346,6 +374,16 @@ class PauliOpCircuit(object):
             list(
                 filter(
                     lambda r: isinstance(r, PauliRotation) and r.rotation_amount == rotation_amount,
+                    self.ops,
+                )
+            )
+        )
+
+    def count_direct_magic_states(self):
+        return len(
+            list(
+                filter(
+                    lambda r: isinstance(r, PauliRotation) and r.rotation_amount.denominator == 8,
                     self.ops,
                 )
             )

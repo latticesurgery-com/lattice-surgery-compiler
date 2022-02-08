@@ -39,6 +39,9 @@ class LayoutInitializer:
     def map_qubit_to_cell(self, qubit_n: int):
         raise NotImplementedError
 
+    def num_y_ancillas(self):
+        return 1
+
     @staticmethod
     def singleSquarePatch(
         cell: Tuple[int, int],
@@ -171,7 +174,7 @@ class LatticeSurgeryComputation:
         self._initialize_layout(SimplePreDistilledStatesLayoutInitializer(self.num_qubits))
 
         # TODO rename y_eigenstates
-        self.ancilla_locations = [(j, 2) for j in range(self.num_qubits)]
+        self.ancilla_locations = [(j * 2, 2) for j in range(self.num_y_ancillas)]
         self.composer.lattice().min_cols = 2 * self.num_qubits
         self.composer.lattice().min_rows = 3
 
@@ -203,6 +206,7 @@ class LatticeSurgeryComputation:
 
     def _initialize_layout(self, initializer: LayoutInitializer):
         self.composer = LatticeSurgeryComputationComposer(self, initializer.get_layout())
+        self.num_y_ancillas = initializer.num_y_ancillas()
 
         self.logical_qubits: List[Tuple[int, int]] = []
         for j, quuid in self.logical_computation.logical_qubit_uuid_map.items():
@@ -419,7 +423,6 @@ class LatticeSurgeryComputationComposer:
 
     def set_separable_states(self, sim: lps.PatchSimulator):
         separable_states = sim.get_separable_states()
-
         for patch in self.lattice().patches:
             if patch.patch_uuid is not None:
                 if patch.patch_uuid in separable_states:

@@ -181,7 +181,7 @@ def test_get_y_free_equivalent(
     for b in input_circuit_blocks:
         c.add_pauli_block(b)
 
-    output_circuit = c.get_y_free_equivalent()
+    output_circuit = c.to_y_free_equivalent()
     assert len(output_circuit.ops) == len(expected_output_circuit_blocks)
     for i, expected_block in enumerate(expected_output_circuit_blocks):
         assert output_circuit.ops[i] == expected_block

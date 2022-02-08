@@ -58,3 +58,7 @@ def phase_frac_to_latex(phi: Fraction):
     den = str(phi.denominator)
 
     return "%s\\frac{%s\\pi}{%s}" % (sign, num, den)
+
+
+def is_power_of_two(n: int) -> bool:
+    return (n & (n - 1) == 0) and n != 0
