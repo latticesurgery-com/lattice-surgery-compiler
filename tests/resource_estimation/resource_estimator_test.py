@@ -18,7 +18,7 @@ from dataclasses import astuple
 from typing import List, cast
 
 import lsqecc.patches.lattice_surgery_computation_composer as lsc
-import lsqecc.resource_estimation.resource_estimator as lsest
+import lsqecc.resource_estimation.slice_resource_estimator as lsest
 from lsqecc.patches import patches
 
 

@@ -26,7 +26,7 @@ import lsqecc.patches.lattice_surgery_computation_composer as lscc
 import lsqecc.pauli_rotations.segmented_qasm_parser as segmented_qasm_parser
 import lsqecc.simulation.logical_patch_state_simulation as lssim
 from lsqecc.lattice_array import sparse_lattice_to_array
-from lsqecc.resource_estimation.resource_estimator import estimate_resources
+from lsqecc.resource_estimation.slice_resource_estimator import estimate_resources
 
 GUISlice = List[List[Optional[vac.VisualArrayCell]]]  # 2D array of cells
 
