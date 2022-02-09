@@ -1,6 +1,6 @@
 # Gate sequences to approximate rz gates with arguments ^n.
 # Key is n so 0->rz(pi/1), 1->rz(pi/2), 2->rx(pi/4) ...
-# Note that rz(theta) is a rotation by rx(theta/2) in our convention
+# Note that rz(theta) is a rotation by theta/2 about the Z axis in our convention.
 get_pi_over_2_to_the_n_rz_gate = [
     "SS",
     "S",
