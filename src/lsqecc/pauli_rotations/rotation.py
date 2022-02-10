@@ -238,7 +238,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         """Get an approximation in terms of pi/2, pi/4 and pi/8"""
 
         if not is_power_of_two(self.rotation_amount.denominator):
-            raise Exception("Can only approximate pi/2^n rotations")
+            raise Exception(f"Can only approximate pi/2^n rotations, got {self.rotation_amount.denominator}")
 
         approximation_gates = CachedRotationApproximations.get_pi_over_2_to_the_n_rz_gate(
             # -1 because of the theta/2 convention of the rz gate
