@@ -21,7 +21,6 @@ from fractions import Fraction
 from typing import List, Optional, Sequence, Tuple, cast
 
 import pyzx as zx
-import qiskit as qk
 
 from lsqecc.utils import phase_frac_to_latex
 
@@ -352,9 +351,9 @@ class PauliOpCircuit(object):
 
     @staticmethod
     def manual_parse_from_reversible_qasm(qasm: str) -> "PauliOpCircuit":
-        """Read circuit from qiskit gate by gate. Assumes no measurements no comments and no blank lines"""
+        """Read circuit from qiskit gate by gate. Assumes no measurements no comments
+        and no blank lines"""
 
-        X = PauliOperator.X
         Z = PauliOperator.Z
 
         def get_index_arg(arg: str):
@@ -366,10 +365,10 @@ class PauliOpCircuit(object):
 
         # For now discard TODO check that they are used correctly
         instructions = list(
-            filter(lambda i, a: i not in {"OPENQASM", "include", "barrier"}, instructions)
+            filter(lambda i: i[0] not in {"OPENQASM", "include", "barrier"}, instructions)
         )
 
-        qregs = list(filter(lambda i, a: i == "qreg", instructions))
+        qregs = list(filter(lambda i: i[0] == "qreg", instructions))
         if len(qregs) != 1:
             raise QasmParseException(f"Need exact;y on qreg, got {len(qregs)}")
         qreg_name, qreg_args = qregs[0]
