@@ -51,7 +51,7 @@ def estimate_resources(
     code_distance: int = 7,  # NOTE: this value matches the 7 in qentiana
     error_decoding_time_ns: float = (10**3),
     decoding_time_by_code_distance_multiplier: float = 1,
-    physical_error_rate: float = 0.0001,  # As expressed in quentiana, TODO find units
+    physical_error_rate: float = 0.001,  # As expressed in quentiana, TODO find units
 ):
     slices = computation.composer.getSlices()
     layout_slice = slices[0]
