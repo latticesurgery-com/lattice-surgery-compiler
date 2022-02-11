@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Union
 
 import lsqecc.patches.lattice_surgery_computation_composer as lscc
@@ -26,7 +26,7 @@ from lsqecc.external.opensurgery.resanalysis.experiment import (
 
 
 @dataclass
-class EstimatedResources:
+class ResourcesEstimatedFromSlices:
     t_count: int = 0
 
     core_space_qubits: int = 0
@@ -44,11 +44,6 @@ class EstimatedResources:
     time_ms: float = 0.0
     total_space_time_volume_ns_qubits: float = 0
 
-    def render_ascii(self) -> str:
-        return "Estimated resources needed for computation:\n" + "\n".join(
-            [f"{name.replace('_',' ')}: {value}" for name, value in asdict(self).items()]
-        )
-
 
 def estimate_resources(
     computation: lscc.LatticeSurgeryComputation,
@@ -60,17 +55,20 @@ def estimate_resources(
 ):
     slices = computation.composer.getSlices()
     layout_slice = slices[0]
-    e = EstimatedResources()  # Result
+    e = ResourcesEstimatedFromSlices()  # Result
 
     # Set up Qentiana
     ex1 = OpenSurgeryExperiment()
     ex1.props["footprint"] = layout_slice.getRows() * layout_slice.getCols()
     ex1.props["depth_units"] = len(slices)
     ex1.props["physical_error_rate"] = physical_error_rate
-    ex1.props["safety_factor"] = 99
+    ex1.props["safety_factor"] = 99  # 1% error rate.
     ex1.props["t_count"] = computation.get_t_count()
     ex1.props["prefer_depth_over_t_count"] = True
     qentiana = Qentiana(ex1.props)
+
+    qentiana.compute_physical_resources()
+    # Gives all the numbers
 
     # Core is the part of the lattice where the patches for logical qubits are
     e.core_space_qubits = layout_slice.getRows() * layout_slice.getCols() * code_distance**2
@@ -89,7 +87,9 @@ def estimate_resources(
     # Distillation box sizes are computed from quentiana
     qentiana_footprint: Union[str, int] = qentiana.compute_footprint_distillation_qubits()
     assert isinstance(qentiana_footprint, int)
-    e.distillation_box_space_qubits = qentiana_footprint
+    e.distillation_box_space_qubits = (
+        qentiana_footprint  # if (isinstance(qentiana_footprint,int)) else 1000
+    )
     qentiana.compute_distillation_box_distance()
     e.distillation_box_time_ns = qentiana.dist_box_dimensions["depth_distance"]
 

@@ -1,0 +1,3 @@
+Estimated resources needed for computation:
+code distance: 9
+time secs: 4.5e-05
