@@ -383,11 +383,11 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         Z = PauliOperator.Z
 
         return [
-            PauliRotation.from_r_gate(num_qubits, control_qubit, Z, phase / 2),
-            PauliRotation.from_r_gate(num_qubits, target_qubit, Z, phase / 2),
-            PauliRotation.from_cnot_gate(num_qubits, control_qubit, target_qubit),
-            PauliRotation.from_r_gate(num_qubits, target_qubit, Z, -phase / 2),
-        ]
+                PauliRotation.from_r_gate(num_qubits, control_qubit, Z, phase / 2),
+                PauliRotation.from_r_gate(num_qubits, target_qubit, Z, phase / 2)
+            ] \
+            + PauliRotation.from_cnot_gate(num_qubits, control_qubit, target_qubit) \
+            + [PauliRotation.from_r_gate(num_qubits, target_qubit, Z, -phase / 2)]
 
 
 class Measurement(PauliProductOperation, coc.ConditionalOperation):
