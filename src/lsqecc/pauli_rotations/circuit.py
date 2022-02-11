@@ -356,21 +356,26 @@ class PauliOpCircuit(object):
 
         Z = PauliOperator.Z
 
-        def get_index_arg(arg: str):
-            return int(qreg_args[0].split("[")[1].split("]")[0])
+        def get_index_arg(qreg_arg: str):
+            return int(qreg_arg.split("[")[1].split("]")[0])
 
-        instructions: List[Tuple[str, List[str]]] = [
-            (line.split(" ")[0], line.split(" ")[1].split(",")) for line in qasm.split(";\n")
-        ]
+        def split_instruciton_and_args(line: str) -> Tuple[str, List[str]]:
+            if " " not in line:
+                return line, []
+            return line.split(" ")[0], line.split(" ")[1].split(",")
+
+        instructions: List[Tuple[str, List[str]]] = list(
+            map(split_instruciton_and_args, qasm.split(";\n"))
+        )
 
         # For now discard TODO check that they are used correctly
         instructions = list(
-            filter(lambda i: i[0] not in {"OPENQASM", "include", "barrier"}, instructions)
+            filter(lambda line: line[0] not in {"OPENQASM", "include", "barrier"}, instructions)
         )
 
-        qregs = list(filter(lambda i: i[0] == "qreg", instructions))
+        qregs = list(filter(lambda line: line[0] == "qreg", instructions))
         if len(qregs) != 1:
-            raise QasmParseException(f"Need exact;y on qreg, got {len(qregs)}")
+            raise QasmParseException(f"Need exactly one qreg, got {len(qregs)}")
         qreg_name, qreg_args = qregs[0]
         num_qubits = get_index_arg(qreg_args[0])
 
