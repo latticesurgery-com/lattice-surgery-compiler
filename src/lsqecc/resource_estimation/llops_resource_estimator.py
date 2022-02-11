@@ -32,6 +32,7 @@ class ResourceEstimationConfig:
     # TODO why do we prefer to specify it in this way, instead of a global target error rate?
     safety_factor: float = 99
     physical_error_rate: float = 0.001
+    prefer_depth_over_t_count = True # Because we do have a worst case depth value
 
 
 @dataclass
