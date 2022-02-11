@@ -32,7 +32,6 @@ class ResourceEstimationConfig:
     # TODO why do we prefer to specify it in this way, instead of a global target error rate?
     safety_factor: float = 99
     physical_error_rate: float = 0.001
-    prefer_depth_over_t_count = True  # TODO decide
 
 
 @dataclass
@@ -41,11 +40,6 @@ class ResourcesEstimatedFromLLOPS:
     time_secs: float = 0
 
 
-#
-# vvvv THIS IS WHAT WE WANT TO COMPLETE TODAY vvvv
-#
-# Left some TODOs
-#
 def estimate(
     logical_lattice_computation: llops.LogicalLatticeComputation,
     config: ResourceEstimationConfig = ResourceEstimationConfig(),
