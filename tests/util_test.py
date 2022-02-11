@@ -16,7 +16,7 @@ from lsqecc.utils import is_power_of_two
         (2**63, True),
         (2**64, True),
         (2**65, True),
-        (2**65+1, False),
+        (2**65 + 1, False),
         (-1, False),
         (-2, False),
     ],
