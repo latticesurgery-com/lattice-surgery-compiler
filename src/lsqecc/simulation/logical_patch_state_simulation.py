@@ -18,7 +18,6 @@ import enum
 import itertools
 import math
 import random
-import uuid
 from collections import deque
 from typing import Dict, Iterable, List, Optional, Tuple, TypeVar, cast
 
@@ -28,6 +27,7 @@ import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 import lsqecc.simulation.qiskit_opflow_utils as qkutil
 from lsqecc.pauli_rotations import PauliOperator
 from lsqecc.simulation.lazy_tensor_op import LazyTensorOp, tensor_list
+from lsqecc.utils import PatchId
 
 from .qubit_state import DefaultSymbolicStates, SymbolicState
 
@@ -143,31 +143,31 @@ def proportional_choice(assoc_data_prob: List[Tuple[T, float]]) -> T:
 
 class PatchToQubitMapper:
     def __init__(self, logical_computation: llops.LogicalLatticeComputation):
-        self.patch_location_to_logical_idx: Dict[uuid.UUID, int] = dict()
+        self.patch_location_to_logical_idx: Dict[PatchId, int] = dict()
         for p in PatchToQubitMapper._get_all_operating_patches(logical_computation):
             if self.patch_location_to_logical_idx.get(p) is None:
                 self.patch_location_to_logical_idx[p] = self.max_num_patches()
 
-    def get_idx(self, patch: uuid.UUID) -> int:
+    def get_idx(self, patch: PatchId) -> int:
         return self.patch_location_to_logical_idx[patch]
 
     def max_num_patches(self) -> int:
         return len(self.patch_location_to_logical_idx)
 
-    def get_uuid(self, target_idx: int) -> uuid.UUID:
+    def get_uuid(self, target_idx: int) -> PatchId:
         for quiid, idx in self.patch_location_to_logical_idx.items():
             if idx == target_idx:
                 return quiid
         raise Exception(f"Patch with idx {target_idx} not found")
 
-    def enumerate_patches_by_index(self) -> Iterable[Tuple[int, uuid.UUID]]:
+    def enumerate_patches_by_index(self) -> Iterable[Tuple[int, PatchId]]:
         for idx in range(self.max_num_patches()):
             yield (idx, self.get_uuid(idx))
 
     @staticmethod
     def _get_all_operating_patches(
         logical_computation: llops.LogicalLatticeComputation,
-    ) -> List[uuid.UUID]:
+    ) -> List[PatchId]:
         # Add the patches used logical qubits
         patch_list = list(logical_computation.logical_qubit_uuid_map.values())
 
@@ -194,7 +194,7 @@ class PatchSimulator:
     def apply_logical_operation(self, logical_op: llops.LogicalLatticeOperation):
         raise NotImplementedError
 
-    def get_separable_states(self) -> Dict[uuid.UUID, Optional[qkop.DictStateFn]]:
+    def get_separable_states(self) -> Dict[PatchId, Optional[qkop.DictStateFn]]:
         """None is for unknown state, regardless of separability"""
         raise NotImplementedError
 
@@ -218,14 +218,14 @@ class FullStateVectorPatchSimulator(PatchSimulator):
     def _make_initial_logical_state(self) -> qkop.DictStateFn:
         """Every patch, when initialized, is considered a new logical qubit.
         So all patch initializations and magic state requests are handled ahead of time"""
-        initial_ancilla_states: Dict[uuid.UUID, SymbolicState] = dict()
+        initial_ancilla_states: Dict[PatchId, SymbolicState] = dict()
 
         def add_initial_ancilla_state(quuid, symbolic_state):
             if initial_ancilla_states.get(quuid) is not None:
                 raise Exception("Initializing patch " + str(quuid) + " twice")
             initial_ancilla_states[quuid] = symbolic_state
 
-        def get_init_state(quuid: uuid.UUID) -> qkop.StateFn:
+        def get_init_state(quuid: PatchId) -> qkop.StateFn:
             return ConvertersToQiskit.symbolic_state(
                 initial_ancilla_states.get(quuid, DefaultSymbolicStates.Zero)
             )
@@ -291,7 +291,7 @@ class FullStateVectorPatchSimulator(PatchSimulator):
             self.logical_state = outcome.resulting_state
             logical_op.set_outcome(outcome.corresponding_eigenvalue)
 
-    def get_separable_states(self) -> Dict[uuid.UUID, Optional[qkop.DictStateFn]]:
+    def get_separable_states(self) -> Dict[PatchId, Optional[qkop.DictStateFn]]:
         separable_states_by_index: Dict[
             int, qkop.DictStateFn
         ] = qkutil.StateSeparator.get_separable_qubits(self.logical_state)
@@ -312,14 +312,14 @@ class LazyTensorPatchSimulator(PatchSimulator):
     def _make_initial_logical_state(self) -> LazyTensorOp[qkop.StateFn]:
         """Every patch, when initialized, is considered a new logical qubit.
         So all patch initializations and magic state requests are handled ahead of time"""
-        initial_ancilla_states: Dict[uuid.UUID, SymbolicState] = dict()
+        initial_ancilla_states: Dict[PatchId, SymbolicState] = dict()
 
         def add_initial_ancilla_state(quuid, symbolic_state):
             if initial_ancilla_states.get(quuid) is not None:
                 raise Exception("Initializing patch " + str(quuid) + " twice")
             initial_ancilla_states[quuid] = symbolic_state
 
-        def get_init_state(quuid: uuid.UUID) -> qkop.StateFn:
+        def get_init_state(quuid: PatchId) -> qkop.StateFn:
             return ConvertersToQiskit.symbolic_state(
                 initial_ancilla_states.get(quuid, DefaultSymbolicStates.Zero)
             )
@@ -426,7 +426,7 @@ class LazyTensorPatchSimulator(PatchSimulator):
             self.logical_state.swap_operands(operand_swap_target_counter, front_of_queue)
 
             # Update the patch->idx map
-            operand_uuid_list: List[List[uuid.UUID]] = []
+            operand_uuid_list: List[List[PatchId]] = []
             for operand_idx, operand_size in enumerate(self.logical_state.get_operand_sizes()):
                 begin_operand = self.logical_state.get_idx_of_first_qubit_in_operand(operand_idx)
                 end_operand = begin_operand + operand_size  # TODO refactor into get_operator_bounds
@@ -454,9 +454,9 @@ class LazyTensorPatchSimulator(PatchSimulator):
         n_operands = self.bring_active_operands_to_front(logical_op)
         self.logical_state.merge_the_first_n_operands(n_operands - 1)
 
-    def get_separable_states(self) -> Dict[uuid.UUID, qkop.DictStateFn]:
+    def get_separable_states(self) -> Dict[PatchId, qkop.DictStateFn]:
 
-        separable_states: Dict[uuid.UUID, qkop.DictStateFn] = {}
+        separable_states: Dict[PatchId, qkop.DictStateFn] = {}
 
         operand_offset = 0
         for operand in self.logical_state.ops:
@@ -476,7 +476,7 @@ class NoOpSimulator(PatchSimulator):
     def apply_logical_operation(self, logical_op: llops.LogicalLatticeOperation):
         pass  # No-op
 
-    def get_separable_states(self) -> Dict[uuid.UUID, Optional[qkop.DictStateFn]]:
+    def get_separable_states(self) -> Dict[PatchId, Optional[qkop.DictStateFn]]:
         return dict(
             [(patch_uuid, None) for patch_uuid in self.mapper.patch_location_to_logical_idx.keys()]
         )
