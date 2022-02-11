@@ -17,13 +17,13 @@
 
 import copy
 import enum
-import uuid
 from typing import Dict, List, Optional, Tuple, cast
 
 import lsqecc.logical_lattice_ops.logical_lattice_ops as llops
 import lsqecc.patches.patches as patches
 import lsqecc.simulation.logical_patch_state_simulation as lps
 import lsqecc.simulation.qubit_state as qs
+from lsqecc.utils import PatchId
 
 from . import ancilla_region_routing as ancilla_region_routing
 
@@ -252,10 +252,10 @@ class LatticeSurgeryComputation:
 
         return LatticeSurgeryComputationSliceContextManager(self.composer)
 
-    def find_cell_by_qubit_uuid(self, qubit_uuid: uuid.UUID) -> Tuple[int, int]:
+    def find_cell_by_qubit_uuid(self, qubit_uuid: PatchId) -> Tuple[int, int]:
         return self.composer.lattice().getPatchByUuid(qubit_uuid).getRepresentative()
 
-    def bind_magic_state(self, patch_uuid: uuid.UUID) -> Optional[patches.Patch]:
+    def bind_magic_state(self, patch_uuid: PatchId) -> Optional[patches.Patch]:
         if len(self.magic_state_queue) == 0:
             return None
         cell = self.magic_state_queue[0]
@@ -283,7 +283,7 @@ class LatticeSurgeryComputationComposer:
         self.lattice().patches.append(patch)
 
     def addSquareAncilla(
-        self, patch_state: qs.QubitState, patch_uuid: Optional[uuid.UUID] = None
+        self, patch_state: qs.QubitState, patch_uuid: Optional[PatchId] = None
     ) -> Optional[Tuple[int, int]]:
         cell = self.getAncillaLocation()
         if cell is None:
@@ -378,10 +378,10 @@ class LatticeSurgeryComputationComposer:
     def getSlices(self) -> List[patches.Lattice]:
         return self.qubit_patch_slices
 
-    def get_patch_representative(self, quuid: uuid.UUID) -> Tuple[int, int]:
+    def get_patch_representative(self, quuid: PatchId) -> Tuple[int, int]:
         return self.get_patch(quuid).getRepresentative()
 
-    def get_patch(self, quuid: uuid.UUID) -> patches.Patch:
+    def get_patch(self, quuid: PatchId) -> patches.Patch:
         p = self.lattice().getPatchByUuid(quuid)
         assert p is not None
         return p
