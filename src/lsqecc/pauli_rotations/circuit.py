@@ -351,8 +351,7 @@ class PauliOpCircuit(object):
 
     @staticmethod
     def _manual_parse_from_reversible_qasm(qasm: str) -> "PauliOpCircuit":
-        """Read circuit from qiskit gate by gate. Assumes no measurements no comments
-        and no blank lines"""
+        """Read circuit from qiskit gate by gate. Assumes no measurements and no comments"""
 
         Z = PauliOperator.Z
 
@@ -368,16 +367,18 @@ class PauliOpCircuit(object):
             map(split_instruciton_and_args, qasm.split(";\n"))
         )
 
-        # For now discard TODO check that they are used correctly
-        instructions = list(
-            filter(lambda line: line[0] not in {"OPENQASM", "include", "barrier"}, instructions)
-        )
-
         qregs = list(filter(lambda line: line[0] == "qreg", instructions))
         if len(qregs) != 1:
             raise QasmParseException(f"Need exactly one qreg, got {len(qregs)}")
         qreg_name, qreg_args = qregs[0]
         num_qubits = get_index_arg(qreg_args[0])
+
+        # For now discard TODO check that they are used correctly
+        instructions = list(
+            filter(
+                lambda line: line[0] not in {"OPENQASM", "include", "barrier", "qreg"}, instructions
+            )
+        )
 
         ret_circ = PauliOpCircuit(num_qubits)
 
@@ -426,6 +427,8 @@ class PauliOpCircuit(object):
                         Fraction(1, phase_pi_frac_den),
                     )
                 )
+            elif not instruction and not args:
+                pass
             else:
                 raise QasmParseException(
                     f"Instruction {instruction} with args {args} not implemented"
