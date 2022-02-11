@@ -350,7 +350,7 @@ class PauliOpCircuit(object):
         return ret_circ
 
     @staticmethod
-    def manual_parse_from_reversible_qasm(qasm: str) -> "PauliOpCircuit":
+    def _manual_parse_from_reversible_qasm(qasm: str) -> "PauliOpCircuit":
         """Read circuit from qiskit gate by gate. Assumes no measurements no comments
         and no blank lines"""
 
@@ -426,6 +426,10 @@ class PauliOpCircuit(object):
                         Fraction(1, phase_pi_frac_den),
                     )
                 )
+            else:
+                raise QasmParseException(
+                    f"Instruction {instruction} with args {args} not implemented"
+                )
 
         return ret_circ
 
@@ -439,11 +443,11 @@ class PauliOpCircuit(object):
 
     class DecomposerType(enum.Enum):
         PyZX = "PyZX"
-        Manual = "Manual"
+        _Manual = "_Manual"  # Experimental
 
     @staticmethod
     def load_reversible_from_qasm_string(
-        qasm_string: str, decomposer: DecomposerType = DecomposerType.Manual
+        qasm_string: str, decomposer: DecomposerType = DecomposerType.PyZX
     ) -> "PauliOpCircuit":
         """Load a string as if it were a QASM circuit. Only supports reversible circuits."""
 
@@ -451,7 +455,7 @@ class PauliOpCircuit(object):
             pyzx_circ = zx.Circuit.from_qasm(qasm_string)
             return PauliOpCircuit.load_from_pyzx(pyzx_circ)
         else:
-            return PauliOpCircuit.manual_parse_from_reversible_qasm(qasm_string)
+            return PauliOpCircuit._manual_parse_from_reversible_qasm(qasm_string)
 
     @staticmethod
     def join(lhs: "PauliOpCircuit", rhs: "PauliOpCircuit") -> "PauliOpCircuit":

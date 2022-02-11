@@ -14,5 +14,5 @@ if __name__ == "__main__":
     qasm = qft_benchmark.qft_gate(4).qasm()
     print()
 
-    print(PauliOpCircuit.manual_parse_from_reversible_qasm(qasm))
+    print(PauliOpCircuit._manual_parse_from_reversible_qasm(qasm))
 
