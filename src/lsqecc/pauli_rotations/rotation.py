@@ -29,18 +29,6 @@ from lsqecc.pauli_rotations.pi_over_2_to_the_n_rz_gate_approximations import (
 from lsqecc.utils import decompose_pi_fraction, is_power_of_two, phase_frac_to_latex
 
 
-# Wrap as a singleton
-class CachedRotationApproximations:
-    instance: List[str] = get_pi_over_2_to_the_n_rz_gate
-
-    @staticmethod
-    def get_pi_over_2_to_the_n_rz_gate(n: int) -> str:
-        """Parameter n is the argument pi/2^n as passed to the rz gate.
-        Note that a Z_{theta} rotation is a 2*theta rz gate
-        """
-        return CachedRotationApproximations.instance[n]
-
-
 class PauliOperator(Enum):
     """
     Representation of a Pauli operator inside of a rotation block
@@ -234,48 +222,94 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
     def __hash__(self) -> int:
         return hash(hash(self.rotation_amount) + hash(tuple(self.ops_list)))
 
-    def to_basic_form_approximation(self) -> List["PauliRotation"]:
-        """Get an approximation in terms of pi/2, pi/4 and pi/8"""
-
-        if not is_power_of_two(self.rotation_amount.denominator):
-            raise Exception(
-                f"Can only approximate pi/2^n rotations, got {self.rotation_amount.denominator}"
-            )
-
-        approximation_gates = CachedRotationApproximations.get_pi_over_2_to_the_n_rz_gate(
-            # -1 because of the theta/2 convention of the rz gate
-            int(math.log2(self.rotation_amount.denominator))
-            - 1
-        )
-
-        axis_list = list(filter(lambda op: op != PauliOperator.I, self.ops_list))
-        if len(axis_list) != 1:
-            raise Exception("Can only approximate single qubit rotations")
-        axis = axis_list[0]
-
-        if axis == PauliOperator.X:
+    @staticmethod
+    def _approximate_rotation_in_as_qubit_sequence(axis: str, denominator_exponent: int):
+        approximation_gates = get_pi_over_2_to_the_n_rz_gate[denominator_exponent]
+        if axis == "X":
             approximation_gates = "H" + approximation_gates + "H"
-        elif axis == PauliOperator.Z:
+        elif axis == "Z":
             pass
         else:
             raise Exception(f"Unsupported axis of rotation {axis}")
 
         rotations = []
-        qubit_idx = self.ops_list.index(axis)
+
         for gate in approximation_gates:
             if gate == "S":
-                rotations.append(PauliRotation.from_s_gate(self.qubit_num, qubit_idx))
+                rotations.append(PauliRotation.from_s_gate(0, 0))
             elif gate == "T":
-                rotations.append(PauliRotation.from_t_gate(self.qubit_num, qubit_idx))
+                rotations.append(PauliRotation.from_t_gate(0, 0))
             elif gate == "X":
-                rotations.append(PauliRotation.from_x_gate(self.qubit_num, qubit_idx))
+                rotations.append(PauliRotation.from_x_gate(0, 0))
             elif gate == "H":
-                rotations.extend(PauliRotation.from_hadamard_gate(self.qubit_num, qubit_idx))
+                rotations.extend(PauliRotation.from_hadamard_gate(0, 0))
             else:
                 raise Exception(f"Cannot decompose gate: {gate}")
 
         # Note that it might be possible to simplify these a little further
         return rotations
+
+    @staticmethod
+    def _build_approximations(axis: str) -> List[List["PauliRotation"]]:
+        return [
+            PauliRotation._approximate_rotation_in_as_qubit_sequence(axis, i)
+            for i in range(len(get_pi_over_2_to_the_n_rz_gate))
+        ]
+
+    # Wrap as a singleton
+    class CachedRotationApproximations:
+        rx_approximations: List[List["PauliRotation"]] = []
+        rz_approximations: List[List["PauliRotation"]] = []
+
+        @staticmethod
+        def get_approximation(n: int, axis: "PauliOperator") -> List["PauliRotation"]:
+            """Parameter n is the argument pi/2^n as passed to the rz gate.
+            Note that a Z_{theta} rotation is a 2*theta rz gate
+            """
+
+            if len(PauliRotation.CachedRotationApproximations.rx_approximations) == 0:
+                PauliRotation.CachedRotationApproximations.rx_approximations = (
+                    PauliRotation._build_approximations("X")
+                )
+                PauliRotation.CachedRotationApproximations.rz_approximations = (
+                    PauliRotation._build_approximations("Z")
+                )
+
+            if axis == PauliOperator.X:
+                return PauliRotation.CachedRotationApproximations.rx_approximations[n]
+            elif axis == PauliOperator.Z:
+                return PauliRotation.CachedRotationApproximations.rz_approximations[n]
+            else:
+                raise Exception(f"Unsupported axis of rotation {axis}")
+
+    def to_basic_form_approximation(self) -> List["PauliRotation"]:
+        """Get an approximation in terms of pi/2, pi/4 and pi/8"""
+
+        if not is_power_of_two(self.rotation_amount.denominator):
+            raise Exception("Can only approximate pi/2^n rotations")
+
+        denominator_exponent = int(math.log2(self.rotation_amount.denominator)) - 1
+        # -1 because of the theta/2 convention of the rz gate
+
+        axis_list = list(filter(lambda op: op != PauliOperator.I, self.ops_list))
+        if len(axis_list) != 1:
+            raise Exception("Can only approximate single qubit rotations")
+        axis = axis_list[0]
+        axis_index = self.ops_list.index(axis)
+
+        raw_rotations = PauliRotation.CachedRotationApproximations.get_approximation(
+            denominator_exponent, axis
+        )
+
+        padded_rotations: List["PauliRotation"] = []
+        for rotation in raw_rotations:
+            padded_rotations.append(
+                PauliRotation.from_list(
+                    [PauliOperator.I] * self.qubit_num, rotation.rotation_amount
+                )
+            )
+            padded_rotations[-1].ops_list[axis_index] = rotation.ops_list[0]
+        return padded_rotations
 
     def to_basic_form_decomposition(self) -> List["PauliRotation"]:
         """Express in terms of pi/2, pi/4 and pi/8"""
