@@ -238,7 +238,9 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         """Get an approximation in terms of pi/2, pi/4 and pi/8"""
 
         if not is_power_of_two(self.rotation_amount.denominator):
-            raise Exception("Can only approximate pi/2^n rotations")
+            raise Exception(
+                f"Can only approximate pi/2^n rotations, got {self.rotation_amount.denominator}"
+            )
 
         approximation_gates = CachedRotationApproximations.get_pi_over_2_to_the_n_rz_gate(
             # -1 because of the theta/2 convention of the rz gate
@@ -365,6 +367,29 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         correct_target.change_single_op(target_qubit, PauliOperator.Z)
 
         return [entangling_op, correct_control, correct_target]
+
+    @staticmethod
+    def from_crz_gate(
+        num_qubits: int, control_qubit: int, target_qubit: int, phase: Fraction
+    ) -> List["PauliRotation"]:
+        """
+        Use the follwing identity:
+        q_0: ─────■─────               ┌───────────┐
+             ┌────┴────┐    ---   q_0: ┤ Rz(π/(2n))├──■──────────────────■──
+        q_1: ┤ Rz(π/n) ├    ---        ├───────────┤┌─┴─┐┌────────────┐┌─┴─┐
+             └─────────┘          q_1: ┤ Rz(π/(2n))├┤ X ├┤ Rz(-π/(2n))├┤ X ├
+                                       └───────────┘└───┘└────────────┘└───┘
+        """
+        Z = PauliOperator.Z
+
+        return (
+            [
+                PauliRotation.from_r_gate(num_qubits, control_qubit, Z, phase / 2),
+                PauliRotation.from_r_gate(num_qubits, target_qubit, Z, phase / 2),
+            ]
+            + PauliRotation.from_cnot_gate(num_qubits, control_qubit, target_qubit)
+            + [PauliRotation.from_r_gate(num_qubits, target_qubit, Z, -phase / 2)]
+        )
 
 
 class Measurement(PauliProductOperation, coc.ConditionalOperation):
