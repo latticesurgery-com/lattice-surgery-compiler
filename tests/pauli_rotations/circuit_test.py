@@ -369,3 +369,30 @@ def test_render_ascii():
     )
 
     assert c.render_ascii() == expected_output
+
+
+EXAMPLE_CIRCUIT = """OPENQASM 2.0;
+include "qelib1.inc";
+qreg q0[4];
+h q0[3];
+barrier q0[0],q0[1],q0[2],q0[3];
+crz(pi/2) q0[2],q0[3];
+h q0[2];
+barrier q0[0],q0[1],q0[2],q0[3];
+crz(pi/4) q0[1],q0[3];
+crz(pi/2) q0[1],q0[2];
+h q0[1];
+barrier q0[0],q0[1],q0[2],q0[3];
+crz(pi/8) q0[0],q0[3];
+crz(pi/4) q0[0],q0[2];
+crz(pi/2) q0[0],q0[1];
+h q0[0];
+barrier q0[0],q0[1],q0[2],q0[3];
+"""
+
+
+def test__manual_parse_from_reversible_qasm(snapshot):
+    snapshot.assert_match(
+        PauliOpCircuit._manual_parse_from_reversible_qasm(EXAMPLE_CIRCUIT).render_ascii(),
+        "circuit.txt",
+    )
