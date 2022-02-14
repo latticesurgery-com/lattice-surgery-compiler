@@ -16,14 +16,19 @@
 # USA
 
 import copy
+import enum
 from fractions import Fraction
-from typing import List, Optional, Sequence, cast
+from typing import List, Optional, Sequence, Tuple, cast
 
 import pyzx as zx
 
 from lsqecc.utils import phase_frac_to_latex
 
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
+
+
+class QasmParseException(Exception):
+    pass
 
 
 class PauliOpCircuit(object):
@@ -345,6 +350,93 @@ class PauliOpCircuit(object):
         return ret_circ
 
     @staticmethod
+    def _manual_parse_from_reversible_qasm(qasm: str) -> "PauliOpCircuit":
+        """Read circuit from qiskit gate by gate. Assumes no measurements and no comments"""
+
+        Z = PauliOperator.Z
+
+        def get_index_arg(qreg_arg: str):
+            return int(qreg_arg.split("[")[1].split("]")[0])
+
+        def split_instruciton_and_args(line: str) -> Tuple[str, List[str]]:
+            if " " not in line:
+                return line, []
+            return line.split(" ")[0], line.split(" ")[1].split(",")
+
+        instructions: List[Tuple[str, List[str]]] = list(
+            map(split_instruciton_and_args, qasm.split(";\n"))
+        )
+
+        qregs = list(filter(lambda line: line[0] == "qreg", instructions))
+        if len(qregs) != 1:
+            raise QasmParseException(f"Need exactly one qreg, got {len(qregs)}")
+        qreg_name, qreg_args = qregs[0]
+        num_qubits = get_index_arg(qreg_args[0])
+
+        # For now discard TODO check that they are used correctly
+        instructions = list(
+            filter(
+                lambda line: line[0] not in {"OPENQASM", "include", "barrier", "qreg"}, instructions
+            )
+        )
+
+        ret_circ = PauliOpCircuit(num_qubits)
+
+        for instruction, args in instructions:
+
+            if instruction == "h":
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_hadamard_gate(num_qubits, get_index_arg(args[0]))
+                )
+            elif instruction == "x":
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_x_gate(num_qubits, get_index_arg(args[0]))
+                )
+            elif instruction == "s":
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_s_gate(num_qubits, get_index_arg(args[0]))
+                )
+            elif instruction == "t":
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_t_gate(num_qubits, get_index_arg(args[0]))
+                )
+            elif instruction[0:2] == "rz":
+                if instruction[2:6] != "(pi/":
+                    raise QasmParseException(
+                        f"Can only parse pi/n for n power of 2 angles as rz args, "
+                        f"got {instruction}"
+                    )
+                phase_pi_frac_den = int(instruction[6:].split(")")[0])
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_r_gate(
+                        num_qubits, get_index_arg(args[0]), Z, Fraction(1, phase_pi_frac_den)
+                    )
+                )
+            elif instruction[0:3] == "crz":
+                if instruction[3:7] != "(pi/":
+                    raise QasmParseException(
+                        f"Can only parse pi/n for n power of 2 angles as rz args, "
+                        f"got {instruction}"
+                    )
+                phase_pi_frac_den = int(instruction[7:].split(")")[0])
+                ret_circ.add_pauli_blocks(
+                    PauliRotation.from_crz_gate(
+                        num_qubits,
+                        get_index_arg(args[0]),
+                        get_index_arg(args[1]),
+                        Fraction(1, phase_pi_frac_den),
+                    )
+                )
+            elif not instruction and not args:
+                pass
+            else:
+                raise QasmParseException(
+                    f"Instruction {instruction} with args {args} not implemented"
+                )
+
+        return ret_circ
+
+    @staticmethod
     def from_list(pauli_op_list: List[PauliProductOperation]):
         c = PauliOpCircuit(pauli_op_list[0].qubit_num)
         for op in pauli_op_list:
@@ -352,14 +444,21 @@ class PauliOpCircuit(object):
             c.add_pauli_block(op)
         return c
 
+    class DecomposerType(enum.Enum):
+        PyZX = "PyZX"
+        _Manual = "_Manual"  # Experimental
+
     @staticmethod
-    def load_reversible_from_qasm_string(qasm_string: str) -> "PauliOpCircuit":
+    def load_reversible_from_qasm_string(
+        qasm_string: str, decomposer: DecomposerType = DecomposerType.PyZX
+    ) -> "PauliOpCircuit":
         """Load a string as if it were a QASM circuit. Only supports reversible circuits."""
 
-        pyzx_circ = zx.Circuit.from_qasm(qasm_string)
-        ret_circ = PauliOpCircuit.load_from_pyzx(pyzx_circ)
-
-        return ret_circ
+        if decomposer == PauliOpCircuit.DecomposerType.PyZX:
+            pyzx_circ = zx.Circuit.from_qasm(qasm_string)
+            return PauliOpCircuit.load_from_pyzx(pyzx_circ)
+        else:
+            return PauliOpCircuit._manual_parse_from_reversible_qasm(qasm_string)
 
     @staticmethod
     def join(lhs: "PauliOpCircuit", rhs: "PauliOpCircuit") -> "PauliOpCircuit":
