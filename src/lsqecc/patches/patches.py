@@ -18,11 +18,11 @@
 from __future__ import annotations
 
 import itertools
+import uuid
 from enum import Enum
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from lsqecc.pauli_rotations import PauliOperator
-from lsqecc.utils import PatchId
 
 if TYPE_CHECKING:
     from lsqecc.logical_lattice_ops.logical_lattice_ops import LogicalLatticeOperation
@@ -115,7 +115,7 @@ class Patch:
         state: Optional[QubitState],
         cells: List[Tuple[int, int]],
         edges: List[Edge],
-        qubit_uuid: Optional[PatchId] = None,
+        qubit_uuid: Optional[uuid.UUID] = None,
     ):
         self.patch_type = patch_type
         self.cells = cells
@@ -141,7 +141,7 @@ class Patch:
     def getCoordList(self, coord_type: CoordType) -> List[int]:
         return list(map(lambda cell: cell[coord_type.value], self.cells))
 
-    def set_uuid(self, patch_uuid: PatchId):
+    def set_uuid(self, patch_uuid: uuid.UUID):
         self.patch_uuid = patch_uuid
 
 
@@ -190,7 +190,7 @@ class Lattice:
         maybe_patch = self.getPatchOfCell(cell)
         return maybe_patch.patch_type if maybe_patch is not None else None
 
-    def getPatchByUuid(self, patch_uuid: PatchId) -> Optional[Patch]:
+    def getPatchByUuid(self, patch_uuid: uuid.UUID) -> Optional[Patch]:
         for p in self.patches:
             if p.patch_uuid is not None and p.patch_uuid == patch_uuid:
                 return p

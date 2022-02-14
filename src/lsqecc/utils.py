@@ -16,7 +16,6 @@
 # USA
 
 import math
-import random
 from dataclasses import asdict
 from fractions import Fraction
 
@@ -70,12 +69,3 @@ def dataclass_render_ascii(self) -> str:
     return "Estimated resources needed for computation:\n" + "\n".join(
         [f"{name.replace('_',' ')}: {value}" for name, value in asdict(self).items()]
     )
-
-
-PatchId = bytes
-
-_patch_id_counter = 0
-
-
-def get_new_patch_id():
-    return random.randbytes(20)

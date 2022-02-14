@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
 # USA
 
+import uuid
 from collections import deque
 from fractions import Fraction
 from typing import Deque, Dict, List, Optional, Sequence, Union
@@ -28,7 +29,6 @@ from lsqecc.pauli_rotations import (
     PauliProductOperation,
     PauliRotation,
 )
-from lsqecc.utils import PatchId, get_new_patch_id
 
 # TODO give a uuid to all patches
 
@@ -36,62 +36,64 @@ from lsqecc.utils import PatchId, get_new_patch_id
 
 
 class LogicalLatticeOperation(coc.ConditionalOperation):
-    def get_operating_patches(self) -> List[PatchId]:
+    def get_operating_patches(self) -> List[uuid.UUID]:
         raise NotImplementedError
 
 
 class SinglePatchMeasurement(LogicalLatticeOperation, coc.HasPauliEigenvalueOutcome):
-    def __init__(self, qubit_uuid: PatchId, op: PauliOperator, isNegative: Optional[bool] = False):
+    def __init__(
+        self, qubit_uuid: uuid.UUID, op: PauliOperator, isNegative: Optional[bool] = False
+    ):
         self.qubit_uuid = qubit_uuid
         self.op = op
         self.isNegative = isNegative
 
-    def get_operating_patches(self) -> List[PatchId]:
+    def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]
 
 
 class MultiBodyMeasurement(LogicalLatticeOperation, coc.HasPauliEigenvalueOutcome):
     def __init__(
-        self, patch_pauli_operator_map: Dict[PatchId, PauliOperator], isNegative: bool = False
+        self, patch_pauli_operator_map: Dict[uuid.UUID, PauliOperator], isNegative: bool = False
     ):
         self.patch_pauli_operator_map = patch_pauli_operator_map
         self.isNegative = isNegative
 
-    def get_operating_patches(self) -> List[PatchId]:
+    def get_operating_patches(self) -> List[uuid.UUID]:
         return list(self.patch_pauli_operator_map.keys())
 
 
 class AncillaQubitPatchInitialization(LogicalLatticeOperation):
-    def __init__(self, qubit_state: qs.QubitState, qubit_uuid: PatchId):
+    def __init__(self, qubit_state: qs.QubitState, qubit_uuid: uuid.UUID):
         self.qubit_state = qubit_state
         self.qubit_uuid = qubit_uuid
 
-    def get_operating_patches(self) -> List[PatchId]:
+    def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]
 
 
 class LogicalPauli(LogicalLatticeOperation):
-    def __init__(self, qubit_uuid: PatchId, pauli_matrix: PauliOperator):
+    def __init__(self, qubit_uuid: uuid.UUID, pauli_matrix: PauliOperator):
         self.qubit_uuid = qubit_uuid
         self.pauli_matrix = pauli_matrix
 
-    def get_operating_patches(self) -> List[PatchId]:
+    def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]
 
 
 class MagicStateRequest(LogicalLatticeOperation):
-    def __init__(self, qubit_uuid: PatchId):
+    def __init__(self, qubit_uuid: uuid.UUID):
         self.qubit_uuid = qubit_uuid
 
-    def get_operating_patches(self) -> List[PatchId]:
+    def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]
 
 
 class LogicalLatticeComputation:
     def __init__(self, circuit: PauliOpCircuit):
         self.circuit = circuit
-        self.logical_qubit_uuid_map: Dict[int, PatchId] = dict(
-            [(j, get_new_patch_id()) for j in range(circuit.qubit_num)]
+        self.logical_qubit_uuid_map: Dict[int, uuid.UUID] = dict(
+            [(j, uuid.uuid4()) for j in range(circuit.qubit_num)]
         )
         self.ops: List[LogicalLatticeOperation] = []
 
@@ -127,7 +129,7 @@ class LogicalLatticeComputation:
         if not isinstance(m, Measurement):
             raise TypeError("Make sure the passed argument is of type Measurement")
 
-        ret: Dict[PatchId, PauliOperator] = dict()
+        ret: Dict[uuid.UUID, PauliOperator] = dict()
         for qubit_idx in range(m.qubit_num):
             if m.get_op(qubit_idx) != PauliOperator.I:
                 ret[self.logical_qubit_uuid_map[qubit_idx]] = m.get_op(qubit_idx)
@@ -187,7 +189,7 @@ class RotationsComposer:
         condition: Optional[coc.EvaluationCondition],
     ) -> Sequence[Union[LogicalLatticeOperation, PauliProductOperation]]:
         """See Figure 11 of Litinski's GoSC"""
-        ancilla_uuid = get_new_patch_id()
+        ancilla_uuid = uuid.uuid4()
         ancilla_initialization = AncillaQubitPatchInitialization(
             qs.DefaultSymbolicStates.YPosEigenState, ancilla_uuid
         )
@@ -226,7 +228,7 @@ class RotationsComposer:
         condition: Optional[coc.EvaluationCondition],
     ) -> Sequence[Union[LogicalLatticeOperation, PauliProductOperation]]:
         """Returns the correction terms. See Figure 11 of Litinski's GoSC"""
-        magic_state_uuid = get_new_patch_id()
+        magic_state_uuid = uuid.uuid4()
 
         multi_body_measurement = MultiBodyMeasurement({})
         multi_body_measurement.set_condition(condition)
