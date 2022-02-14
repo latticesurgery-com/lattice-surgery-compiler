@@ -1,9 +1,8 @@
-from collections import Sequence
 from dataclasses import dataclass
 from fractions import Fraction
 
 # TODO freeze the gate class
-from typing import List
+from typing import List, Sequence
 
 from lsqecc.gates import approximate
 

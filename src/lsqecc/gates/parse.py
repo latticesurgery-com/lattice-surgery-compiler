@@ -17,18 +17,18 @@ def split_instruciton_and_args(line: str) -> Tuple[str, List[str]]:
 
 def parse_trivial_gate(instruction: str, args: List[str]) -> gates.Gate:
     if instruction == "h":
-        gates.H(get_index_arg(args[0]))
+        return gates.H(get_index_arg(args[0]))
     elif instruction == "x":
-        gates.X(get_index_arg(args[0]))
+        return gates.X(get_index_arg(args[0]))
     elif instruction == "s":
-        gates.S(get_index_arg(args[0]))
+        return gates.S(get_index_arg(args[0]))
     elif instruction == "t":
-        gates.T(get_index_arg(args[0]))
+        return gates.T(get_index_arg(args[0]))
     else:
-        QasmParseException("Not a trivial gate")
+        raise QasmParseException(f"Not a trivial gate: {instruction}")
 
 
-def parse_circuit(qasm: str) -> Sequence[gates.Gate]:
+def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
 
     instructions: List[Tuple[str, List[str]]] = list(
         map(split_instruciton_and_args, qasm.split(";\n"))
@@ -45,7 +45,7 @@ def parse_circuit(qasm: str) -> Sequence[gates.Gate]:
     ret_gates: List[gates.Gate] = []
 
     for instruction, args in instructions:
-        if instruction in "hxzst":
+        if instruction and instruction in "hxzst":
             ret_gates.append(parse_trivial_gate(instruction, args))
         elif instruction[0:2] == "rz":
             if instruction[2:6] != "(pi/":
@@ -53,7 +53,7 @@ def parse_circuit(qasm: str) -> Sequence[gates.Gate]:
                     f"Can only parse pi/n for n power of 2 angles as rz args, " f"got {instruction}"
                 )
             phase_pi_frac_den = int(instruction[6:].split(")")[0])
-            gates.RZ(get_index_arg(args[0]), Fraction(1, phase_pi_frac_den))
+            ret_gates.append(gates.RZ(get_index_arg(args[0]), Fraction(1, phase_pi_frac_den)))
         elif instruction[0:3] == "crz":
             if instruction[3:7] != "(pi/":
                 raise QasmParseException(
