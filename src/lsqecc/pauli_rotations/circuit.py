@@ -22,13 +22,9 @@ from typing import List, Optional, Sequence, Tuple, cast
 
 import pyzx as zx
 
-from lsqecc.utils import phase_frac_to_latex
+from lsqecc.utils import QasmParseException, phase_frac_to_latex
 
 from .rotation import Measurement, PauliOperator, PauliProductOperation, PauliRotation
-
-
-class QasmParseException(Exception):
-    pass
 
 
 class PauliOpCircuit(object):
