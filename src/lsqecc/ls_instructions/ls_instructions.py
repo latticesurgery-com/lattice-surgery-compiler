@@ -26,7 +26,7 @@ class Init(LSInstruction):
     state: qs.QubitState = qs.DefaultSymbolicStates.Zero
 
     def __repr__(self):
-        return f"{type(self).__name__} {self.patch_id} {self.state}"
+        return f"{type(self).__name__} {self.patch_id} {self.state.ket_repr()}"
 
 
 @dataclass

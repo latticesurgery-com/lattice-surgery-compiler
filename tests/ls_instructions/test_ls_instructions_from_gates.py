@@ -27,8 +27,10 @@ barrier q0[0],q0[1],q0[2],q0[3];
 
 class TestLSInstructionsFromGatesGenerator:
     def test_text_from_gates_circuit(self, snapshot):
-        instructions: str = LSInstructionsFromGatesGenerator.text_from_gates_circuit(
-            GatesCircuit.from_qasm(QFT_CIRCUIT).to_clifford_plus_t()
+        instructions: str = repr(
+            LSInstructionsFromGatesGenerator.text_from_gates_circuit(
+                GatesCircuit.from_qasm(QFT_CIRCUIT).to_clifford_plus_t()
+            )
         )
         snapshot.assert_match(instructions, "circuit.txt")
 

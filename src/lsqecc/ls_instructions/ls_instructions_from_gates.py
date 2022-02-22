@@ -38,7 +38,7 @@ class LSInstructionsFromGatesGenerator:
         elif isinstance(gate, gates.CNOT):
             ancilla = self.get_new_ancilla()
             return [
-                ls_instructions.Init(qs.DefaultSymbolicStates.Plus),
+                ls_instructions.Init(patch_id=ancilla, state=qs.DefaultSymbolicStates.Plus),
                 ls_instructions.MultiBodyMeasure(
                     {gate.control_qubit: PauliOperator.Z, ancilla: PauliOperator.Z}
                 ),
