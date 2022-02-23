@@ -372,14 +372,12 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
     def from_crz_gate(
         num_qubits: int, control_qubit: int, target_qubit: int, phase: Fraction
     ) -> List["PauliRotation"]:
-        """
-        Use the follwing identity:
-        q_0: ─────■─────               ┌───────────┐
-             ┌────┴────┐    ---   q_0: ┤ Rz(π/(2n))├──■──────────────────■──
-        q_1: ┤ Rz(π/n) ├    ---        ├───────────┤┌─┴─┐┌────────────┐┌─┴─┐
-             └─────────┘          q_1: ┤ Rz(π/(2n))├┤ X ├┤ Rz(-π/(2n))├┤ X ├
-                                       └───────────┘└───┘└────────────┘└───┘
-        """
+        # Use the follwing identity:
+        # q_0: ─────■─────               ┌───────────┐
+        #      ┌────┴────┐    ---   q_0: ┤ Rz(π/(2n))├──■──────────────────■──
+        # q_1: ┤ Rz(π/n) ├    ---        ├───────────┤┌─┴─┐┌────────────┐┌─┴─┐
+        #      └─────────┘          q_1: ┤ Rz(π/(2n))├┤ X ├┤ Rz(-π/(2n))├┤ X ├
+        #                                └───────────┘└───┘└────────────┘└───┘
         Z = PauliOperator.Z
 
         return (
