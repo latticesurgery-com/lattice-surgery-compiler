@@ -41,7 +41,7 @@ class RequestMagicState(LSInstruction):
     patch_id: PatchId = -1
 
     def __repr__(self):
-        return f"{type(self).__name__}  {self.patch_id}"
+        return f"{type(self).__name__} {self.patch_id}"
 
 
 @dataclass
