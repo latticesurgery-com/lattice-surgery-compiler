@@ -1,3 +1,7 @@
+"""
+Helper methods to parse qasm circuits.
+"""
+
 from fractions import Fraction
 from typing import List, Sequence, Tuple
 

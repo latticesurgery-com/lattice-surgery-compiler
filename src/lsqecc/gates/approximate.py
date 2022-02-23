@@ -9,6 +9,10 @@ from lsqecc.utils import is_power_of_two
 
 
 def approximate_rz(rz_gate: "gates.RZ") -> Sequence["gates.Gate"]:
+    """Get the Clifford+T approximation of a an rz gate.
+    Currently ony supports arguments of the form pi/2^n.
+    """
+
     if not (is_power_of_two(rz_gate.phase.denominator) and rz_gate.phase.numerator == 1):
         raise Exception(f"Can only approximate pi/2^n phase gates, got rz(pi*{rz_gate.phase})")
 

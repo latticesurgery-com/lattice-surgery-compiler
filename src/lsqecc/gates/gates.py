@@ -1,3 +1,7 @@
+"""
+Quantum gates based on the wires they are applied onto.
+"""
+
 from dataclasses import dataclass
 from fractions import Fraction
 
@@ -65,14 +69,12 @@ class CRZ(RZ):
     control_qubit: int = 0
 
     def to_clifford_plus_t(self) -> Sequence[Gate]:
-        """
-        Use the follwing identity:
-        q_0: ─────■─────               ┌───────────┐
-             ┌────┴────┐    ---   q_0: ┤ Rz(π/(2n))├──■──────────────────■──
-        q_1: ┤ Rz(π/n) ├    ---        ├───────────┤┌─┴─┐┌────────────┐┌─┴─┐
-             └─────────┘          q_1: ┤ Rz(π/(2n))├┤ X ├┤ Rz(-π/(2n))├┤ X ├
-                                       └───────────┘└───┘└────────────┘└───┘
-        """
+        # Use the follwing identity:
+        # q_0: ─────■─────               ┌───────────┐
+        #      ┌────┴────┐    ---   q_0: ┤ Rz(π/(2n))├──■──────────────────■──
+        # q_1: ┤ Rz(π/n) ├    ---        ├───────────┤┌─┴─┐┌────────────┐┌─┴─┐
+        #      └─────────┘          q_1: ┤ Rz(π/(2n))├┤ X ├┤ Rz(-π/(2n))├┤ X ├
+        #                                └───────────┘└───┘└────────────┘└───┘
 
         gates: List[Gate] = []
         gates.extend(RZ(self.control_qubit, self.phase / 2).to_clifford_plus_t())

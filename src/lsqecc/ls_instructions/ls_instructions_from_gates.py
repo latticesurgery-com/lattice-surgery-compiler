@@ -9,6 +9,10 @@ from lsqecc.pauli_rotations import PauliOperator
 
 
 class LSInstructionsFromGatesGenerator:
+    """
+    Convert a sequence of gates to LSInstructions
+    """
+
     def __init__(self):
         self.ancilla_qubit_counter = 0
 

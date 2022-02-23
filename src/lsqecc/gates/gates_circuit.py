@@ -8,6 +8,8 @@ from lsqecc.gates import gates  # noqa: F401
 
 @dataclass
 class GatesCircuit:
+    """Circuit as a sequence of gates. Each gates carries information about its wires."""
+
     gates: Sequence["gates.Gate"] = field(default_factory=lambda: [])  # noqa: F811
 
     def to_clifford_plus_t(self) -> "GatesCircuit":

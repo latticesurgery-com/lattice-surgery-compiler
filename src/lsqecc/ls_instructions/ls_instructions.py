@@ -1,3 +1,10 @@
+"""
+Lattice Surgery instructions before routing. These classes encode a language of operations that a
+router can use to generate a 3D-Assembly of lattice surgery instructions over a certain layout.
+
+Specification: https://github.com/latticesurgery-com/lattice-surgery-compiler/issues/246
+"""
+
 from dataclasses import dataclass, field
 from typing import Dict, List
 
@@ -89,7 +96,3 @@ class HGate(LSInstruction):
 
     def __repr__(self):
         return f"{type(self).__name__} {self.patch_id}"
-
-
-if __name__ == "__main__":
-    print("ok")
