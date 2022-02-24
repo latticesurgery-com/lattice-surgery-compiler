@@ -13,8 +13,8 @@ class LSInstructionsFromGatesGenerator:
     Convert a sequence of gates to LSInstructions
     """
 
-    def __init__(self):
-        self.ancilla_qubit_counter = 0
+    def __init__(self, start_ancilla_qubit_counter=0):
+        self.ancilla_qubit_counter = start_ancilla_qubit_counter
 
     def get_new_ancilla(self):
         self.ancilla_qubit_counter += 1
@@ -34,6 +34,7 @@ class LSInstructionsFromGatesGenerator:
                 ls_instructions.MultiBodyMeasure(
                     {gate.target_qubit: PauliOperator.Z, ancilla: PauliOperator.X}
                 ),
+                ls_instructions.MeasureSinglePatch(ancilla, PauliOperator.Z),
                 ls_instructions.SGate(gate.target_qubit),
                 ls_instructions.LogicalPauli(gate.target_qubit),
             ]
@@ -49,7 +50,7 @@ class LSInstructionsFromGatesGenerator:
                 ls_instructions.MultiBodyMeasure(
                     {gate.target_qubit: PauliOperator.X, ancilla: PauliOperator.X}
                 ),
-                ls_instructions.MeasureSinglePatch(gate.control_qubit, PauliOperator.Z),
+                ls_instructions.MeasureSinglePatch(ancilla, PauliOperator.Z),
             ]
         else:
             raise Exception(f"Gate {gate} is not Clifford+T")
