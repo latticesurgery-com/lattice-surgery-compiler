@@ -69,3 +69,7 @@ def dataclass_render_ascii(self) -> str:
     return "Estimated resources needed for computation:\n" + "\n".join(
         [f"{name.replace('_',' ')}: {value}" for name, value in asdict(self).items()]
     )
+
+
+class QasmParseException(Exception):
+    pass

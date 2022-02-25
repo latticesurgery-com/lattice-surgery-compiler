@@ -23,7 +23,7 @@ from fractions import Fraction
 from typing import Dict, List, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
-from lsqecc.pauli_rotations.pi_over_2_to_the_n_rz_gate_approximations import (
+from lsqecc.gates.pi_over_2_to_the_n_rz_gate_approximations import (
     get_pi_over_2_to_the_n_rz_gate,
 )
 from lsqecc.utils import decompose_pi_fraction, is_power_of_two, phase_frac_to_latex
@@ -387,6 +387,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
             ]
             + PauliRotation.from_cnot_gate(num_qubits, control_qubit, target_qubit)
             + [PauliRotation.from_r_gate(num_qubits, target_qubit, Z, -phase / 2)]
+            + PauliRotation.from_cnot_gate(num_qubits, control_qubit, target_qubit)
         )
 
 
