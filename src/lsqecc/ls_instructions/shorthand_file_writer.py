@@ -8,7 +8,7 @@ class ShorthandFileWriter:
     def __init__(self, output_file: TextIO):
         self.output_file = output_file
 
-    def write_instructions(self, instruction: lsi.LSInstruction):
+    def write_instruction(self, instruction: lsi.LSInstruction):
         if isinstance(instruction, lsi.DeclareLogicalQubitPatches):
             self.output_file.write(repr(instruction))
         elif isinstance(instruction, lsi.Init):
