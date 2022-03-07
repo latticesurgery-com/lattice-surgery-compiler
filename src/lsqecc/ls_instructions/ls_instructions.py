@@ -37,19 +37,12 @@ class Init(LSInstruction):
 
 
 @dataclass
-class RequestMagicState(LSInstruction):
+class MeasureSinglePatch(LSInstruction):
     patch_id: PatchId = -1
+    op: PauliOperator = PauliOperator.Z
 
     def __repr__(self):
-        return f"{type(self).__name__} {self.patch_id}"
-
-
-@dataclass
-class RequestYState(LSInstruction):
-    patch_id: PatchId = -1
-
-    def __repr__(self):
-        return f"{type(self).__name__}  {self.patch_id}"
+        return f"{type(self).__name__} {self.patch_id} {self.op}"
 
 
 @dataclass
@@ -65,12 +58,11 @@ class MultiBodyMeasure(LSInstruction):
 
 
 @dataclass
-class MeasureSinglePatch(LSInstruction):
+class RequestMagicState(LSInstruction):
     patch_id: PatchId = -1
-    op: PauliOperator = PauliOperator.Z
 
     def __repr__(self):
-        return f"{type(self).__name__} {self.patch_id} {self.op}"
+        return f"{type(self).__name__} {self.patch_id}"
 
 
 @dataclass
@@ -83,6 +75,14 @@ class LogicalPauli(LSInstruction):
 
 
 @dataclass
+class HGate(LSInstruction):
+    patch_id: PatchId = -1
+
+    def __repr__(self):
+        return f"{type(self).__name__} {self.patch_id}"
+
+
+@dataclass
 class SGate(LSInstruction):
     patch_id: PatchId = -1
 
@@ -91,8 +91,8 @@ class SGate(LSInstruction):
 
 
 @dataclass
-class HGate(LSInstruction):
+class RequestYState(LSInstruction):
     patch_id: PatchId = -1
 
     def __repr__(self):
-        return f"{type(self).__name__} {self.patch_id}"
+        return f"{type(self).__name__}  {self.patch_id}"
