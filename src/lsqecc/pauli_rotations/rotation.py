@@ -23,6 +23,7 @@ from fractions import Fraction
 from typing import Dict, List, Tuple
 
 import lsqecc.simulation.conditional_operation_control as coc
+from lsqecc.gates.compress_rotation_approximations import partition_gate_sequence
 from lsqecc.gates.pi_over_2_to_the_n_rz_gate_approximations import (
     get_pi_over_2_to_the_n_rz_gate,
 )
@@ -234,7 +235,9 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
     def __hash__(self) -> int:
         return hash(hash(self.rotation_amount) + hash(tuple(self.ops_list)))
 
-    def to_basic_form_approximation(self, compress_rotations: bool = True) -> List["PauliRotation"]:
+    def to_basic_form_approximation(
+        self, compress_rotations: bool = False
+    ) -> List["PauliRotation"]:
         """Get an approximation in terms of pi/2, pi/4 and pi/8"""
 
         if not is_power_of_two(self.rotation_amount.denominator):
@@ -259,6 +262,8 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         else:
             raise Exception(f"Unsupported axis of rotation {axis}")
 
+        if compress_rotations:
+            approximation_gates = partition_gate_sequence(approximation_gates)
         rotations = []
         qubit_idx = self.ops_list.index(axis)
         for gate in approximation_gates:
@@ -270,11 +275,20 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
                 rotations.append(PauliRotation.from_x_gate(self.qubit_num, qubit_idx))
             elif gate == "H":
                 rotations.extend(PauliRotation.from_hadamard_gate(self.qubit_num, qubit_idx))
+            elif len(gate) > 1:
+                rotations.extend(PauliRotation.from_gate_string(self.qubit_num, qubit_idx, gate))
             else:
                 raise Exception(f"Cannot decompose gate: {gate}")
 
         # Note that it might be possible to simplify these a little further
         return rotations
+
+    @staticmethod
+    def count_s_and_t_to_phase(gate_string: str) -> Fraction:
+        s_count = gate_string.count("S")
+        t_count = gate_string.count("T")
+        phase = s_count * Fraction(1, 2) + t_count * Fraction(1, 4)
+        return phase
 
     def to_basic_form_decomposition(self) -> List["PauliRotation"]:
         """Express in terms of pi/2, pi/4 and pi/8"""
@@ -305,6 +319,23 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         for i, op in enumerate(pauli_ops):
             r.change_single_op(i, op)
         return r
+
+    @staticmethod
+    def from_gate_string(num_qubits: int, target_qubit: int, gate_string: str):
+        if gate_string.startswith("H") and gate_string.endswith("H"):
+            return PauliRotation.from_r_gate(
+                num_qubits,
+                target_qubit,
+                PauliOperator.X,
+                phase=PauliRotation.count_s_and_t_to_phase(gate_string),
+            )
+        else:
+            return PauliRotation.from_r_gate(
+                num_qubits,
+                target_qubit,
+                PauliOperator.Z,
+                phase=PauliRotation.count_s_and_t_to_phase(gate_string),
+            )
 
     @staticmethod
     def from_r_gate(num_qubits: int, target_qubit: int, phase_type: PauliOperator, phase: Fraction):
