@@ -234,7 +234,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
     def __hash__(self) -> int:
         return hash(hash(self.rotation_amount) + hash(tuple(self.ops_list)))
 
-    def to_basic_form_approximation(self) -> List["PauliRotation"]:
+    def to_basic_form_approximation(self, compress_rotations: bool = True) -> List["PauliRotation"]:
         """Get an approximation in terms of pi/2, pi/4 and pi/8"""
 
         if not is_power_of_two(self.rotation_amount.denominator):
@@ -247,7 +247,6 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
             int(math.log2(self.rotation_amount.denominator))
             - 1
         )
-
         axis_list = list(filter(lambda op: op != PauliOperator.I, self.ops_list))
         if len(axis_list) != 1:
             raise Exception("Can only approximate single qubit rotations")
