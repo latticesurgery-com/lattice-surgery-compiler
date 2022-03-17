@@ -215,6 +215,24 @@ class TestPauliRotation:
             "list_repr.txt",
         )
 
+    def test_to_basic_form_decomposition_with_approximation_and_compression(self, snapshot):
+        snapshot.assert_match(
+            repr(
+                PauliRotation.from_list([Z], Fraction(1, 16)).to_basic_form_decomposition(
+                    compress_rotations=True
+                )
+            ),
+            "list_repr_Z.txt",
+        )
+        snapshot.assert_match(
+            repr(
+                PauliRotation.from_list([X], Fraction(1, 16)).to_basic_form_decomposition(
+                    compress_rotations=True
+                )
+            ),
+            "list_repr_X.txt",
+        )
+
     @pytest.mark.parametrize(
         "rotation",
         [
