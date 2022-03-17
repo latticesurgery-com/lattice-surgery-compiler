@@ -276,7 +276,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
             elif gate == "H":
                 rotations.extend(PauliRotation.from_hadamard_gate(self.qubit_num, qubit_idx))
             elif len(gate) > 1:
-                rotations.extend(PauliRotation.from_gate_string(self.qubit_num, qubit_idx, gate))
+                rotations.append(PauliRotation.from_gate_string(self.qubit_num, qubit_idx, gate))
             else:
                 raise Exception(f"Cannot decompose gate: {gate}")
 
@@ -290,7 +290,9 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
         phase = s_count * Fraction(1, 2) + t_count * Fraction(1, 4)
         return phase
 
-    def to_basic_form_decomposition(self) -> List["PauliRotation"]:
+    def to_basic_form_decomposition(
+        self, compress_rotations: bool = False
+    ) -> List["PauliRotation"]:
         """Express in terms of pi/2, pi/4 and pi/8"""
         if self.rotation_amount.denominator == 1:
             return []  # don't need to do anything because exp(-i*pi*P) = I
@@ -305,7 +307,7 @@ class PauliRotation(PauliProductOperation, coc.ConditionalOperation):
                     output_rotations.append(new_rotation)
             return output_rotations
         else:
-            return self.to_basic_form_approximation()
+            return self.to_basic_form_approximation(compress_rotations)
 
     def to_latex(self) -> str:
         return f"{super().to_latex()}_{{{phase_frac_to_latex(self.rotation_amount)}}}"

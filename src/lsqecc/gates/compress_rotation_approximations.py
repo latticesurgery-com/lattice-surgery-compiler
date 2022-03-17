@@ -9,7 +9,9 @@ def partition_gate_sequence(gate_approximation: str):
         if gate in {"S", "T"}:
             partition += gate
         elif gate == "X":
-            if partition[0] == "H":
+            if not len(partition):  # empty partition
+                pass
+            elif partition[0] == "H":
                 partitioned_sequence.append(partition[0])
                 partitioned_sequence.append(partition[1:])
             else:
