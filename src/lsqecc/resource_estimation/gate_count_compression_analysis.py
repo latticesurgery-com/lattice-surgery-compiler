@@ -48,7 +48,7 @@ plt.title(
     + f" Mean Compression Ratio = ={compression_ratio_mean_Z}"
 )
 plt.legend()
-plt.savefig("assets/compression_Z_rotations.png")
+# plt.savefig("assets/compression_Z_rotations.png")
 
 plt.figure(figsize=(16, 9))
 plt.plot(
@@ -73,4 +73,4 @@ plt.title(
     + f"Mean Compression Ratio = ={compression_ratio_mean_X}"
 )
 plt.legend()
-plt.savefig("assets/compression_X_rotations.png")
+# plt.savefig("assets/compression_X_rotations.png")
