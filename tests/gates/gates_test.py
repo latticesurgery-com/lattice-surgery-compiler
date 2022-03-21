@@ -5,7 +5,7 @@ import pytest
 from lsqecc.gates import approximate, gates
 
 
-class RZTest:
+class TestRZ:
     @pytest.mark.parametrize(
         "rz_gate, decomposition",
         [
@@ -22,16 +22,15 @@ class RZTest:
         assert rz_gate.to_clifford_plus_t() == decomposition
 
 
-class CRZTest:
-    def test_to_clifford_plus_t(self, rz_gate, decomposition):
+class TestCRZ:
+    def test_to_clifford_plus_t(self):  # ):
         crz_gate = gates.CRZ(control_qubit=0, target_qubit=1, phase=Fraction(1, 2))
 
-        decomposition = [
-            gates.RZ(target_qubit=0, phase=Fraction(1, 4)),
-            gates.RZ(target_qubit=1, phase=Fraction(1, 4)),
-            gates.CNOT(control_qubit=0, target_qubit=1),
-            gates.RZ(target_qubit=1, phase=Fraction(1, 4)),
-            gates.CNOT(control_qubit=0, target_qubit=1),
-        ]
+        decomposition = []
+        decomposition.extend(gates.RZ(target_qubit=0, phase=Fraction(1, 4)).to_clifford_plus_t())
+        decomposition.extend(gates.RZ(target_qubit=1, phase=Fraction(1, 4)).to_clifford_plus_t())
+        decomposition.append(gates.CNOT(control_qubit=0, target_qubit=1))
+        decomposition.extend(gates.RZ(target_qubit=1, phase=Fraction(1, 4)).to_clifford_plus_t())
+        decomposition.append(gates.CNOT(control_qubit=0, target_qubit=1))
 
         assert crz_gate.to_clifford_plus_t() == decomposition
