@@ -59,7 +59,7 @@ class RZ(Gate):
         elif self.phase == Fraction(1, 2):
             return [S(self.target_qubit)]
         elif self.phase == Fraction(1, 4):
-            return [S(self.target_qubit)]
+            return [T(self.target_qubit)]
         else:
             return approximate.approximate_rz(self)
 
