@@ -8,6 +8,8 @@ def partition_gate_sequence(gate_approximation: str):
     for index, gate in enumerate(gate_approximation):
         if gate in {"S", "T"}:
             partition += gate
+            if index == len(gate_approximation) - 1:
+                partitioned_sequence.append(partition)
         elif gate == "X":
             if not len(partition):  # empty partition
                 pass
