@@ -16,10 +16,7 @@ class GatesCircuit:
         return GatesCircuit(
             list(
                 itertools.chain.from_iterable(
-                    [
-                        gate.to_clifford_plus_t(compress_rotations=compress_rotations)
-                        for gate in self.gates
-                    ]
+                    [gate.to_clifford_plus_t(compress_rotations) for gate in self.gates]
                 )
             )
         )

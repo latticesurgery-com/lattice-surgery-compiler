@@ -41,7 +41,7 @@ def approximate_rz(rz_gate: "gates.RZ", compress_rotations: bool = False) -> Seq
             raise Exception(f"Cannot decompose gate: {gate}")
 
     # Note that it might be possible to simplify these a little further
-    return gates
+    return approx_gates
 
 
 def count_s_and_t_to_phase(gate_string: str) -> Fraction:
