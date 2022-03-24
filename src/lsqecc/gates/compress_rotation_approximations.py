@@ -21,6 +21,7 @@ def partition_gate_sequence(gate_approximation: str):
             elif partition[0] == "H":
                 partitioned_sequence.append(partition[0])
                 partitioned_sequence.append(partition[1:])
+                in_x_basis = not in_x_basis
             else:
                 partitioned_sequence.append(partition)
             partitioned_sequence.append(gate)

@@ -81,8 +81,14 @@ class TestRotationCompression:
                 Fraction(1, 1),
                 [gates.PauliRotations(target_qubit=1, phase=Fraction(1, 1), axis=PauliOperator.Z)],
             ),
-            (Fraction(1, 2), [gates.S(target_qubit=1)]),
-            (Fraction(1, 4), [gates.T(target_qubit=1)]),
+            (
+                Fraction(1, 2),
+                [gates.PauliRotations(target_qubit=1, phase=Fraction(1, 2), axis=PauliOperator.Z)],
+            ),
+            (
+                Fraction(1, 4),
+                [gates.PauliRotations(target_qubit=1, phase=Fraction(1, 4), axis=PauliOperator.Z)],
+            ),
         ],
     )
     def test_approximate_rz_with_compression_basic_angles(

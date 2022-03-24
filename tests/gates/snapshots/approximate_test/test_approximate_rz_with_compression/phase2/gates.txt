@@ -1,1 +1,1 @@
-[T(target_qubit=1)]
+[PauliRotations(target_qubit=1, phase=Fraction(1, 4), axis=Z)]

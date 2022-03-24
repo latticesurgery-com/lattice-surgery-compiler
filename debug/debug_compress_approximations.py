@@ -1,5 +1,3 @@
-from cProfile import label
-from cgi import test
 from lsqecc.gates.compress_rotation_approximations import partition_gate_sequence
 from lsqecc.pauli_rotations.rotation import CachedRotationApproximations
 from lsqecc.gates.pi_over_2_to_the_n_rz_gate_approximations import get_pi_over_2_to_the_n_rz_gate

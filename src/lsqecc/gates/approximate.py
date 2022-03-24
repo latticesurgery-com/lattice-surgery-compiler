@@ -28,9 +28,21 @@ def approximate_rz(rz_gate: "gates.RZ", compress_rotations: bool = False) -> Seq
 
     for gate in approximation_gates:
         if gate == "S":
-            approx_gates.append(gates.S(rz_gate.target_qubit))
+            approx_gates.append(
+                gates.PauliRotations(
+                    target_qubit=rz_gate.target_qubit, phase=Fraction(1, 2), axis=PauliOperator.Z
+                )
+                if compress_rotations
+                else gates.S(rz_gate.target_qubit)
+            )
         elif gate == "T":
-            approx_gates.append(gates.T(rz_gate.target_qubit))
+            approx_gates.append(
+                gates.PauliRotations(
+                    target_qubit=rz_gate.target_qubit, phase=Fraction(1, 4), axis=PauliOperator.Z
+                )
+                if compress_rotations
+                else gates.T(rz_gate.target_qubit)
+            )
         elif gate == "X":
             approx_gates.append(gates.X(rz_gate.target_qubit))
         elif gate == "H":
