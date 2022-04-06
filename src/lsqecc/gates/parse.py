@@ -8,7 +8,7 @@ from typing import List, Sequence, Tuple
 from lsqecc.gates import gates
 from lsqecc.utils import QasmParseException
 
-IGNORED_INSTRUCTIONS = {"OPENQASM", "include", "barrier", "qreg", "creg"}
+IGNORED_INSTRUCTIONS = {"OPENQASM", "include", "barrier", "qreg", "creg", "gate"}
 
 
 def get_index_arg(qreg_arg: str) -> int:
@@ -16,6 +16,9 @@ def get_index_arg(qreg_arg: str) -> int:
 
 
 def split_instruciton_and_args(line: str) -> Tuple[str, List[str]]:
+    while line and line[-1] == ";":
+        line = line[:-1]
+
     if " " not in line:
         return line, []
     if line.count(" ") == 1:
@@ -40,7 +43,7 @@ def parse_trivial_gate(instruction: str, args: List[str]) -> gates.Gate:
 def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
 
     instructions: List[Tuple[str, List[str]]] = list(
-        map(split_instruciton_and_args, qasm.split(";\n"))
+        map(split_instruciton_and_args, qasm.split("\n"))
     )
 
     qregs = list(filter(lambda line: line[0] == "qreg", instructions))
