@@ -5,7 +5,8 @@ from typing import Sequence
 from lsqecc.gates import gates
 from lsqecc.gates.compress_rotation_approximations import partition_gate_sequence
 from lsqecc.gates.pi_over_2_to_the_n_rz_gate_approximations import (
-    get_pi_over_2_to_the_n_rz_gate,
+    get_pi_over_2_to_the_n_rz_gate_neg,
+    get_pi_over_2_to_the_n_rz_gate_pos,
 )
 from lsqecc.pauli_rotations.rotation import PauliOperator
 from lsqecc.utils import is_power_of_two
@@ -16,12 +17,18 @@ def approximate_rz(rz_gate: "gates.RZ", compress_rotations: bool = False) -> Seq
     Currently ony supports arguments of the form pi/2^n.
     """
 
-    if not (is_power_of_two(rz_gate.phase.denominator) and rz_gate.phase.numerator == 1):
-        raise Exception(f"Can only approximate pi/2^n phase gates, got rz(pi*{rz_gate.phase})")
+    if not (is_power_of_two(rz_gate.phase.denominator) and rz_gate.phase.numerator in {-1, 1}):
+        raise Exception(f"Can only approximate pi*(1/2^n) phase gates, got rz(pi*{rz_gate.phase})")
 
     denominator_exponent = int(math.log2(rz_gate.phase.denominator))
 
-    approximation_gates = get_pi_over_2_to_the_n_rz_gate[denominator_exponent]
+    pre_computed_sequence = (
+        get_pi_over_2_to_the_n_rz_gate_pos
+        if rz_gate.phase.numerator == 1
+        else get_pi_over_2_to_the_n_rz_gate_neg
+    )
+
+    approximation_gates = pre_computed_sequence[denominator_exponent]
     if compress_rotations:
         approximation_gates = partition_gate_sequence(approximation_gates)
     approx_gates = []
