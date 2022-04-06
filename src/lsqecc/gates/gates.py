@@ -122,3 +122,9 @@ class CRZ(RZ):
         gates.extend(RZ(self.target_qubit, self.phase / 2).to_clifford_plus_t(compress_rotations))
         gates.append(CNOT(control_qubit=self.control_qubit, target_qubit=self.target_qubit))
         return gates
+
+
+@dataclass
+class SingleQubitMeasurement(Gate):
+    basis: PauliOperator = PauliOperator.Z
+    pass

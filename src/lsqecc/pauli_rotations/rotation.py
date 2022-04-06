@@ -25,14 +25,14 @@ from typing import Dict, List, Tuple
 import lsqecc.simulation.conditional_operation_control as coc
 from lsqecc.gates.compress_rotation_approximations import partition_gate_sequence
 from lsqecc.gates.pi_over_2_to_the_n_rz_gate_approximations import (
-    get_pi_over_2_to_the_n_rz_gate,
+    get_pi_over_2_to_the_n_rz_gate_pos,
 )
 from lsqecc.utils import decompose_pi_fraction, is_power_of_two, phase_frac_to_latex
 
 
 # Wrap as a singleton
 class CachedRotationApproximations:
-    instance: List[str] = get_pi_over_2_to_the_n_rz_gate
+    instance: List[str] = get_pi_over_2_to_the_n_rz_gate_pos
 
     @staticmethod
     def get_pi_over_2_to_the_n_rz_gate(n: int) -> str:

@@ -52,6 +52,8 @@ class LSInstructionsFromGatesGenerator:
                 ),
                 ls_instructions.MeasureSinglePatch(ancilla, PauliOperator.Z),
             ]
+        elif isinstance(gate, gates.SingleQubitMeasurement):
+            return [ls_instructions.MeasureSinglePatch(patch_id=gate.target_qubit, op=gate.basis)]
         else:
             raise Exception(f"Gate {gate} is not Clifford+T")
 
