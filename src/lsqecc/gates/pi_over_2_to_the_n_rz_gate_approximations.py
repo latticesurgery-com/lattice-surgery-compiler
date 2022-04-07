@@ -7,6 +7,9 @@ Note that rz(theta) is a rotation by rx(theta/2) in our conventionprint('['
 List generated using `gridsynth` with precision -d 41.
 It is the lowest precision for which the pi/2^135 could be approximated.
 """
+
+PRECISION = 41
+
 get_pi_over_2_to_the_n_rz_gate_neg = [
     # rz(-pi/2^0)
     "SS",
