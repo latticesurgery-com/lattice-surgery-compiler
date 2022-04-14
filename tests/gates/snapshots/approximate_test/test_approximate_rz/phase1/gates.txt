@@ -1,1 +1,1 @@
-[S(target_qubit=1)]
+[S(target_qubit=1), S(target_qubit=1)]
