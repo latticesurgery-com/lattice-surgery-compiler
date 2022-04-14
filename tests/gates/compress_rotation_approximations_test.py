@@ -33,6 +33,8 @@ class TestGateCompression:
             ("HSTHSSHSTHT", ["HSTH", "SS", "HSTH", "T"]),
             ("HSTHSSHSTH", ["HSTH", "SS", "HSTH"]),
             ("STHSSHSTHTH", ["ST", "HSSH", "ST", "HTH"]),
+            ("XHSTHST", ["X", "HSTH", "ST"]),
+            ("HXHSTHST", ["H", "X", "HSTH", "ST"]),
         ],
     )
     def test_partition_gate_sequence(self, gate_string: str, partitioned_gates: List[str]):
