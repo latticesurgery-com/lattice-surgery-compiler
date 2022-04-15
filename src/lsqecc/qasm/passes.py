@@ -1,7 +1,9 @@
 from typing import List
 
 import numpy as np
+import sympy
 from qiskit import QuantumCircuit
+from qiskit.circuit import ParameterExpression
 from qiskit.converters import circuit_to_dag, dag_to_circuit
 from qiskit.transpiler import TransformationPass
 
@@ -56,6 +58,30 @@ class PhasesToRZPass(TransformationPass):
             if node.op.name == "tdg":
                 replacement = QuantumCircuit(1)
                 replacement.rz(-np.pi / 4, 0)
+                dag.substitute_node_with_dag(node, circuit_to_dag(replacement))
+
+        return dag
+
+
+class RytoRzWithLitinskiYRemoval(TransformationPass):
+    """
+    Uses Litinski GoSCs Y removal to convert:
+        ry(a) = exp(-i*a/2*Y)
+              = exp(-i*a/2*Y) * 1
+              = exp(-i*a/2*Y) * exp(-i*pi/4*Z) * exp(i*pi/4*Z)
+              = exp(-i*pi/4*Z) * exp(-i*a/2*iYZ) * exp(i*pi/4*Z)
+              = exp(-i*pi/4*Z) * exp(-i*a/2*X) * exp(i*pi/4*Z)
+              = rz(pi/2) * rx(a) * rz(-pi/2)
+    """
+
+    def run(self, dag):
+        for node in dag.op_nodes():
+            if node.op.name == "ry":
+                a = node.op.params[0]
+                replacement = QuantumCircuit(1)
+                replacement.rz(ParameterExpression({}, sympy.pi / 2), 0)
+                replacement.rx(a, 0)
+                replacement.rz(ParameterExpression({}, -sympy.pi / 2), 0)
                 dag.substitute_node_with_dag(node, circuit_to_dag(replacement))
 
         return dag
