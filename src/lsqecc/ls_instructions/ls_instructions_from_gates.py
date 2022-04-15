@@ -1,5 +1,6 @@
 import itertools
 from typing import Sequence
+from typing.io import IO
 
 import lsqecc.simulation.qubit_state as qs
 from lsqecc.gates import gates
@@ -62,3 +63,10 @@ class LSInstructionsFromGatesGenerator:
         generator = LSInstructionsFromGatesGenerator()
         instructions = itertools.chain.from_iterable(map(generator.gen_instructions, circuit.gates))
         return "\n".join(map(repr, instructions))
+
+    @staticmethod
+    def write_instruction(circuit: GatesCircuit, f: IO):
+        generator = LSInstructionsFromGatesGenerator()
+        for gate in circuit.gates:
+            for instr in generator.gen_instructions(gate):
+                print(repr(instr), file=f)
