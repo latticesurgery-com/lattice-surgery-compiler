@@ -63,7 +63,7 @@ def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
                     control_qubit=get_index_arg(args[0]), target_qubit=get_index_arg(args[1])
                 )
             )
-        elif instruction[0:2] == "rz":
+        elif instruction[0:2] in {"rz", "rx"}:
             phase_pi_frac_num = 1
             phase_pi_frac_den = 1
             if instruction[2:6] == "(pi/":
@@ -78,6 +78,10 @@ def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
                 )
             ret_gates.append(
                 gates.RZ(get_index_arg(args[0]), Fraction(phase_pi_frac_num, phase_pi_frac_den))
+                if instruction[0:2] == "rz"
+                else gates.RX(
+                    get_index_arg(args[0]), Fraction(phase_pi_frac_num, phase_pi_frac_den)
+                )
             )
         elif instruction[0:3] == "crz":
             if instruction[3:7] != "(pi/":

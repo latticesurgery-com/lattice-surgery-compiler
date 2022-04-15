@@ -104,6 +104,35 @@ class RZ(Gate):
 
 
 @dataclass
+class RX(Gate):
+    phase: Fraction = Fraction(1, 1)
+
+    def to_clifford_plus_t(self, compress_rotations: bool = False) -> Sequence[Gate]:
+        if self.phase == Fraction(1, 1):
+            return [X(self.target_qubit)]
+        elif self.phase == Fraction(1, 2):
+            return (
+                [H(self.target_qubit), S(self.target_qubit), H(self.target_qubit)]
+                if not compress_rotations
+                else [self]
+            )
+        elif self.phase == Fraction(1, 4):
+            return (
+                [H(self.target_qubit), T(self.target_qubit), H(self.target_qubit)]
+                if not compress_rotations
+                else [self]
+            )
+        else:
+            return (
+                [H(self.target_qubit)]
+                + approximate.approximate_rz(
+                    RZ(target_qubit=self.target_qubit, phase=self.phase), compress_rotations
+                )
+                + [H(self.target_qubit)]
+            )
+
+
+@dataclass
 class CRZ(RZ):
     control_qubit: int = 0
 
