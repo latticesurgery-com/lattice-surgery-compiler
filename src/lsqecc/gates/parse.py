@@ -32,12 +32,31 @@ def parse_trivial_gate(instruction: str, args: List[str]) -> gates.Gate:
         return gates.H(get_index_arg(args[0]))
     elif instruction == "x":
         return gates.X(get_index_arg(args[0]))
+    elif instruction == "z":
+        return gates.Z(get_index_arg(args[0]))
     elif instruction == "s":
         return gates.S(get_index_arg(args[0]))
     elif instruction == "t":
         return gates.T(get_index_arg(args[0]))
+    elif instruction == "sdg":
+        return gates.RZ(get_index_arg(args[0]), phase=Fraction(-1, 2))
+    elif instruction == "tdg":
+        return gates.RZ(get_index_arg(args[0]), phase=Fraction(-1, 4))
     else:
         raise QasmParseException(f"Not a trivial gate: {instruction}")
+
+
+def get_num_qubits(qasm: str) -> int:
+    instructions: List[Tuple[str, List[str]]] = list(
+        map(split_instruciton_and_args, qasm.split("\n"))
+    )
+
+    qregs = list(filter(lambda line: line[0] == "qreg", instructions))
+    if len(qregs) != 1:
+        raise QasmParseException(f"Need exactly one qreg, got {len(qregs)}")
+
+    instr, args = qregs[0]
+    return get_index_arg(args[0])
 
 
 def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
@@ -55,12 +74,20 @@ def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
     ret_gates: List[gates.Gate] = []
 
     for instruction, args in instructions:
-        if instruction and instruction in "hxzst":
+        if instruction and instruction in list("hxzst") + ["tdg", "sdg"]:
             ret_gates.append(parse_trivial_gate(instruction, args))
         elif instruction == "cx" or instruction == "cnot":
             ret_gates.append(
                 gates.CNOT(
                     control_qubit=get_index_arg(args[0]), target_qubit=get_index_arg(args[1])
+                )
+            )
+        elif instruction[0:2] == "cz":
+            ret_gates.append(
+                gates.CRZ(
+                    control_qubit=get_index_arg(args[0]),
+                    target_qubit=get_index_arg(args[1]),
+                    phase=Fraction(1, 1),
                 )
             )
         elif instruction[0:2] in {"rz", "rx"}:
@@ -71,6 +98,9 @@ def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
             elif instruction[2:7] == "(-pi/":
                 phase_pi_frac_num = -1
                 phase_pi_frac_den = int(instruction[7:].split(")")[0])
+            elif instruction[2] == "(":
+                phase_pi_frac = instruction[3:].split(")")[0]
+                phase_pi_frac_num, phase_pi_frac_den = map(int, phase_pi_frac.split("*pi/"))
             else:
                 raise QasmParseException(
                     f"Can only parse pi/n or -pi/n for n power of 2 angles as rz args, "

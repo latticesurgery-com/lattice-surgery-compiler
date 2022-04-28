@@ -66,7 +66,18 @@ class LSInstructionsFromGatesGenerator:
 
     @staticmethod
     def write_instruction(circuit: GatesCircuit, f: IO):
-        generator = LSInstructionsFromGatesGenerator()
+        if circuit.num_qubits is None:
+            raise Exception("num_qubits required to write ls instrtuctions")
+        print(
+            repr(
+                ls_instructions.DeclareLogicalQubitPatches(
+                    patch_ids=list(range(circuit.num_qubits))
+                )
+            ),
+            file=f,
+        )
+
+        generator = LSInstructionsFromGatesGenerator(circuit.num_qubits)
         for gate in circuit.gates:
             for instr in generator.gen_instructions(gate):
                 print(repr(instr), file=f)
