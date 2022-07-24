@@ -26,10 +26,10 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Set up Python 3.9
+    - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: "3.10"
         
     - name: Build package
       run: |
@@ -66,14 +66,14 @@ jobs:
     
     - name: Test with pytest
       run: |
-        if [[ ${{ matrix.python-version }} == '3.9' ]]; then
+        if [[ ${{ matrix.python-version }} == '3.10' ]]; then
           pytest --cov=lsqecc --cov-report=term --cov-report=xml;
         else 
           pytest;
         fi
   
     - name: Save coverage report
-      if: matrix.python-version == '3.9'
+      if: matrix.python-version == '3.10'
       uses: actions/upload-artifact@v2.2.4
       with: 
         name: coverage-report
@@ -86,11 +86,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    
-    - name: Set up Python 3.9
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: "3.10"
         
     - name: Download Coverage Report
       uses: actions/download-artifact@v2.0.10
