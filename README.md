@@ -43,12 +43,16 @@ Part of our process is inspired by Litinski's Game of Surface Codes [[4]](#4). I
 ## Status
 The compiler is deployed in alpha at [latticesurgery.com](https://latticesurgery.com).
 
+## Documentation
+The latest documentation can be found [here](https://lattice-surgery-compiler.readthedocs.io/en/latest/).
+
+With the compiler still being in alpha, most of the documentation doesn't exist yet or is subject to change. 
+
 ## Contributing and Development set up
 
 Check out our [contribution guide](https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/dev/CONTRIBUTING.md).
 
 If you just want to get an idea for what this compiler does, check out https://latticesurgery.com.
-
 
 ## References
 <a id="1">[1]</a> 
