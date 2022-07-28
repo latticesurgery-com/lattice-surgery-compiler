@@ -13,13 +13,15 @@ Compile logical circuits to lattice surgery operations on a surface code lattice
 https://github.com/latticesurgery-com/general-issue-tracker/issues/3).
 
 ## Overview
-A compiler that takes a QASM circuit and turns it into abstract lattice surgery instructions.
+A compiler that translates QASM circuits into abstract lattice surgery instructions.
 
-Our long term vision is to have an end to end lattice surgery compiler. We want it to be able to take a manually programmed circuit and ouput a large error corrected circuit, that performs the same computation with many more qubits and a higher degree of accuracy.
+Lattice surgery instructions were chosen as the output since they are equivalent representations of QASM circuits, and they can be made fault-tolerant with more convenience.
+
+Our long-term vision is to have an end-to-end lattice surgery compiler. It should be able to translate a manually programmed circuit into a larger, error corrected circuit that performs the same computation. The error corrected circuit is larger since it needs to use many more qubits to provide a higher degree of accuracy.
 
 ### Features:
 * Web-based patch visualizer that shows a computation happening on a surface code lattice (in picture). Try it at [latticesurgery.com](https://latticesurgery.com).
-* HTTP Service to compile qasm circuits.
+* HTTP Service to compile QASM circuits.
 * Data representation for Pauli rotations and abstract lattice surgery operations.
 * QASM to lattice surgery patch compiler.
 * Remove stabilizer operations from the input circuit.
