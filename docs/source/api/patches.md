@@ -10,3 +10,9 @@ This section is still under active development
     :members:
     :member-order: bysource
 ```
+
+```{eval-rst}
+.. autoclass:: lsqecc.patches.patches.EdgeType
+    :show-inheritance:
+    :members:
+```
