@@ -80,8 +80,13 @@ class PatchType(Enum):
     """Enum for classifying what a patch represents."""
 
     Qubit = "Qubit"
+    """Patch represents a logical qubit."""
+
     DistillationQubit = "DistillationQubit"
+    """Patch represents a qubit used for entanglement distillation."""
+
     Ancilla = "Ancilla"
+    """Patch represents ancilla qubits."""
 
 
 class Edge:
