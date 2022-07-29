@@ -77,6 +77,8 @@ PAULI_OPERATOR_TO_EDGE_MAP: Dict[PauliOperator, EdgeType] = {
 
 
 class PatchType(Enum):
+    """Enum for classifying what a patch represents."""
+
     Qubit = "Qubit"
     DistillationQubit = "DistillationQubit"
     Ancilla = "Ancilla"
