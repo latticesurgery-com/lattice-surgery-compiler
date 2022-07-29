@@ -105,6 +105,9 @@ class Edge:
         ).get(self.orientation)
 
     def isStiched(self):
+        """Returns `True` if `self.border_type` is
+        `EdgeType.SolidStitched` or `EdgeType.DashedStitched`, else `False`.
+        """
         return self.border_type in [EdgeType.SolidStiched, EdgeType.DashedStiched]
 
 
