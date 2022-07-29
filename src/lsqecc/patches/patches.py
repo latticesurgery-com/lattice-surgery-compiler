@@ -34,17 +34,17 @@ class Orientation(Enum):
     Mainly used to determine which side of a Patch an Edge lies on.
     """
 
-    """Top side of the patch."""
     Top = "Top"
+    """Top side of the patch."""
 
-    """Bottom side of the patch."""
     Bottom = "Bottom"
+    """Bottom side of the patch."""
 
-    """Left side of the patch."""
     Left = "Left"
+    """Left side of the patch."""
 
-    """Right side of the patch."""
     Right = "Right"
+    """Right side of the patch."""
 
     @staticmethod
     def get_graph_edge(edge: Edge) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
