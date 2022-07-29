@@ -16,3 +16,9 @@ This section is still under active development
     :show-inheritance:
     :members:
 ```
+
+```{eval-rst}
+.. autoclass:: lsqecc.patches.patches.PatchType
+    :show-inheritance:
+    :members:
+```
