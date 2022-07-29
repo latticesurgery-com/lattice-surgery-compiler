@@ -83,6 +83,8 @@ class PatchType(Enum):
 
 
 class Edge:
+    """Class for representing an Edge (of a Patch) on a 2D Lattice."""
+
     def __init__(self, edge_type: EdgeType, cell: Tuple[int, int], orientation: Orientation):
         self.cell = cell
         self.orientation = orientation
