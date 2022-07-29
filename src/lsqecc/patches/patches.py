@@ -71,6 +71,7 @@ class EdgeType(Enum):
     """The Edge represents a join between ancilla Patches."""
 
     def stitched_type(self):
+        """Returns stitched version of current EdgeType value, or self if already stitched."""
         if self == EdgeType.Solid:
             return EdgeType.SolidStiched
         if self == EdgeType.Dashed:
@@ -78,6 +79,7 @@ class EdgeType(Enum):
         return self
 
     def unstitched_type(self):
+        """Returns unstitched version of current EdgeType value, or self if already unstitched."""
         if self == EdgeType.SolidStiched:
             return EdgeType.Solid
         if self == EdgeType.DashedStiched:
