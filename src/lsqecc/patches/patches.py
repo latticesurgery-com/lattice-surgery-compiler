@@ -91,6 +91,9 @@ class Edge:
         self.border_type = edge_type
 
     def getNeighbouringCell(self) -> Optional[Tuple[int, int]]:
+        """Returns the neighbouring cell, where neighbour is decided by self.orientation.
+        e.g. If `self.orientation = Orientation.Top`, returns the cell above.
+        """
         col, row = self.cell
         return (
             {
