@@ -49,6 +49,12 @@ class Orientation(Enum):
 
 
 class EdgeType(Enum):
+    """Enum for representing what an Edge looks like and what type of operation it encodes.
+    When representing Pauli operators, an Edge is (solid or dashed) and (stitched or unstitched).
+    Alternatively, it can represent the border of joining ancilla patches.
+    Different Pauli operators are mapped to different EdgeType values: X is dashed, and Z is solid.
+    """
+
     Solid = "Solid"
     SolidStiched = "SolidStiched"
     Dashed = "Dashed"
