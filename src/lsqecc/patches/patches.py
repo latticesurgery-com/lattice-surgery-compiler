@@ -30,9 +30,20 @@ if TYPE_CHECKING:
 
 
 class Orientation(Enum):
+    """Enum for representing the sides of a Patch.
+    Mainly used to determine which side of a Patch an Edge lies on.
+    """
+
+    """Top side of the patch."""
     Top = "Top"
+
+    """Bottom side of the patch."""
     Bottom = "Bottom"
+
+    """Left side of the patch."""
     Left = "Left"
+
+    """Right side of the patch."""
     Right = "Right"
 
     @staticmethod
