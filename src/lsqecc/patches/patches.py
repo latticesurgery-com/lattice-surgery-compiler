@@ -90,12 +90,17 @@ class PatchType(Enum):
 
 
 class Edge:
+    """Class for representing an Edge (of a Patch) on a 2D Lattice."""
+
     def __init__(self, edge_type: EdgeType, cell: Tuple[int, int], orientation: Orientation):
         self.cell = cell
         self.orientation = orientation
         self.border_type = edge_type
 
     def getNeighbouringCell(self) -> Optional[Tuple[int, int]]:
+        """Returns the neighbouring cell, where neighbour is decided by self.orientation.
+        e.g. If `self.orientation = Orientation.Top`, returns the cell above.
+        """
         col, row = self.cell
         return (
             {
@@ -107,6 +112,9 @@ class Edge:
         ).get(self.orientation)
 
     def isStiched(self):
+        """Returns `True` if `self.border_type` is
+        `EdgeType.SolidStitched` or `EdgeType.DashedStitched`, else `False`.
+        """
         return self.border_type in [EdgeType.SolidStiched, EdgeType.DashedStiched]
 
 
