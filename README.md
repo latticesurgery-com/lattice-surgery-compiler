@@ -9,7 +9,9 @@
 
 [![LSC Logo](https://user-images.githubusercontent.com/46719079/150657000-8e83c649-84a8-431b-aab0-d44d847e5a24.png)](https://latticesurgery.com)
 
-Compile logical circuits to lattice surgery operations on a surface code lattice and visualize. Currently in active development. See [Project Status](
+Compile logical quantum circuits to lattice surgery operations on a surface code lattice. Visualize how the lattice evolves between each step of surgery.
+
+Currently in active development. See [Project Status](
 https://github.com/latticesurgery-com/general-issue-tracker/issues/3).
 
 ## Overview
