@@ -1,4 +1,4 @@
 ﻿myst-parser==0.17.0
-Sphinx==4.5.0
+Sphinx==5.2.2
 sphinx-autodoc-typehints==1.17.0
 furo==2022.3.4
