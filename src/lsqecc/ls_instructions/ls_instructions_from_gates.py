@@ -17,6 +17,10 @@ class LSInstructionsFromGatesGenerator:
     def __init__(self, start_ancilla_qubit_counter=0):
         self.ancilla_qubit_counter = start_ancilla_qubit_counter
 
+    @staticmethod
+    def get_declaration_instruction(qubit_ids: list[int]) -> ls_instructions.LSInstruction:
+        return ls_instructions.DeclareLogicalQubitPatches(patch_ids=qubit_ids)
+
     def get_new_ancilla(self):
         self.ancilla_qubit_counter += 1
         return self.ancilla_qubit_counter

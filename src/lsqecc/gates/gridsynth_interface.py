@@ -9,7 +9,7 @@ from lsqecc.gates.pi_over_2_to_the_n_rz_gate_approximations import (
 )
 from lsqecc.utils import is_power_of_two
 
-_DEFAULT_GRIDSYNTH_EXECUTABLE = "../rotation-decomposer/gridsynth"
+_DEFAULT_GRIDSYNTH_EXECUTABLE = "/home/varunseshadri/.cabal/bin/gridsynth"
 
 
 def to_standard_interval(f: Fraction) -> Fraction:

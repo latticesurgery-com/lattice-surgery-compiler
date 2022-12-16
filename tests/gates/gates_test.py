@@ -1,8 +1,10 @@
 from fractions import Fraction
+from typing import List, cast
 
 import pytest
 
 from lsqecc.gates import approximate, gates
+from lsqecc.gates.gates import Gate
 from lsqecc.pauli_rotations.rotation import PauliOperator
 
 
@@ -79,8 +81,11 @@ class TestPauliRotations:
             ),
             (
                 gates.PauliRotations(target_qubit=0, phase=Fraction(1, 16), axis=PauliOperator.X),
-                [gates.H(target_qubit=0)]
-                + approximate.approximate_rz(gates.RZ(target_qubit=0, phase=Fraction(1, 16)))
+                [gates.H(target_qubit=0), ...]
+                + cast(
+                    List["Gate"],
+                    approximate.approximate_rz(gates.RZ(target_qubit=0, phase=Fraction(1, 16))),
+                )
                 + [gates.H(target_qubit=0)],
             ),
         ],

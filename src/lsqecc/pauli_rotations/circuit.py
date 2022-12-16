@@ -63,7 +63,9 @@ class PauliOpCircuit(object):
     def copy(self) -> "PauliOpCircuit":
         return copy.deepcopy(self)
 
-    def add_pauli_block(self, new_block: PauliProductOperation, index: int = None) -> None:
+    def add_pauli_block(
+        self, new_block: PauliProductOperation, index: Optional[int] = None
+    ) -> None:
         """Add a rotation to the circuit
 
         Args:
@@ -89,7 +91,7 @@ class PauliOpCircuit(object):
         qubit: int,
         operator_type: PauliOperator,
         rotation_amount: Fraction,
-        index: int = None,
+        index: Optional[int] = None,
     ) -> None:
         """Add a single Pauli operator rotation (X, Z, Y) to the circuit.
 

@@ -8,8 +8,8 @@ from lsqecc.pauli_rotations.rotation import PauliOperator
 
 
 def approximate_rz(rz_gate: "gates.RZ", compress_rotations: bool = False) -> Sequence["gates.Gate"]:
-    """Get the Clifford+T approximation of a an rz gate.
-    Currently ony supports arguments of the form pi/2^n.
+    """Get the Clifford+T approximation of a rz gate.
+    Currently, only supports arguments of the form pi/2^n.
     """
 
     approximation_gates = GridsynthInterface.get_approximation(10, rz_gate.phase)

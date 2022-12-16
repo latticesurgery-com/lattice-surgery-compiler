@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 # TODO freeze the gate class
-from typing import List, Sequence
+from typing import List, Sequence, cast
 
 from lsqecc.gates import approximate
 from lsqecc.pauli_rotations.rotation import PauliOperator
@@ -79,10 +79,16 @@ class PauliRotations(Gate):
             elif self.phase == Fraction(1, 4):
                 return [H(self.target_qubit), T(self.target_qubit), H(self.target_qubit)]
             else:
-                return (
-                    [H(self.target_qubit)]
-                    + approximate.approximate_rz(RZ(phase=self.phase), compress_rotations)
-                    + [H(self.target_qubit)]
+                return cast(
+                    Sequence[Gate],
+                    (
+                        [H(self.target_qubit), ...]
+                        + cast(
+                            List[Gate],
+                            approximate.approximate_rz(RZ(phase=self.phase), compress_rotations),
+                        )
+                        + [H(self.target_qubit)]
+                    ),
                 )
         else:
             raise (Exception("Only X/Z axes are supported as of now!"))
@@ -123,12 +129,20 @@ class RX(Gate):
                 else [self]
             )
         else:
-            return (
-                [H(self.target_qubit)]
-                + approximate.approximate_rz(
-                    RZ(target_qubit=self.target_qubit, phase=self.phase), compress_rotations
+            # gate_sequence: List[Gate] = [H(self.target_qubit)]
+            # gate_sequence = gate_sequence + cast(List[Gate],approximate.approximate_rz(
+            #         RZ(target_qubit=self.target_qubit, phase=self.phase), compress_rotations
+            #     ))
+            return cast(
+                Sequence[Gate],
+                [H(self.target_qubit), ...]
+                + cast(
+                    List[Gate],
+                    approximate.approximate_rz(
+                        RZ(target_qubit=self.target_qubit, phase=self.phase), compress_rotations
+                    ),
                 )
-                + [H(self.target_qubit)]
+                + [H(self.target_qubit)],
             )
 
 
