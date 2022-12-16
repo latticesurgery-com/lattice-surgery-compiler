@@ -12,7 +12,7 @@ def approximate_rz(rz_gate: "gates.RZ", compress_rotations: bool = False) -> Seq
     Currently, only supports arguments of the form pi/2^n.
     """
 
-    approximation_gates = GridsynthInterface.get_approximation(10, rz_gate.phase)
+    approximation_gates = GridsynthInterface.get_approximation(41, rz_gate.phase)
     if compress_rotations:
         approximation_gates = partition_gate_sequence(approximation_gates)
     approx_gates = []
