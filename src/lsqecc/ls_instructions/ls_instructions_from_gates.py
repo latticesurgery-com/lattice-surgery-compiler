@@ -1,5 +1,6 @@
 import itertools
 from typing import Sequence
+from typing.io import IO
 
 import lsqecc.simulation.qubit_state as qs
 from lsqecc.gates import gates
@@ -52,6 +53,8 @@ class LSInstructionsFromGatesGenerator:
                 ),
                 ls_instructions.MeasureSinglePatch(ancilla, PauliOperator.Z),
             ]
+        elif isinstance(gate, gates.SingleQubitMeasurement):
+            return [ls_instructions.MeasureSinglePatch(patch_id=gate.target_qubit, op=gate.basis)]
         else:
             raise Exception(f"Gate {gate} is not Clifford+T")
 
@@ -60,3 +63,21 @@ class LSInstructionsFromGatesGenerator:
         generator = LSInstructionsFromGatesGenerator()
         instructions = itertools.chain.from_iterable(map(generator.gen_instructions, circuit.gates))
         return "\n".join(map(repr, instructions))
+
+    @staticmethod
+    def write_instruction(circuit: GatesCircuit, f: IO):
+        if circuit.num_qubits is None:
+            raise Exception("num_qubits required to write ls instrtuctions")
+        print(
+            repr(
+                ls_instructions.DeclareLogicalQubitPatches(
+                    patch_ids=list(range(circuit.num_qubits))
+                )
+            ),
+            file=f,
+        )
+
+        generator = LSInstructionsFromGatesGenerator(circuit.num_qubits)
+        for gate in circuit.gates:
+            for instr in generator.gen_instructions(gate):
+                print(repr(instr), file=f)

@@ -7,7 +7,7 @@ from lsqecc.gates import gates
 from lsqecc.gates.approximate import approximate_rz, from_gate_string
 from lsqecc.gates.compress_rotation_approximations import partition_gate_sequence
 from lsqecc.gates.pi_over_2_to_the_n_rz_gate_approximations import (
-    get_pi_over_2_to_the_n_rz_gate,
+    get_pi_over_2_to_the_n_rz_gate_pos,
 )
 from lsqecc.pauli_rotations.rotation import PauliOperator
 
@@ -69,7 +69,7 @@ class TestRotationCompression:
         compressed_gates = approximate_rz(
             gates.RZ(target_qubit=1, phase=phase), compress_rotations=False
         )
-        partitions = get_pi_over_2_to_the_n_rz_gate[int(math.log2(phase.denominator))]
+        partitions = get_pi_over_2_to_the_n_rz_gate_pos[int(math.log2(phase.denominator))]
 
         assert len(compressed_gates) == len(partitions)
         assert compressed_gates == expected_gate_sequence
@@ -98,7 +98,7 @@ class TestRotationCompression:
             gates.RZ(target_qubit=1, phase=phase), compress_rotations=True
         )
         partitions = partition_gate_sequence(
-            get_pi_over_2_to_the_n_rz_gate[int(math.log2(phase.denominator))]
+            get_pi_over_2_to_the_n_rz_gate_pos[int(math.log2(phase.denominator))]
         )
 
         assert len(compressed_gates) == len(partitions)
@@ -124,7 +124,7 @@ class TestRotationCompression:
             gates.RZ(target_qubit=1, phase=phase), compress_rotations=True
         )
         partitions = partition_gate_sequence(
-            get_pi_over_2_to_the_n_rz_gate[int(math.log2(phase.denominator))]
+            get_pi_over_2_to_the_n_rz_gate_pos[int(math.log2(phase.denominator))]
         )
 
         assert len(compressed_gates) == len(partitions)
