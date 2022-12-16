@@ -8,6 +8,8 @@ from typing import List, Sequence, Tuple
 from lsqecc.gates import gates
 from lsqecc.utils import QasmParseException
 
+IGNORED_INSTRUCTIONS = {"OPENQASM", "include", "barrier", "qreg", "creg", "gate"}
+
 
 def get_index_arg(qreg_arg: str) -> int:
     return int(qreg_arg.split("[")[1].split("]")[0])

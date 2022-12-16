@@ -61,7 +61,5 @@ class LSInstructionsFromGatesGenerator:
         instructions = itertools.chain.from_iterable(map(generator.gen_instructions, circuit.gates))
         return "\n".join(map(repr, instructions))
 
-    def get_declaration_instruction(
-        self, ids: list[int]
-    ) -> Sequence[ls_instructions.LSInstruction]:
-        return [ls_instructions.DeclareLogicalQubitPatches(patch_ids=ids)]
+    def get_declaration_instruction(self, ids: list[int]) -> str:
+        return repr(ls_instructions.DeclareLogicalQubitPatches(patch_ids=ids))
