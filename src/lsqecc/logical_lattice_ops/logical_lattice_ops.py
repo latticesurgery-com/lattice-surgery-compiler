@@ -19,6 +19,7 @@ import uuid
 from collections import deque
 from fractions import Fraction
 from typing import Deque, Dict, List, Optional, Sequence, Union
+from dataclasses import dataclass
 
 import lsqecc.simulation.conditional_operation_control as coc
 import lsqecc.simulation.qubit_state as qs
@@ -81,6 +82,14 @@ class LogicalPauli(LogicalLatticeOperation):
         return [self.qubit_uuid]
 
 
+class Hadamard(LogicalLatticeOperation):
+    def __init__(self, qubit_uuid: uuid.UUID):
+        self.qubit_uuid = qubit_uuid
+
+    def get_operating_patches(self) -> List[uuid.UUID]:
+        return [self.qubit_uuid]
+
+
 class MagicStateRequest(LogicalLatticeOperation):
     def __init__(self, qubit_uuid: uuid.UUID):
         self.qubit_uuid = qubit_uuid
@@ -89,17 +98,31 @@ class MagicStateRequest(LogicalLatticeOperation):
         return [self.qubit_uuid]
 
 
+
+
+
+@dataclass
+class LogicalLatticeComputationRawInput:
+    ops: List[LogicalLatticeOperation]
+    logical_qubit_uuid_map: Dict[int, uuid.UUID]
+
 class LogicalLatticeComputation:
-    def __init__(self, circuit: PauliOpCircuit):
-        self.circuit = circuit
-        self.logical_qubit_uuid_map: Dict[int, uuid.UUID] = dict(
-            [(j, uuid.uuid4()) for j in range(circuit.qubit_num)]
-        )
-        self.ops: List[LogicalLatticeOperation] = []
+    def __init__(self, input: Union[LogicalLatticeComputationRawInput, PauliOpCircuit]):
+        if isinstance(input, PauliOpCircuit):
+            self = LogicalLatticeComputation([], {});
+        
+            self.logical_qubit_uuid_map: Dict[int, uuid.UUID] = dict(
+                    [(j, uuid.uuid4()) for j in range(input.qubit_num)]
+                )
+            self.ops: List[LogicalLatticeOperation] = []
+            self._load_circuit(input)
 
-        self._load_circuit()
+        else:
+            self.ops = input.ops
+            self.logical_qubit_uuid_map = input.logical_qubit_uuid_map
 
-    def _load_circuit(self):
+
+    def _load_circuit(self, circuit: PauliOpCircuit):
         def to_lattice_operation(
             op: PauliProductOperation,
         ) -> Union[LogicalLatticeOperation, PauliRotation]:

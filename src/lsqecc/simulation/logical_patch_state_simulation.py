@@ -274,6 +274,14 @@ class FullStateVectorPatchSimulator(PatchSimulator):
             )
             self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
 
+        elif isinstance(logical_op, llops.Hadamard):
+            symbolic_state = circuit_apply_op_to_qubit(
+                self.logical_state,
+                qkop.H,
+                self.mapper.get_idx(logical_op.qubit_uuid),
+            )
+            self.logical_state = symbolic_state.eval()  # Convert to DictStateFn
+
         elif isinstance(logical_op, llops.MultiBodyMeasurement):
             pauli_op_list: List[qkop.OperatorBase] = []
 
@@ -373,6 +381,18 @@ class LazyTensorPatchSimulator(PatchSimulator):
             symbolic_state = circuit_apply_op_to_qubit(
                 operand,
                 ConvertersToQiskit.pauli_op(logical_op.pauli_matrix),
+                idx_within_operand,
+            )
+            self.logical_state.ops[operand_idx] = cast(qkop.StateFn, symbolic_state.eval())
+        
+        elif isinstance(logical_op, llops.Hadamard):
+            op_idx = self.mapper.get_idx(logical_op.qubit_uuid)
+            operand_idx, idx_within_operand = self.logical_state.get_idxs_of_qubit(op_idx)
+            operand = self.logical_state.ops[operand_idx]
+
+            symbolic_state = circuit_apply_op_to_qubit(
+                operand,
+                qkop.H,
                 idx_within_operand,
             )
             self.logical_state.ops[operand_idx] = cast(qkop.StateFn, symbolic_state.eval())
