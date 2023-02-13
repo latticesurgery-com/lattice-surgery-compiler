@@ -1,8 +1,8 @@
 # Lattice Surgery Compiler
 [![Test](https://github.com/latticesurgery-com/lattice-surgery-compiler/actions/workflows/test.yml/badge.svg)](https://github.com/latticesurgery-com/lattice-surgery-compiler/actions/workflows/test.yml)
-[![Documentation Status](https://readthedocs.org/projects/lattice-surgery-compiler/badge/?version=latest)](https://lattice-surgery-compiler.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/latticesurgery-com/lattice-surgery-compiler/branch/dev/graph/badge.svg?token=7SSY2AY2QN)](https://codecov.io/gh/latticesurgery-com/lattice-surgery-compiler)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![arXiv](https://img.shields.io/badge/arXiv-2302.02459-b31b1b.svg)](https://arxiv.org/abs/2302.02459)
 [![Unitary Fund](https://img.shields.io/badge/Supported%20By-Unitary%20Fund-FFFF00.svg)](https://unitary.fund)
 
 <!-- start -->
