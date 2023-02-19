@@ -164,6 +164,11 @@ class PatchToQubitMapper:
         for idx in range(self.max_num_patches()):
             yield (idx, self.get_uuid(idx))
 
+    def remove_qubit_and_shift_remaining(self, target_idx: int) -> None:
+        for idx in range(target_idx, self.max_num_patches() - 1):
+            self.patch_location_to_logical_idx[self.get_uuid(idx + 1)] = idx
+        self.patch_location_to_logical_idx.pop(self.get_uuid(target_idx))
+        
     @staticmethod
     def _get_all_operating_patches(
         logical_computation: llops.LogicalLatticeComputation,
@@ -313,9 +318,10 @@ class FullStateVectorPatchSimulator(PatchSimulator):
 
 
 class LazyTensorPatchSimulator(PatchSimulator):
-    def __init__(self, logical_computation: llops.LogicalLatticeComputation):
+    def __init__(self, logical_computation: llops.LogicalLatticeComputation, discard_measured_patches=False):
         super(LazyTensorPatchSimulator, self).__init__(logical_computation)
         self.logical_state: LazyTensorOp[qkop.StateFn] = self._make_initial_logical_state()
+        self.discard_measured_patches: bool = discard_measured_patches
 
     def _make_initial_logical_state(self) -> LazyTensorOp[qkop.StateFn]:
         """Every patch, when initialized, is considered a new logical qubit.
@@ -373,6 +379,11 @@ class LazyTensorPatchSimulator(PatchSimulator):
             if idx_within_operand == operand.num_qubits - 1:
                 self.logical_state.separate_last_qubit_of_operand(operand_idx)
                 # TODO use .permute + reindexing to detach any qubit, not just the last
+
+                if self.discard_measured_patches:
+                    self.logical_state.remove_operand(operand_idx)
+                    self.mapper.remove_qubit_and_shift_remaining(measure_idx)
+            
         elif isinstance(logical_op, llops.LogicalPauli):
             op_idx = self.mapper.get_idx(logical_op.qubit_uuid)
             operand_idx, idx_within_operand = self.logical_state.get_idxs_of_qubit(op_idx)

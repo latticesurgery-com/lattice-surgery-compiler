@@ -142,6 +142,12 @@ class LazyTensorOp(Generic[T]):
         self.ops.insert(operand_idx + 1, maybe_new_operand_from_qubit)
         return True
 
+    def remove_operand(self, operand_idx: int) -> None:
+        if self.ops[operand_idx].num_qubits == 1:
+            self.ops.pop(operand_idx)
+        else:
+            raise Exception(f"Cannot remove non separable qubit at operand {operand_idx}: {self.ops[operand_idx]}")
+
     def are_possibly_entangled(self):
         pass  # TODO
 
