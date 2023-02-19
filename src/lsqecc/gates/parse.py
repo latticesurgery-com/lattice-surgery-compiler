@@ -51,13 +51,18 @@ def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
     for instruction, args in instructions:
         if instruction and instruction in "hxzst":
             ret_gates.append(parse_trivial_gate(instruction, args))
+        elif instruction == "cx" or instruction == "cnot":
+            ret_gates.append(gates.CNOT(get_index_arg(args[0]), get_index_arg(args[1])))
         elif instruction[0:2] == "rz":
-            if instruction[2:6] != "(pi/":
+            if instruction[2:6] == "(pi/":
+                phase_pi_frac_den = int(instruction[6:].split(")")[0])
+                ret_gates.append(gates.RZ(get_index_arg(args[0]), Fraction(1, phase_pi_frac_den)))
+            elif instruction[2:6] == "(pi)":
+                ret_gates.append(gates.RZ(get_index_arg(args[0]), Fraction(1, 1)))
+            else:
                 raise QasmParseException(
                     f"Can only parse pi/n for n power of 2 angles as rz args, " f"got {instruction}"
                 )
-            phase_pi_frac_den = int(instruction[6:].split(")")[0])
-            ret_gates.append(gates.RZ(get_index_arg(args[0]), Fraction(1, phase_pi_frac_den)))
         elif instruction[0:3] == "crz":
             if instruction[3:7] != "(pi/":
                 raise QasmParseException(
@@ -71,6 +76,10 @@ def parse_gates_circuit(qasm: str) -> Sequence[gates.Gate]:
                     phase=Fraction(1, phase_pi_frac_den),
                 )
             )
+        elif instruction == "swap":
+            ret_gates.append(gates.CNOT(get_index_arg(args[0]), get_index_arg(args[1])))
+            ret_gates.append(gates.CNOT(get_index_arg(args[1]), get_index_arg(args[0])))
+            ret_gates.append(gates.CNOT(get_index_arg(args[0]), get_index_arg(args[1])))
         elif not instruction and not args:
             pass
         else:

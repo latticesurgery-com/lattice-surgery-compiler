@@ -89,6 +89,13 @@ class Hadamard(LogicalLatticeOperation):
     def get_operating_patches(self) -> List[uuid.UUID]:
         return [self.qubit_uuid]
 
+class SGate(LogicalLatticeOperation):
+    def __init__(self, qubit_uuid: uuid.UUID):
+        self.qubit_uuid = qubit_uuid
+
+    def get_operating_patches(self) -> List[uuid.UUID]:
+        return [self.qubit_uuid]
+
 
 class MagicStateRequest(LogicalLatticeOperation):
     def __init__(self, qubit_uuid: uuid.UUID):
