@@ -1,7 +1,7 @@
 # pauli_rotations
 
 ```{note}
-This section is still under active development
+This section is still under active development. TESTING CI
 ```
 
 ```{eval-rst}
