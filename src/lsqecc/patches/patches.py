@@ -60,13 +60,29 @@ class Orientation(Enum):
 
 
 class EdgeType(Enum):
+    """Enum for representing what an Edge looks like and what type of operation it encodes.
+    When representing Pauli operators, an Edge is (solid or dashed) and (stitched or unstitched).
+    Alternatively, it can represent the border of joining ancilla Patches.
+    Different Pauli operators are mapped to different EdgeType values: X is dashed, and Z is solid.
+    """
+
     Solid = "Solid"
+    """The Edge is Solid and not Stitched, and it encodes the Pauli Z operation."""
+
     SolidStiched = "SolidStiched"
+    """The Edge is Solid and Stitched, and it encodes the Pauli Z operation."""
+
     Dashed = "Dashed"
+    """The Edge is Solid and not Stitched, and encodes the Pauli X operation."""
+
     DashedStiched = "DashedStiched"
+    """The Edge is Solid and Stitched and encodes the Pauli X operation."""
+
     AncillaJoin = "AncillaJoin"
+    """The Edge represents a join between ancilla Patches."""
 
     def stitched_type(self):
+        """Returns stitched version of current EdgeType value, or self if already stitched."""
         if self == EdgeType.Solid:
             return EdgeType.SolidStiched
         if self == EdgeType.Dashed:
@@ -74,6 +90,7 @@ class EdgeType(Enum):
         return self
 
     def unstitched_type(self):
+        """Returns unstitched version of current EdgeType value, or self if already unstitched."""
         if self == EdgeType.SolidStiched:
             return EdgeType.Solid
         if self == EdgeType.DashedStiched:
